@@ -1,2 +1,1 @@
-# 2015-2026-Digital-Student-Agenda
-Student agenda and project and homework tracking.
+2025-2026 Digital Student Agenda.
