@@ -84,6 +84,9 @@ body.dark-mode .sidebar { border-right-color: rgba(255,255,255,0.08); box-shadow
 .sidebar-about { padding: 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; font-size: 11px; color: rgba(255,255,255,0.75); line-height: 1.6; }
 .sidebar-about-title { font-weight: 700; margin-bottom: 8px; color: rgba(255,255,255,0.9); font-size: 12px; }
 .sidebar-about-text { margin-bottom: 12px; }
+.sidebar-policy { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.12); display: grid; gap: 6px; }
+.sidebar-policy strong { color: rgba(255,255,255,0.92); font-size: 10px; letter-spacing: 0.2px; }
+.sidebar-policy p { margin: 0; font-size: 10px; color: rgba(255,255,255,0.74); line-height: 1.45; }
 .sidebar-reset-btn { background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; font-weight: 700; padding: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
 .sidebar-reset-btn:hover { color: #fff; }
 
@@ -518,6 +521,12 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <div class="sidebar-about">
           <div class="sidebar-about-title">Digital Student Agenda</div>
           <div class="sidebar-about-text">Manage your tasks, notes, and schedule all in one place.</div>
+          <div class="sidebar-policy" aria-label="Privacy and data policy notice">
+            <strong>Privacy &amp; Data Notice</strong>
+            <p>Your agenda data is stored on this device in browser local storage by default, not on a cloud server.</p>
+            <p>Data remains available until you delete entries, clear site data, or use Reset to defaults from this sidebar.</p>
+            <p>You control your data at all times. If cloud sync is enabled in a future release, account access will use secure OAuth sign-in and synced data will be encrypted in transit and at rest.</p>
+          </div>
           <button id="resetSettingsBtn" class="sidebar-reset-btn">Reset to defaults</button>
         </div>
       </div>
