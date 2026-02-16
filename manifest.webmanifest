@@ -1,7 +1,7 @@
 {
-  "name": "Digital Student Agenda",
-  "short_name": "Student Agenda",
-  "description": "Track homework, class schedule, notes, and goals in one place.",
+  "name": "FocusFlow",
+  "short_name": "FocusFlow",
+  "description": "FocusFlow keeps assignments, schedules, notes, and study routines in one focused workspace, especially for students with ADHD.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
