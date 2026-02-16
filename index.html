@@ -225,6 +225,10 @@ body.dark-mode .pro-select { background-color: #1e293b; }
 .focus-card { border: 1px solid var(--lux-border); border-radius: 12px; padding: 16px; background: var(--lux-hover); }
 .focus-time { font-size: 40px; font-weight: 900; letter-spacing: 1px; color: var(--lux-text-main); margin: 8px 0 12px; }
 .focus-chip { display: inline-flex; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border: 1px solid var(--lux-border); color: var(--lux-text-sub); }
+.focus-status { margin-top: 10px; font-size: 11px; color: var(--lux-text-sub); min-height: 16px; }
+.focus-status.good { color: var(--lux-success); }
+.focus-status.warn { color: var(--lux-warning); }
+.focus-status.bad { color: var(--lux-danger); }
 .habit-item { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 0; border-bottom:1px solid var(--lux-border); }
 .habit-item:last-child { border-bottom:none; }
 .habit-check { width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--lux-border); cursor: pointer; display:inline-flex; align-items:center; justify-content:center; font-size: 11px; }
@@ -726,7 +730,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="primary-btn" onclick="togglePomodoro()" id="pomodoroStartBtn">Start</button>
                 <button class="ghost-btn" onclick="resetPomodoro()">Reset</button>
-                <button class="ghost-btn" onclick="playAlarmTone()">Test Alarm</button>
+                <button class="ghost-btn" onclick="testAlarmFlow()">Test Alarm</button>
                 <select id="noiseSelect" class="pro-select pro-input" style="max-width:180px;" onchange="playNoise()" onclick="playNoise()">
                   <option value="">White noise off</option>
                   <option value="rain">Rain</option>
@@ -735,6 +739,8 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
                 </select>
                 <button class="ghost-btn" onclick="stopNoise()">Mute</button>
               </div>
+              <div style="margin-top:12px;font-size:11px;color:var(--lux-text-sub);line-height:1.5;">If your alarm is quiet in Focus Studio: unmute this tab, click <strong>Test Alarm</strong>, then allow notifications when prompted.</div>
+              <div id="focusAlarmStatus" class="focus-status">Alarm ready when you are.</div>
               <div style="margin-top:12px;font-size:11px;color:var(--lux-text-sub);">Weekly focus time: <strong id="focusMinutesWeek">0 mins</strong></div>
               <div style="font-size:11px;color:var(--lux-text-sub);">Average daily focus: <strong id="focusAvgDay">0 mins</strong></div>
             </div>
@@ -988,6 +994,8 @@ let noiseNode = null;
 let noiseGain = null;
 let rainDropInterval = null;
 let hasRequestedNotificationPermission = false;
+let hasPrimedAudio = false;
+let fallbackAlarmClip = null;
 
 const SUBJECT_COLORS = {
   'Math':    { bg: '#dbeafe', text: '#1e40af', border: '#3b82f6' },
@@ -1402,6 +1410,54 @@ function showPomodoroCompletionPopup(completedMode) {
   }, 100);
 }
 
+function setFocusAlarmStatus(message, level = '') {
+  const statusEl = document.getElementById('focusAlarmStatus');
+  if (!statusEl) return;
+  statusEl.textContent = message;
+  statusEl.className = `focus-status${level ? ` ${level}` : ''}`;
+}
+
+async function primeAudio(reason = 'manual') {
+  try {
+    const ctx = ensureAudioContext();
+    const silentGain = ctx.createGain();
+    const osc = ctx.createOscillator();
+    silentGain.gain.value = 0.00001;
+    osc.connect(silentGain).connect(ctx.destination);
+    const t = ctx.currentTime;
+    osc.start(t);
+    osc.stop(t + 0.02);
+    hasPrimedAudio = true;
+    if (reason === 'manual') {
+      setFocusAlarmStatus('Audio primed. Alarm playback should now be more reliable.', 'good');
+    }
+    return true;
+  } catch (_) {
+    setFocusAlarmStatus('Audio priming was blocked. Tap or click again, then retry Test Alarm.', 'warn');
+    return false;
+  }
+}
+
+function primeAudioOnFirstInteraction() {
+  if (hasPrimedAudio) return;
+  const oncePrime = () => {
+    primeAudio('auto').finally(() => {
+      document.removeEventListener('pointerdown', oncePrime);
+      document.removeEventListener('keydown', oncePrime);
+    });
+  };
+  document.addEventListener('pointerdown', oncePrime, { once: true });
+  document.addEventListener('keydown', oncePrime, { once: true });
+}
+
+function getFallbackAlarmClip() {
+  if (!fallbackAlarmClip) {
+    fallbackAlarmClip = new Audio('data:audio/wav;base64,UklGRlQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTAAAAAAgICAgICAgICAgICAf39/f39/f39/f39/gICAgICAgICAgICAgH9/f39/f39/f39/f4CAgICAgICAgICAgIB/f39/f39/f39/f3+AgICAgICAgICAgICA');
+    fallbackAlarmClip.preload = 'auto';
+  }
+  return fallbackAlarmClip;
+}
+
 function handlePomodoroPhaseChange(completedMode) {
   playAlarmTone();
   showPomodoroCompletionPopup(completedMode);
@@ -1432,22 +1488,47 @@ function ensureAudioContext() {
 }
 
 function playAlarmTone() {
-  const ctx = ensureAudioContext();
-  const start = ctx.currentTime + 0.02;
-  const notes = [880, 660, 880];
+  try {
+    const ctx = ensureAudioContext();
+    if (ctx.state !== 'running') throw new Error('AudioContext not running');
+    const start = ctx.currentTime + 0.02;
+    const notes = [880, 660, 880];
 
-  notes.forEach((freq, i) => {
-    const t = start + (i * 0.22);
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.12, t + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.2);
+    notes.forEach((freq, i) => {
+      const t = start + (i * 0.22);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.12, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.2);
+    });
+
+    setFocusAlarmStatus('Alarm played through Web Audio.', 'good');
+    return Promise.resolve(true);
+  } catch (_) {
+    const clip = getFallbackAlarmClip();
+    clip.currentTime = 0;
+    return clip.play()
+      .then(() => {
+        setFocusAlarmStatus('Alarm played using fallback audio clip.', 'warn');
+        return true;
+      })
+      .catch(() => {
+        setFocusAlarmStatus('Alarm playback was blocked by browser policy. Use Test Alarm again after interacting with the page.', 'bad');
+        return false;
+      });
+  }
+}
+
+function testAlarmFlow() {
+  requestNotificationPermission();
+  primeAudio().finally(() => {
+    handlePomodoroPhaseChange('focus');
   });
 }
 
@@ -1495,6 +1576,7 @@ function getAudioDebugStatus() {
   return {
     hasAudioContext: !!audioCtx,
     audioContextState: audioCtx ? audioCtx.state : 'none',
+    hasPrimedAudio,
     whiteNoiseActive: !!noiseNode,
     selectedNoise: document.getElementById('noiseSelect')?.value || ''
   };
@@ -2193,6 +2275,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const breakInput = document.getElementById('breakMinutes');
   if (focusInput) focusInput.value = DB.pomodoroSettings.focusMinutes || 25;
   if (breakInput) breakInput.value = DB.pomodoroSettings.breakMinutes || 5;
+  primeAudioOnFirstInteraction();
   resetPomodoro();
 
   const naturalInput = document.getElementById('taskNaturalInput');
