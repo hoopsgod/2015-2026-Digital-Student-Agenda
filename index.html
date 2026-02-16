@@ -632,9 +632,94 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 .stat-num { font-size: 24px; font-weight: 900; color: var(--lux-text-main); }
 .stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--lux-text-sub); font-weight: 700; margin-top: 4px; }
 
+/* LANDING PAGE + LIVE PREVIEW */
+.landing-page {
+  min-height: 100vh;
+  padding: 28px 20px 56px;
+  background: radial-gradient(circle at 12% 12%, #dbeafe 0%, #eef2ff 35%, #f8fafc 72%, #ffffff 100%);
+  color: #0f172a;
+}
+.landing-shell { max-width: 1180px; margin: 0 auto; display: grid; gap: 44px; }
+.landing-hero { display: grid; gap: 28px; align-items: center; grid-template-columns: 1fr; }
+.landing-copy h1 {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: clamp(2.1rem, 5vw, 4rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  font-weight: 800;
+  max-width: 14ch;
+}
+.landing-copy p { margin-top: 14px; font-size: clamp(1rem, 2vw, 1.2rem); color: #334155; max-width: 52ch; }
+.landing-actions { display: flex; gap: 16px; margin-top: 26px; align-items: center; flex-wrap: wrap; }
+.landing-enter-btn {
+  border: none; border-radius: 999px; background: #0f172a; color: #fff;
+  font-size: 0.95rem; font-weight: 700; letter-spacing: 0.02em;
+  padding: 14px 24px; cursor: pointer; box-shadow: 0 16px 32px rgba(15, 23, 42, 0.22);
+}
+.landing-secondary-link { color: #1d4ed8; text-decoration: none; font-weight: 600; }
+.preview-frame-wrap {
+  background: rgba(255,255,255,0.86); border: 1px solid #dbe3f2; border-radius: 22px;
+  box-shadow: 0 24px 54px rgba(15, 23, 42, 0.16); padding: 16px;
+}
+.preview-frame-head { display: flex; align-items: center; justify-content: space-between; padding: 0 2px 12px; }
+.preview-frame-title { font-size: 0.86rem; font-weight: 700; color: #0f172a; }
+.preview-frame-pill {
+  border: 1px solid #bfdbfe; background: #eff6ff; color: #1d4ed8; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 700; padding: 6px 10px;
+}
+.live-preview-embed {
+  width: 100%; height: 580px; border: 1px solid #d7deeb; border-radius: 14px; background: #fff;
+}
+.landing-benefits { display: grid; gap: 12px; }
+.landing-benefits li { list-style: none; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,0.78); border: 1px solid #e2e8f0; color: #334155; }
+
+.demo-mode-pill {
+  position: fixed; top: 16px; right: 16px; z-index: 2500;
+  border: 1px solid rgba(59,130,246,0.45); background: rgba(239,246,255,0.95); color: #1d4ed8;
+  padding: 7px 11px; border-radius: 999px; font-size: 11px; font-weight: 700;
+  box-shadow: 0 8px 20px rgba(15,23,42,0.15);
+}
+body.demo-mode .sidebar,
+body.demo-mode .mobile-nav { pointer-events: none; opacity: 0.72; }
+
+@media (max-width: 768px) {
+  .landing-page { padding: 20px 14px 40px; }
+  .landing-shell { gap: 26px; }
+  .live-preview-embed { height: 460px; }
+  .landing-actions { margin-top: 18px; }
+}
+
   </style>
 </head>
 <body style="margin: 0; padding: 0;">
+  <main id="landingRoot" class="landing-page" style="display:none;">
+    <div class="landing-shell">
+      <section class="landing-hero">
+        <div class="landing-copy">
+          <h1>Stay ahead of every class, assignment, and deadline.</h1>
+          <p>Digital Student Agenda keeps your tasks, schedule, notes, and study flow in one focused workspace built for daily student momentum.</p>
+          <div class="landing-actions">
+            <button class="landing-enter-btn" type="button" onclick="enterApp()">Enter App</button>
+            <a class="landing-secondary-link" href="#preview" onclick="scrollToPreview(event)">See How It Works</a>
+          </div>
+        </div>
+        <div id="preview" class="preview-frame-wrap">
+          <div class="preview-frame-head">
+            <span class="preview-frame-title">Live Preview (Read-Only)</span>
+            <span class="preview-frame-pill">Demo Mode: changes won't save</span>
+          </div>
+          <iframe id="livePreviewFrame" class="live-preview-embed" title="Live app preview" loading="lazy"></iframe>
+        </div>
+      </section>
+      <ul class="landing-benefits">
+        <li><strong>Plan faster:</strong> Organize tasks by class, due date, and priority in seconds.</li>
+        <li><strong>Study smarter:</strong> Use notes, focus timers, and schedule blocks in one flow.</li>
+        <li><strong>Stay consistent:</strong> Track progress daily without app-switching overload.</li>
+      </ul>
+    </div>
+  </main>
+
+  <div id="appRoot">
   <div id="appBg"></div>
   <div class="main-wrapper">
     <!-- SIDEBAR -->
@@ -1154,7 +1239,67 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
     <button onclick="switchSection('links')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Links</button>
   </nav>
 
+</div>
 <script>
+const ROUTES = {
+  LANDING: '#/',
+  APP: '#/app'
+};
+const DEMO_MODE = new URLSearchParams(window.location.search).get('demo') === '1';
+
+function normalizedHash() {
+  const hash = window.location.hash || '';
+  if (hash === '' || hash === '#') return ROUTES.LANDING;
+  return hash;
+}
+
+function isLandingRoute() {
+  return normalizedHash() !== ROUTES.APP;
+}
+
+function enterApp() {
+  window.location.hash = ROUTES.APP;
+}
+
+function scrollToPreview(event) {
+  if (event) event.preventDefault();
+  document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function updateRouteView() {
+  const landing = document.getElementById('landingRoot');
+  const app = document.getElementById('appRoot');
+  const inLanding = isLandingRoute() && !DEMO_MODE;
+  if (landing) landing.style.display = inLanding ? 'block' : 'none';
+  if (app) app.style.display = inLanding ? 'none' : 'block';
+
+  if (inLanding) {
+    const iframe = document.getElementById('livePreviewFrame');
+    if (iframe && !iframe.src) {
+      const previewUrl = new URL(window.location.href);
+      previewUrl.searchParams.set('demo', '1');
+      previewUrl.hash = ROUTES.APP;
+      iframe.src = previewUrl.toString();
+    }
+  }
+}
+
+function setupDemoModeGuards() {
+  if (!DEMO_MODE) return;
+  document.body.classList.add('demo-mode');
+
+  const pill = document.createElement('div');
+  pill.className = 'demo-mode-pill';
+  pill.textContent = "Demo Mode: changes won't save";
+  document.body.appendChild(pill);
+
+  document.addEventListener('click', (event) => {
+    const anchor = event.target.closest('a[href]');
+    if (!anchor) return;
+    event.preventDefault();
+  }, true);
+}
+
 // ==================== SAFE STORAGE ====================
 const memoryStore = {};
 
@@ -1174,6 +1319,7 @@ const STORAGE = {
     return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
   },
   setItem(key, value) {
+    if (DEMO_MODE) return;
     if (this.available) {
       localStorage.setItem(key, value);
       return;
@@ -1181,6 +1327,7 @@ const STORAGE = {
     memoryStore[key] = value;
   },
   removeItem(key) {
+    if (DEMO_MODE) return;
     if (this.available) {
       localStorage.removeItem(key);
       return;
@@ -1188,6 +1335,7 @@ const STORAGE = {
     delete memoryStore[key];
   },
   clear() {
+    if (DEMO_MODE) return;
     if (this.available) {
       localStorage.clear();
       return;
@@ -1216,8 +1364,8 @@ const DB = {
   focusSessions: readJSON('agenda_focusSessions', []),
   pomodoroSettings: readJSON('agenda_pomodoroSettings', { focusMinutes: 25, breakMinutes: 5 }),
   points: parseInt(STORAGE.getItem('agenda_points') || '0', 10) || 0,
-  save(key) { STORAGE.setItem('agenda_' + key, JSON.stringify(this[key])); },
-  savePoints() { STORAGE.setItem('agenda_points', String(this.points)); }
+  save(key) { if (DEMO_MODE) return; STORAGE.setItem('agenda_' + key, JSON.stringify(this[key])); },
+  savePoints() { if (DEMO_MODE) return; STORAGE.setItem('agenda_points', String(this.points)); }
 };
 
 // Default links if empty
@@ -2991,15 +3139,42 @@ function monitorWebVitals() {
   }
 }
 
+function renderApp({ demoMode = false } = {}) {
+  if (demoMode) {
+    document.body.classList.add('demo-mode');
+  }
+
+  initializeScheduleSettingsUI();
+  renderNotesFolderFilter();
+  refreshNoteEditorSelectors('', '');
+  renderTasks();
+  renderSchedule();
+  renderUploads();
+  renderNotes();
+  renderLinks();
+  updateDashboard();
+  updateAnalytics();
+  initQuote();
+  loadBranding();
+  switchSection('profile');
+}
+
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
+  if (!window.location.hash || window.location.hash === '#') {
+    window.location.hash = ROUTES.LANDING;
+  }
+  setupDemoModeGuards();
+  updateRouteView();
+  window.addEventListener('hashchange', updateRouteView);
+
   // Load preferences
   if (STORAGE.getItem('dyslexia') === 'true') document.body.classList.add('font-dyslexic');
   if (STORAGE.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
   applyColorTheme(STORAGE.getItem('currentTheme') || 'deep-ocean');
   document.getElementById('hamburgerBtn')?.setAttribute('aria-expanded', 'false');
   setupPWAInstall();
-  registerServiceWorker();
+  if (!DEMO_MODE) registerServiceWorker();
   monitorWebVitals();
 
   // Event listeners
@@ -3075,14 +3250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  initializeScheduleSettingsUI();
-  renderNotesFolderFilter();
-  refreshNoteEditorSelectors('', '');
-
-  // Render everything
-  renderTasks(); renderSchedule(); renderUploads(); renderNotes(); renderLinks();
-  updateDashboard(); updateAnalytics(); initQuote(); loadBranding();
-  switchSection('profile');
+  renderApp({ demoMode: DEMO_MODE });
 });
 </script>
 
