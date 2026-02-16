@@ -68,6 +68,13 @@ body.dark-mode .sidebar { border-right-color: rgba(255,255,255,0.08); box-shadow
 .sidebar-btn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.25); transform: translateX(6px); box-shadow: 0 12px 32px rgba(0,0,0,0.2); color: #fff; }
 .sidebar-btn.active { background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9)); border-color: #fff; color: var(--titan-primary); font-weight: 700; box-shadow: 0 16px 40px rgba(0,0,0,0.25); transform: translateX(6px); }
 
+
+.ui-icon { display: inline-flex; align-items: center; justify-content: center; width: 1.05em; height: 1.05em; vertical-align: -0.14em; }
+.ui-icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.icon-lg { width: 1.35em; height: 1.35em; }
+.icon-xl { width: 1.5em; height: 1.5em; }
+.sidebar-btn .ui-icon, .mobile-nav button .ui-icon { margin-right: 8px; }
+
 .sidebar-about { padding: 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; font-size: 11px; color: rgba(255,255,255,0.75); line-height: 1.6; }
 .sidebar-about-title { font-weight: 700; margin-bottom: 8px; color: rgba(255,255,255,0.9); font-size: 12px; }
 .sidebar-about-text { margin-bottom: 12px; }
@@ -301,7 +308,7 @@ body.dark-mode .note-editor { background: #1e293b; }
   text-decoration: none; color: var(--lux-text-main); transition: all 0.2s; margin-bottom: 8px;
 }
 .link-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); transform: translateX(4px); }
-.link-icon { font-size: 20px; flex-shrink: 0; }
+.link-icon { display: inline-flex; width: 20px; height: 20px; flex-shrink: 0; color: var(--lux-text-sub); }
 .link-info { flex: 1; }
 .link-name { font-size: 14px; font-weight: 600; }
 .link-url { font-size: 11px; color: var(--lux-text-sub); }
@@ -334,7 +341,7 @@ body.dark-mode .note-editor { background: #1e293b; }
   display: none;
   background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
   border: 1px solid rgba(255,255,255,0.2); width: 44px; height: 44px; border-radius: 10px;
-  cursor: pointer; align-items: center; justify-content: center; color: var(--titan-accent); font-size: 22px;
+  cursor: pointer; align-items: center; justify-content: center; color: var(--titan-accent);
 }
 .mobile-sidebar-backdrop {
   display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -399,16 +406,16 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-title">Navigation</div>
-        <button class="sidebar-btn active" data-section="profile" onclick="switchSection('profile')">🏠 Dashboard</button>
-        <button class="sidebar-btn" data-section="agenda" onclick="switchSection('agenda')">✓ Log Homework</button>
-        <button class="sidebar-btn" data-section="schedule" onclick="switchSection('schedule')">📅 Schedule</button>
-        <button class="sidebar-btn" data-section="heatmap" onclick="switchSection('heatmap')">🔥 Analytics</button>
-        <button class="sidebar-btn" data-section="notes" onclick="switchSection('notes')">📝 Notes</button>
-        <button class="sidebar-btn" data-section="links" onclick="switchSection('links')">🔗 Links</button>
+        <button class="sidebar-btn active" data-section="profile" onclick="switchSection('profile')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/></svg></span>Dashboard</button>
+        <button class="sidebar-btn" data-section="agenda" onclick="switchSection('agenda')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Log Homework</button>
+        <button class="sidebar-btn" data-section="schedule" onclick="switchSection('schedule')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Schedule</button>
+        <button class="sidebar-btn" data-section="heatmap" onclick="switchSection('heatmap')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"/><path d="M7 15l3-3 3 2 4-5"/><circle cx="7" cy="15" r="1"/><circle cx="10" cy="12" r="1"/><circle cx="13" cy="14" r="1"/><circle cx="17" cy="9" r="1"/></svg></span>Analytics</button>
+        <button class="sidebar-btn" data-section="notes" onclick="switchSection('notes')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>Notes</button>
+        <button class="sidebar-btn" data-section="links" onclick="switchSection('links')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Links</button>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-title">Appearance</div>
-        <button class="sidebar-btn" onclick="toggleSettingsPanel()">⚙️ Customize</button>
+        <button class="sidebar-btn" onclick="toggleSettingsPanel()"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1 2.3 2.5.7 2-1.5 2 3.4-1.8 1.7.3 2.6 2.2 1.5-2 3.4-2.4-.9-2.2 1.5-.4 2.5h-4l-.4-2.5-2.2-1.5-2.4.9-2-3.4 2.2-1.5.3-2.6L2.5 7.9l2-3.4 2 1.5 2.5-.7z"/><circle cx="12" cy="12" r="3"/></svg></span>Customize</button>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-about">
@@ -432,8 +439,8 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
     </div>
     <div class="header-actions">
       <div class="header-status-pill"><span class="status-dot"></span>Synced & Ready</div>
-      <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileSidebar()">☰</button>
-      <button class="header-btn" id="settingsToggle">⚙️</button>
+      <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileSidebar()"><span class="ui-icon icon-lg" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span></button>
+      <button class="header-btn" id="settingsToggle"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1 2.3 2.5.7 2-1.5 2 3.4-1.8 1.7.3 2.6 2.2 1.5-2 3.4-2.4-.9-2.2 1.5-.4 2.5h-4l-.4-2.5-2.2-1.5-2.4.9-2-3.4 2.2-1.5.3-2.6L2.5 7.9l2-3.4 2 1.5 2.5-.7z"/><circle cx="12" cy="12" r="3"/></svg></span></button>
     </div>
   </div>
 
@@ -486,19 +493,19 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <div style="font-size: 10px; color: var(--titan-accent); text-transform: uppercase; letter-spacing: 2.2px; font-weight: 900; margin-bottom: 14px;">Quick Actions</div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
               <button onclick="switchSection('agenda'); setTimeout(toggleTaskForm, 200);" style="display:flex; align-items:center; gap:10px; padding:16px 18px; background:linear-gradient(135deg, var(--titan-primary), rgba(0,0,0,0.75)); color:var(--titan-accent); border:none; border-radius:10px; cursor:pointer; transition:all 0.2s; text-align:left; font-family:inherit;">
-                <span style="font-size:22px;">✏️</span>
+                <span class="ui-icon icon-xl" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4.5-1L19 8.5 15.5 5 5 15.5z"/><path d="M13.5 6.5l3 3"/></svg></span>
                 <div><div style="font-size:13px; font-weight:700;">Log Homework</div><div style="font-size:10px; opacity:0.7;">Add a new task</div></div>
               </button>
               <button onclick="switchSection('schedule')" style="display:flex; align-items:center; gap:10px; padding:16px 18px; background:var(--lux-hover); color:var(--lux-text-main); border:1px solid var(--lux-border); border-radius:10px; cursor:pointer; transition:all 0.2s; text-align:left; font-family:inherit;">
-                <span style="font-size:22px;">📅</span>
+                <span class="ui-icon icon-xl" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>
                 <div><div style="font-size:13px; font-weight:700;">View Schedule</div><div style="font-size:10px; color:var(--lux-text-sub);">Check your classes</div></div>
               </button>
               <button onclick="switchSection('notes'); setTimeout(newNote, 200);" style="display:flex; align-items:center; gap:10px; padding:16px 18px; background:var(--lux-hover); color:var(--lux-text-main); border:1px solid var(--lux-border); border-radius:10px; cursor:pointer; transition:all 0.2s; text-align:left; font-family:inherit;">
-                <span style="font-size:22px;">📝</span>
+                <span class="ui-icon icon-xl" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>
                 <div><div style="font-size:13px; font-weight:700;">New Note</div><div style="font-size:10px; color:var(--lux-text-sub);">Jot something down</div></div>
               </button>
               <button onclick="switchSection('links')" style="display:flex; align-items:center; gap:10px; padding:16px 18px; background:var(--lux-hover); color:var(--lux-text-main); border:1px solid var(--lux-border); border-radius:10px; cursor:pointer; transition:all 0.2s; text-align:left; font-family:inherit;">
-                <span style="font-size:22px;">🔗</span>
+                <span class="ui-icon icon-xl" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>
                 <div><div style="font-size:13px; font-weight:700;">Quick Links</div><div style="font-size:10px; color:var(--lux-text-sub);">Open your sites</div></div>
               </button>
             </div>
@@ -509,7 +516,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <!-- ========== HOMEWORK / TASKS ========== -->
       <div id="section-agenda" class="card section-wrapper">
         <div class="card-header">
-          <div class="card-title">✓ Log Homework</div>
+          <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Log Homework</div>
           <button class="ghost-btn" onclick="toggleTaskForm()">+ Add Task</button>
         </div>
 
@@ -565,7 +572,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <!-- ========== SCHEDULE ========== -->
       <div id="section-schedule" class="card section-wrapper">
         <div class="card-header">
-          <div class="card-title">📅 Schedule</div>
+          <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Schedule</div>
           <button class="ghost-btn" onclick="toggleScheduleForm()">+ Add Period</button>
         </div>
 
@@ -602,7 +609,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
           <label style="display: flex; align-items: center; justify-content: center; padding: 24px; border: 2px dashed var(--lux-border); border-radius: 10px; cursor: pointer; transition: all 0.2s; background: var(--lux-hover);">
             <input type="file" id="schedulePDF" accept=".pdf,.png,.jpg,.jpeg" style="display:none;" onchange="handleScheduleUpload(event)" />
             <div style="text-align: center;">
-              <div style="font-size: 28px; margin-bottom: 8px;">📄</div>
+              <div style="font-size: 28px; margin-bottom: 8px; color: var(--lux-text-sub);"><span class="ui-icon icon-xl" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/></svg></span></div>
               <div style="font-size: 13px; font-weight: 600; color: var(--lux-text-main);">Click to upload schedule</div>
               <div style="font-size: 11px; color: var(--lux-text-sub);">PDF, PNG, JPG accepted</div>
             </div>
@@ -614,7 +621,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <!-- ========== ANALYTICS ========== -->
       <div id="section-heatmap" class="card section-wrapper">
         <div class="card-header">
-          <div class="card-title">🔥 Analytics</div>
+          <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"/><path d="M7 15l3-3 3 2 4-5"/><circle cx="7" cy="15" r="1"/><circle cx="10" cy="12" r="1"/><circle cx="13" cy="14" r="1"/><circle cx="17" cy="9" r="1"/></svg></span>Analytics</div>
         </div>
         <div style="padding: 20px;">
           <div class="stats-row" style="padding: 0; border: none; margin-bottom: 20px;">
@@ -634,7 +641,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <!-- ========== NOTES ========== -->
       <div id="section-notes" class="card section-wrapper">
         <div class="card-header">
-          <div class="card-title">📝 Notes</div>
+          <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>Notes</div>
           <button class="ghost-btn" onclick="newNote()">+ New Note</button>
         </div>
 
@@ -654,7 +661,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <!-- ========== LINKS ========== -->
       <div id="section-links" class="card section-wrapper">
         <div class="card-header">
-          <div class="card-title">🔗 Quick Links</div>
+          <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Quick Links</div>
           <button class="ghost-btn" onclick="toggleLinkForm()">+ Add Link</button>
         </div>
 
@@ -663,10 +670,10 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <input id="linkName" class="pro-input" placeholder="Link name" />
             <input id="linkUrl" class="pro-input" placeholder="https://..." />
             <select id="linkIcon" class="pro-select pro-input">
-              <option value="🔗">🔗 General</option><option value="🎓">🎓 School</option>
-              <option value="📚">📚 Study</option><option value="✉️">✉️ Email</option>
-              <option value="📊">📊 Grades</option><option value="🗺️">🗺️ Map</option>
-              <option value="💻">💻 Tech</option><option value="🎮">🎮 Fun</option>
+              <option value="link">General</option><option value="graduation">School</option>
+              <option value="book">Study</option><option value="mail">Email</option>
+              <option value="chart">Grades</option><option value="map">Map</option>
+              <option value="laptop">Tech</option><option value="gamepad">Fun</option>
             </select>
             <div style="display: flex; gap: 8px;">
               <button class="primary-btn" onclick="addLink()">Save Link</button>
@@ -704,7 +711,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         </div>
         <label style="display:flex;align-items:center;justify-content:center;padding:14px;border:2px dashed var(--lux-border);border-radius:8px;cursor:pointer;transition:all 0.2s;background:var(--lux-hover);font-size:12px;font-weight:600;color:var(--lux-text-sub);gap:6px;">
           <input type="file" id="logoUpload" accept=".png,.jpg,.jpeg,.svg,.gif,.webp" style="display:none;" onchange="handleLogoUpload(event)" />
-          📷 Choose Logo Image
+          <span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h4l1.4-2h5.2L16 8h4v12H4z"/><circle cx="12" cy="14" r="3.5"/></svg></span>Choose Logo Image
         </label>
         <!-- App Name -->
         <div>
@@ -731,7 +738,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
     <div class="settings-group">
       <h3>Display Options</h3>
       <div style="display: flex; gap: 8px; flex-direction: column;">
-        <button id="darkModeToggle" class="ghost-btn">🌙 Dark Mode</button>
+        <button id="darkModeToggle" class="ghost-btn"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3a8.5 8.5 0 108 11.5A9 9 0 0114 3z"/></svg></span>Dark Mode</button>
         <button id="dyslexiaToggle" class="ghost-btn">Aa Dyslexia Font</button>
       </div>
     </div>
@@ -745,11 +752,11 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   <!-- MOBILE NAV -->
 
   <nav class="mobile-nav">
-    <button onclick="switchSection('profile')">🏠 Home</button>
-    <button onclick="switchSection('agenda')">✓ Work</button>
-    <button onclick="switchSection('schedule')">📅 Sched</button>
-    <button onclick="switchSection('notes')">📝 Notes</button>
-    <button onclick="switchSection('links')">🔗 Links</button>
+    <button onclick="switchSection('profile')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/></svg></span>Home</button>
+    <button onclick="switchSection('agenda')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Work</button>
+    <button onclick="switchSection('schedule')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Sched</button>
+    <button onclick="switchSection('notes')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>Notes</button>
+    <button onclick="switchSection('links')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Links</button>
   </nav>
 
 <script>
@@ -766,10 +773,10 @@ const DB = {
 // Default links if empty
 if (DB.links.length === 0) {
   DB.links = [
-    { id: Date.now(), name: 'Google Classroom', url: 'https://classroom.google.com', icon: '🎓' },
-    { id: Date.now()+1, name: 'Gmail', url: 'https://mail.google.com', icon: '✉️' },
-    { id: Date.now()+2, name: 'Infinite Campus', url: 'https://websterny.infinitecampus.org/campus/portal/students/webster.jsp', icon: '📊' },
-    { id: Date.now()+3, name: 'Wayground', url: 'https://wayground.com/', icon: '🗺️' },
+    { id: Date.now(), name: 'Google Classroom', url: 'https://classroom.google.com', icon: 'graduation' },
+    { id: Date.now()+1, name: 'Gmail', url: 'https://mail.google.com', icon: 'mail' },
+    { id: Date.now()+2, name: 'Infinite Campus', url: 'https://websterny.infinitecampus.org/campus/portal/students/webster.jsp', icon: 'chart' },
+    { id: Date.now()+3, name: 'Wayground', url: 'https://wayground.com/', icon: 'map' },
   ];
   DB.save('links');
 }
@@ -794,6 +801,48 @@ const SUBJECT_COLORS = {
 
 function getSubjectColor(subject) {
   return SUBJECT_COLORS[subject] || SUBJECT_COLORS['Other'];
+}
+
+const ICON_SVG = {
+  home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/></svg>',
+  'check-square': '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>',
+  calendar: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>',
+  analytics: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"/><path d="M7 15l3-3 3 2 4-5"/><circle cx="7" cy="15" r="1"/><circle cx="10" cy="12" r="1"/><circle cx="13" cy="14" r="1"/><circle cx="17" cy="9" r="1"/></svg>',
+  note: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>',
+  link: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg>',
+  settings: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1 2.3 2.5.7 2-1.5 2 3.4-1.8 1.7.3 2.6 2.2 1.5-2 3.4-2.4-.9-2.2 1.5-.4 2.5h-4l-.4-2.5-2.2-1.5-2.4.9-2-3.4 2.2-1.5.3-2.6L2.5 7.9l2-3.4 2 1.5 2.5-.7z"/><circle cx="12" cy="12" r="3"/></svg>',
+  menu: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4.5-1L19 8.5 15.5 5 5 15.5z"/><path d="M13.5 6.5l3 3"/></svg>',
+  file: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/></svg>',
+  camera: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h4l1.4-2h5.2L16 8h4v12H4z"/><circle cx="12" cy="14" r="3.5"/></svg>',
+  moon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3a8.5 8.5 0 108 11.5A9 9 0 0114 3z"/></svg>',
+  user: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0114 0"/></svg>',
+  graduation: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-4 9 4-9 4z"/><path d="M7 11v4c0 1.5 2.2 3 5 3s5-1.5 5-3v-4"/></svg>',
+  book: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h6a3 3 0 013 3v13H8a3 3 0 00-3 3z"/><path d="M19 4h-6a3 3 0 00-3 3v13h6a3 3 0 013 3z"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7l8 6 8-6"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"/><path d="M7 16v-5M12 16V8M17 16v-8"/></svg>',
+  map: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2z"/><path d="M9 4v14M15 6v14"/></svg>',
+  laptop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"/><path d="M3 18h18"/></svg>',
+    '\u{1F517}': 'link',
+    '\u{1F393}': 'graduation',
+    '\u{1F4DA}': 'book',
+    '\u2709': 'mail',
+    '\u{1F4CA}': 'chart',
+    '\u{1F5FA}': 'map',
+    '\u{1F4BB}': 'laptop',
+    '\u{1F3AE}': 'gamepad'
+  const normalized = String(rawIcon || '').trim().replace(/\uFE0F/g, '');
+  return map[normalized] || normalized || 'link';
+function icon(name) {
+  return ICON_SVG[name] || ICON_SVG.link;
+}
+
+function normalizeLinkIcon(rawIcon) {
+  const map = {
+    '🔗': 'link', '🎓': 'graduation', '📚': 'book', '✉️': 'mail',
+    '📊': 'chart', '🗺️': 'map', '💻': 'laptop', '🎮': 'gamepad'
+  };
+  return map[rawIcon] || rawIcon || 'link';
 }
 
 // ==================== TASKS ====================
@@ -918,8 +967,8 @@ function renderTasks() {
         <div class="task-title"><span class="priority-dot priority-${t.priority}"></span>${t.title}</div>
         <div class="task-meta">
           ${subjectBadge}
-          ${dueStr ? '<span' + (isOverdue ? ' style="color:var(--lux-danger);font-weight:700"' : '') + '>📅 ' + dueStr + (isOverdue ? ' (overdue)' : '') + '</span>' : ''}
-          ${t.notes ? '<span>📝 ' + t.notes + '</span>' : ''}
+          ${dueStr ? '<span' + (isOverdue ? ' style="color:var(--lux-danger);font-weight:700"' : '') + '><span class="ui-icon" aria-hidden="true">' + icon('calendar') + '</span> ' + dueStr + (isOverdue ? ' (overdue)' : '') + '</span>' : ''}
+          ${t.notes ? '<span><span class="ui-icon" aria-hidden="true">' + icon('note') + '</span> ' + t.notes + '</span>' : ''}
         </div>
       </div>
       <div class="task-actions">
@@ -989,7 +1038,7 @@ function renderSchedule() {
         <div class="schedule-period">Period ${b.period || '?'}</div>
         <div class="schedule-class">${b.className}</div>
         ${time ? '<div class="schedule-time">' + time + '</div>' : ''}
-        ${b.teacher ? '<div class="schedule-time">👤 ' + b.teacher + '</div>' : ''}
+        ${b.teacher ? '<div class="schedule-time"><span class="ui-icon" aria-hidden="true">' + icon('user') + '</span> ' + b.teacher + '</div>' : ''}
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         ${b.room ? '<span class="schedule-room">' + b.room + '</span>' : ''}
@@ -1049,7 +1098,7 @@ function renderUploads() {
     return `<div style="border:1px solid var(--lux-border);border-radius:10px;margin-bottom:10px;overflow:hidden;background:var(--lux-card);">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--lux-border);">
         <div style="display:flex;align-items:center;gap:8px;">
-          <span>📄</span><span style="font-size:13px;font-weight:600;color:var(--lux-text-main);">${u.name}</span>
+          <span class="link-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/></svg></span><span style="font-size:13px;font-weight:600;color:var(--lux-text-main);">${u.name}</span>
         </div>
         <div style="display:flex;gap:6px;">
           <button class="ghost-btn" style="padding:4px 10px;font-size:10px;" onclick="toggleUploadPreview(${u.id})">Show/Hide</button>
@@ -1143,7 +1192,7 @@ function addLink() {
   let url = document.getElementById('linkUrl').value.trim();
   if (!name || !url) return alert('Please enter a name and URL');
   if (!url.startsWith('http')) url = 'https://' + url;
-  DB.links.push({ id: Date.now(), name, url, icon: document.getElementById('linkIcon').value });
+  DB.links.push({ id: Date.now(), name, url, icon: normalizeLinkIcon(document.getElementById('linkIcon').value) });
   DB.save('links');
   document.getElementById('linkName').value = '';
   document.getElementById('linkUrl').value = '';
@@ -1167,7 +1216,7 @@ function renderLinks() {
     const domain = l.url.replace(/https?:\/\//, '').split('/')[0];
     return `<div class="link-item">
       <a href="${l.url}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;flex:1;">
-        <span class="link-icon">${l.icon}</span>
+        <span class="link-icon">${icon(normalizeLinkIcon(l.icon))}</span>
         <div class="link-info">
           <div class="link-name">${l.name}</div>
           <div class="link-url">${domain}</div>
