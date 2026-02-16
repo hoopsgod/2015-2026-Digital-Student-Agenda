@@ -1,4 +1,4 @@
-const CACHE_NAME = 'digital-student-agenda-v1';
+const CACHE_NAME = 'digital-student-agenda-v2';
 const APP_SHELL = [
   './',
   './index.html',
@@ -24,15 +24,30 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
+  const request = event.request;
+  const isNavigation = request.mode === 'navigate';
 
-      return fetch(event.request)
+  if (isNavigation) {
+    event.respondWith(
+      fetch(request)
         .then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') return response;
           const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          caches.open(CACHE_NAME).then((cache) => cache.put('./index.html', clone));
+          return response;
+        })
+        .catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request)
+        .then((response) => {
+          if (!response || response.status !== 200) return response;
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
         })
         .catch(() => caches.match('./index.html'));

@@ -163,15 +163,14 @@ body.dark-mode .sidebar { border-right-color: rgba(255,255,255,0.08); box-shadow
   font-weight: 700; letter-spacing: 0.4px;
 }
 
-.section-wrapper {
-  contain-intrinsic-size: 1000px;
-  content-visibility: auto;
-}
-
 .app-container { flex: 1; overflow-y: auto; padding: 24px; background: transparent; }
 .bento-grid { display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 900px; margin: 0 auto; }
 
-.section-wrapper { display: none !important; }
+.section-wrapper {
+  display: none !important;
+  contain-intrinsic-size: 1000px;
+  content-visibility: auto;
+}
 .section-wrapper.active { display: block !important; }
 
 .card { background: var(--lux-card); border-radius: 12px; border: 1px solid var(--lux-border); box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
@@ -538,7 +537,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
     <div class="header-actions">
       <div class="header-status-pill"><span class="status-dot"></span>Synced & Ready</div>
       <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" onclick="toggleMobileSidebar()"><span class="ui-icon icon-lg" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span></button>
-      <button class="header-btn install-btn" id="installBtn" style="display:none;">Install App</button>
+      <button class="header-btn install-btn" id="installBtn" style="display:none;" aria-hidden="true">Install App</button>
       <button class="header-btn" id="settingsToggle" aria-label="Open settings"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1 2.3 2.5.7 2-1.5 2 3.4-1.8 1.7.3 2.6 2.2 1.5-2 3.4-2.4-.9-2.2 1.5-.4 2.5h-4l-.4-2.5-2.2-1.5-2.4.9-2-3.4 2.2-1.5.3-2.6L2.5 7.9l2-3.4 2 1.5 2.5-.7z"/><circle cx="12" cy="12" r="3"/></svg></span></button>
     </div>
   </div>
@@ -2136,12 +2135,23 @@ function switchSection(sectionId) {
 }
 
 function toggleMobileSidebar() {
-  document.querySelector('.sidebar').classList.toggle('mobile-open');
-  document.getElementById('mobileSidebarBackdrop').classList.toggle('active');
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('mobileSidebarBackdrop');
+  const hamburger = document.getElementById('hamburgerBtn');
+  if (!sidebar || !backdrop || !hamburger) return;
+  const open = !sidebar.classList.contains('mobile-open');
+  sidebar.classList.toggle('mobile-open', open);
+  backdrop.classList.toggle('active', open);
+  hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 function closeMobileSidebar() {
-  document.querySelector('.sidebar').classList.remove('mobile-open');
-  document.getElementById('mobileSidebarBackdrop').classList.remove('active');
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('mobileSidebarBackdrop');
+  const hamburger = document.getElementById('hamburgerBtn');
+  if (!sidebar || !backdrop || !hamburger) return;
+  sidebar.classList.remove('mobile-open');
+  backdrop.classList.remove('active');
+  hamburger.setAttribute('aria-expanded', 'false');
 }
 
 function toggleSettingsPanel() {
@@ -2360,15 +2370,21 @@ let deferredInstallPrompt = null;
 function setupPWAInstall() {
   const installBtn = document.getElementById('installBtn');
   if (!installBtn) return;
+
+  const setInstallVisibility = (visible) => {
+    installBtn.style.display = visible ? 'inline-flex' : 'none';
+    installBtn.setAttribute('aria-hidden', visible ? 'false' : 'true');
+  };
+
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
     deferredInstallPrompt = event;
-    installBtn.style.display = 'inline-flex';
+    setInstallVisibility(true);
   });
 
   window.addEventListener('appinstalled', () => {
     deferredInstallPrompt = null;
-    installBtn.style.display = 'none';
+    setInstallVisibility(false);
   });
 
   installBtn.addEventListener('click', async () => {
@@ -2376,7 +2392,7 @@ function setupPWAInstall() {
     deferredInstallPrompt.prompt();
     await deferredInstallPrompt.userChoice;
     deferredInstallPrompt = null;
-    installBtn.style.display = 'none';
+    setInstallVisibility(false);
   });
 }
 
@@ -2391,13 +2407,24 @@ function registerServiceWorker() {
 
 function monitorWebVitals() {
   if (!('PerformanceObserver' in window)) return;
-  const vitals = { cls: 0 };
+
+  const thresholds = {
+    lcp: 2500,
+    cls: 0.1,
+    inp: 200
+  };
+  const vitals = { cls: 0, inp: 0 };
+
+  const logVital = (metric, value, threshold) => {
+    const state = value <= threshold ? 'PASS' : 'WARN';
+    console.info(`[CWV] ${metric}: ${value} (${state}, target <= ${threshold})`);
+  };
 
   try {
     const lcpObserver = new PerformanceObserver((entryList) => {
       const entries = entryList.getEntries();
       const lcp = entries[entries.length - 1];
-      if (lcp) console.info('[CWV] LCP(ms):', Math.round(lcp.startTime));
+      if (lcp) logVital('LCP(ms)', Math.round(lcp.startTime), thresholds.lcp);
     });
     lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
 
@@ -2405,18 +2432,27 @@ function monitorWebVitals() {
       for (const entry of entryList.getEntries()) {
         if (!entry.hadRecentInput) vitals.cls += entry.value;
       }
-      console.info('[CWV] CLS:', Number(vitals.cls.toFixed(3)));
+      logVital('CLS', Number(vitals.cls.toFixed(3)), thresholds.cls);
     });
     clsObserver.observe({ type: 'layout-shift', buffered: true });
 
-    const inpObserver = new PerformanceObserver((entryList) => {
+    const eventObserver = new PerformanceObserver((entryList) => {
       for (const entry of entryList.getEntries()) {
         if (entry.interactionId) {
-          console.info('[CWV] INP(ms):', Math.round(entry.duration));
+          vitals.inp = Math.max(vitals.inp, Math.round(entry.duration));
         }
       }
+      if (vitals.inp) logVital('INP(ms)', vitals.inp, thresholds.inp);
     });
-    inpObserver.observe({ type: 'event', durationThreshold: 40, buffered: true });
+    eventObserver.observe({ type: 'event', durationThreshold: 40, buffered: true });
+
+    const fidObserver = new PerformanceObserver((entryList) => {
+      const firstInput = entryList.getEntries()[0];
+      if (!firstInput) return;
+      const fid = Math.round(firstInput.processingStart - firstInput.startTime);
+      logVital('FID(ms)', fid, 100);
+    });
+    fidObserver.observe({ type: 'first-input', buffered: true });
   } catch (err) {
     console.warn('PerformanceObserver setup failed:', err);
   }
@@ -2428,6 +2464,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (STORAGE.getItem('dyslexia') === 'true') document.body.classList.add('font-dyslexic');
   if (STORAGE.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
   applyColorTheme(STORAGE.getItem('currentTheme') || 'deep-ocean');
+  document.getElementById('hamburgerBtn')?.setAttribute('aria-expanded', 'false');
   setupPWAInstall();
   registerServiceWorker();
   monitorWebVitals();
@@ -2437,6 +2474,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('closeSettings').addEventListener('click', toggleSettingsPanel);
   document.getElementById('settingsPanelBackdrop').addEventListener('click', toggleSettingsPanel);
   document.getElementById('mobileSidebarBackdrop').addEventListener('click', closeMobileSidebar);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMobileSidebar();
+  });
   document.getElementById('darkModeToggle').addEventListener('click', () => {
     document.body.classList.toggle('dark-mode');
     STORAGE.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
