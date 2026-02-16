@@ -664,9 +664,9 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   pointer-events: none;
 }
 .landing-copy { position: relative; z-index: 1; }
-.landing-brand-lockup { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-.landing-brand-logo { width: 44px; height: 44px; object-fit: contain; filter: drop-shadow(0 8px 18px rgba(15, 23, 42, 0.18)); }
-.landing-brand-text { font-size: 0.95rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; color: #0f2a6f; }
+.landing-brand-lockup { display: inline-flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 10px 14px; border-radius: 14px; border: 1px solid rgba(30, 64, 175, 0.18); background: rgba(255,255,255,0.9); box-shadow: 0 14px 30px rgba(30, 64, 175, 0.14); }
+.landing-brand-logo { width: 58px; height: 58px; object-fit: contain; filter: drop-shadow(0 10px 22px rgba(15, 23, 42, 0.24)); }
+.landing-brand-text { font-size: 1.05rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 800; color: #0f2a6f; }
 .landing-copy h1 {
   font-family: 'IBM Plex Sans', sans-serif;
   font-size: clamp(2rem, 4.6vw, 4rem);
@@ -1318,7 +1318,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
           </div>
           <div style="flex:1;">
             <div style="font-size:13px;font-weight:600;color:var(--lux-text-main);margin-bottom:4px;">App Logo</div>
-            <div style="font-size:11px;color:var(--lux-text-sub);">Upload your team or school logo</div>
+            <div style="font-size:11px;color:var(--lux-text-sub);">Customize your main app logo (header logo stays FocusFlow)</div>
           </div>
         </div>
         <label style="display:flex;align-items:center;justify-content:center;padding:14px;border:2px dashed var(--lux-border);border-radius:8px;cursor:pointer;transition:all 0.2s;background:var(--lux-hover);font-size:12px;font-weight:600;color:var(--lux-text-sub);gap:6px;">
@@ -3033,7 +3033,8 @@ function renderThemeGrid() {
 }
 
 // ==================== BRANDING ====================
-let DEFAULT_LOGO = '';
+const COMPANY_LOGO = 'assets/focusflow-logo.svg';
+const DEFAULT_LOGO = COMPANY_LOGO;
 const DEFAULT_NAME = 'FocusFlow';
 const DEFAULT_SUBTITLE = '2025-2026 Digital Agenda';
 const DEFAULT_TAGLINE = 'Elite Athlete Dashboard';
@@ -3060,7 +3061,8 @@ function handleLogoUpload(e) {
 }
 
 function applyLogo(src) {
-  document.querySelectorAll('.header-logo, .sidebar-logo-img').forEach(img => img.src = src);
+  document.querySelectorAll('.sidebar-logo-img').forEach(img => img.src = src);
+  document.querySelectorAll('.header-logo').forEach(img => img.src = COMPANY_LOGO);
   const dashLogo = document.querySelector('.dashboard-logo img');
   if (dashLogo) dashLogo.src = src;
   const previewImg = document.getElementById('logoPreviewImg');
@@ -3100,9 +3102,6 @@ function resetBranding() {
 }
 
 function loadBranding() {
-  // Capture default logo from DOM on first load
-  if (!DEFAULT_LOGO) DEFAULT_LOGO = document.querySelector('.header-logo').src;
-
   const logo = STORAGE.getItem('brand_logo');
   if (logo) applyLogo(logo);
   else applyLogo(DEFAULT_LOGO);
