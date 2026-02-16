@@ -823,16 +823,9 @@ const ICON_SVG = {
   chart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"/><path d="M7 16v-5M12 16V8M17 16v-8"/></svg>',
   map: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2z"/><path d="M9 4v14M15 6v14"/></svg>',
   laptop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"/><path d="M3 18h18"/></svg>',
-    '\u{1F517}': 'link',
-    '\u{1F393}': 'graduation',
-    '\u{1F4DA}': 'book',
-    '\u2709': 'mail',
-    '\u{1F4CA}': 'chart',
-    '\u{1F5FA}': 'map',
-    '\u{1F4BB}': 'laptop',
-    '\u{1F3AE}': 'gamepad'
-  const normalized = String(rawIcon || '').trim().replace(/\uFE0F/g, '');
-  return map[normalized] || normalized || 'link';
+  gamepad: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10h10a4 4 0 013.7 5.5l-1 2.3a2.5 2.5 0 01-3.4 1.2L13 17H11l-3.3 2a2.5 2.5 0 01-3.4-1.2l-1-2.3A4 4 0 017 10z"/><path d="M8 13h3M9.5 11.5v3"/><circle cx="15.5" cy="12.5" r="1"/><circle cx="17.5" cy="14.5" r="1"/></svg>'
+};
+
 function icon(name) {
   return ICON_SVG[name] || ICON_SVG.link;
 }
@@ -842,7 +835,8 @@ function normalizeLinkIcon(rawIcon) {
     '🔗': 'link', '🎓': 'graduation', '📚': 'book', '✉️': 'mail',
     '📊': 'chart', '🗺️': 'map', '💻': 'laptop', '🎮': 'gamepad'
   };
-  return map[rawIcon] || rawIcon || 'link';
+  const normalized = String(rawIcon || '').trim().replace(/\uFE0F/g, '');
+  return map[normalized] || normalized || 'link';
 }
 
 // ==================== TASKS ====================
