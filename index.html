@@ -635,43 +635,128 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 /* LANDING PAGE + LIVE PREVIEW */
 .landing-page {
   min-height: 100vh;
-  padding: 28px 20px 56px;
-  background: radial-gradient(circle at 12% 12%, #dbeafe 0%, #eef2ff 35%, #f8fafc 72%, #ffffff 100%);
+  padding: clamp(18px, 3.2vw, 36px) 18px 60px;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(59,130,246,0.22), transparent 42%),
+    radial-gradient(circle at 88% 14%, rgba(14,165,233,0.16), transparent 40%),
+    linear-gradient(160deg, #f8fbff 0%, #eef2ff 48%, #ffffff 100%);
   color: #0f172a;
 }
-.landing-shell { max-width: 1180px; margin: 0 auto; display: grid; gap: 44px; }
-.landing-hero { display: grid; gap: 28px; align-items: center; grid-template-columns: 1fr; }
+.landing-shell { max-width: 1180px; margin: 0 auto; display: grid; gap: 34px; }
+.landing-hero {
+  position: relative;
+  display: grid;
+  gap: 24px;
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  padding: clamp(16px, 2.6vw, 28px);
+  border-radius: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(255,255,255,0.72);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+}
+.landing-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(15, 23, 42, 0.06), transparent 40%, rgba(37, 99, 235, 0.08));
+  pointer-events: none;
+}
+.landing-copy { position: relative; z-index: 1; }
 .landing-copy h1 {
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: clamp(2.1rem, 5vw, 4rem);
-  line-height: 0.98;
-  letter-spacing: -0.04em;
+  font-size: clamp(2rem, 4.6vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.045em;
   font-weight: 800;
-  max-width: 14ch;
+  max-width: 13ch;
 }
-.landing-copy p { margin-top: 14px; font-size: clamp(1rem, 2vw, 1.2rem); color: #334155; max-width: 52ch; }
-.landing-actions { display: flex; gap: 16px; margin-top: 26px; align-items: center; flex-wrap: wrap; }
+.landing-copy p { margin-top: 14px; font-size: clamp(0.98rem, 2vw, 1.16rem); color: #334155; max-width: 50ch; }
+.landing-actions { display: flex; gap: 14px; margin-top: 22px; align-items: center; flex-wrap: wrap; }
+.landing-enter-wrap { display: grid; gap: 6px; }
 .landing-enter-btn {
-  border: none; border-radius: 999px; background: #0f172a; color: #fff;
-  font-size: 0.95rem; font-weight: 700; letter-spacing: 0.02em;
-  padding: 14px 24px; cursor: pointer; box-shadow: 0 16px 32px rgba(15, 23, 42, 0.22);
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0f172a, #0b1220 65%, #1e293b);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 15px 30px;
+  min-height: 52px;
+  cursor: pointer;
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.3);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
 }
-.landing-secondary-link { color: #1d4ed8; text-decoration: none; font-weight: 600; }
+.landing-enter-btn:hover,
+.landing-enter-btn:focus-visible { transform: translateY(-2px); box-shadow: 0 22px 46px rgba(15, 23, 42, 0.36); filter: brightness(1.04); }
+.landing-enter-btn:active { transform: translateY(0); box-shadow: 0 14px 26px rgba(15, 23, 42, 0.28); }
+.landing-helper-text { font-size: 0.78rem; font-weight: 600; color: #475569; }
+.landing-secondary-link {
+  color: #1d4ed8;
+  text-decoration: none;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.landing-secondary-link:hover { color: #1e3a8a; transform: translateX(2px); }
 .preview-frame-wrap {
-  background: rgba(255,255,255,0.86); border: 1px solid #dbe3f2; border-radius: 22px;
-  box-shadow: 0 24px 54px rgba(15, 23, 42, 0.16); padding: 16px;
+  position: relative;
+  background: rgba(255,255,255,0.88); border: 1px solid #dbe3f2; border-radius: 24px;
+  box-shadow: 0 28px 62px rgba(15, 23, 42, 0.17); padding: 16px;
+  z-index: 1;
 }
-.preview-frame-head { display: flex; align-items: center; justify-content: space-between; padding: 0 2px 12px; }
-.preview-frame-title { font-size: 0.86rem; font-weight: 700; color: #0f172a; }
+.preview-frame-head { display: flex; align-items: center; justify-content: space-between; padding: 2px 4px 12px; gap: 12px; flex-wrap: wrap; }
+.preview-frame-title { font-size: 0.82rem; font-weight: 800; color: #0f172a; letter-spacing: 0.02em; }
 .preview-frame-pill {
   border: 1px solid #bfdbfe; background: #eff6ff; color: #1d4ed8; border-radius: 999px;
-  font-size: 0.72rem; font-weight: 700; padding: 6px 10px;
+  font-size: 0.72rem; font-weight: 800; padding: 6px 10px;
 }
 .live-preview-embed {
-  width: 100%; height: 580px; border: 1px solid #d7deeb; border-radius: 14px; background: #fff;
+  width: 100%; height: min(56vh, 600px); border: 1px solid #d7deeb; border-radius: 16px; background: #fff;
 }
-.landing-benefits { display: grid; gap: 12px; }
-.landing-benefits li { list-style: none; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,0.78); border: 1px solid #e2e8f0; color: #334155; }
+.landing-grid { display: grid; gap: 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.landing-card {
+  border-radius: 16px;
+  padding: 18px 16px;
+  border: 1px solid #e2e8f0;
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.landing-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12); }
+.landing-card-icon { font-size: 1.15rem; margin-bottom: 8px; display: inline-block; }
+.landing-card h3 { font-size: 0.95rem; margin-bottom: 6px; }
+.landing-card p { color: #475569; font-size: 0.84rem; line-height: 1.45; }
+
+.landing-trust,
+.landing-momentum,
+.landing-progress,
+.landing-final-cta {
+  border-radius: 20px;
+  border: 1px solid #dbe4f1;
+  background: rgba(255,255,255,0.88);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+  padding: clamp(16px, 2.2vw, 26px);
+}
+.landing-trust { display: grid; gap: 12px; }
+.landing-trust-strip { display: flex; flex-wrap: wrap; gap: 10px; }
+.landing-trust-badge { border-radius: 999px; border: 1px solid #d6e3f8; background: #f8fbff; padding: 7px 12px; font-size: 0.8rem; font-weight: 700; color: #1e3a8a; }
+.landing-quote { color: #334155; font-size: 0.95rem; font-weight: 500; }
+.landing-momentum h2,
+.landing-progress h2,
+.landing-final-cta h2 { font-size: clamp(1.6rem, 3.2vw, 2.2rem); line-height: 1.04; letter-spacing: -0.03em; }
+.landing-momentum p,
+.landing-progress p,
+.landing-final-cta p { margin-top: 10px; color: #334155; max-width: 62ch; }
+.landing-progress-grid { margin-top: 16px; display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.landing-progress-stat { border-radius: 14px; border: 1px solid #d9e2f1; background: #fff; padding: 14px 12px; }
+.landing-progress-stat strong { display: block; font-size: 1.4rem; letter-spacing: -0.03em; }
+.landing-progress-stat span { font-size: 0.82rem; color: #475569; }
+.landing-final-cta { text-align: center; display: grid; place-items: center; gap: 12px; }
 
 .demo-mode-pill {
   position: fixed; top: 16px; right: 16px; z-index: 2500;
@@ -679,14 +764,22 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   padding: 7px 11px; border-radius: 999px; font-size: 11px; font-weight: 700;
   box-shadow: 0 8px 20px rgba(15,23,42,0.15);
 }
-body.demo-mode .sidebar,
-body.demo-mode .mobile-nav { pointer-events: none; opacity: 0.72; }
+@media (max-width: 1024px) {
+  .landing-hero { grid-template-columns: 1fr; }
+  .landing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .landing-progress-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 @media (max-width: 768px) {
-  .landing-page { padding: 20px 14px 40px; }
-  .landing-shell { gap: 26px; }
-  .live-preview-embed { height: 460px; }
-  .landing-actions { margin-top: 18px; }
+  .landing-page { padding: 14px 12px 36px; min-height: auto; }
+  .landing-shell { gap: 18px; }
+  .landing-hero { border-radius: 20px; padding: 14px; gap: 16px; }
+  .landing-copy h1 { max-width: 100%; }
+  .landing-actions { margin-top: 16px; align-items: flex-start; }
+  .landing-enter-btn { width: 100%; }
+  .landing-grid,
+  .landing-progress-grid { grid-template-columns: 1fr; }
+  .live-preview-embed { height: 54vh; min-height: 340px; }
 }
 
   </style>
@@ -699,23 +792,58 @@ body.demo-mode .mobile-nav { pointer-events: none; opacity: 0.72; }
           <h1>Stay ahead of every class, assignment, and deadline.</h1>
           <p>Digital Student Agenda keeps your tasks, schedule, notes, and study flow in one focused workspace built for daily student momentum.</p>
           <div class="landing-actions">
-            <button class="landing-enter-btn" type="button" onclick="enterApp()">Enter App</button>
-            <a class="landing-secondary-link" href="#preview" onclick="scrollToPreview(event)">See How It Works</a>
+            <div class="landing-enter-wrap">
+              <button class="landing-enter-btn" type="button" onclick="enterApp()">Enter App</button>
+              <span class="landing-helper-text">Free for students • No account required</span>
+            </div>
+            <a class="landing-secondary-link" href="#preview" onclick="scrollToPreview(event)">See How It Works <span aria-hidden="true">→</span></a>
           </div>
         </div>
         <div id="preview" class="preview-frame-wrap">
           <div class="preview-frame-head">
-            <span class="preview-frame-title">Live Preview (Read-Only)</span>
-            <span class="preview-frame-pill">Demo Mode: changes won't save</span>
+            <span class="preview-frame-title">Try the App Instantly</span>
+            <span class="preview-frame-pill">Preview Mode</span>
           </div>
           <iframe id="livePreviewFrame" class="live-preview-embed" title="Live app preview" loading="lazy"></iframe>
         </div>
       </section>
-      <ul class="landing-benefits">
-        <li><strong>Plan faster:</strong> Organize tasks by class, due date, and priority in seconds.</li>
-        <li><strong>Study smarter:</strong> Use notes, focus timers, and schedule blocks in one flow.</li>
-        <li><strong>Stay consistent:</strong> Track progress daily without app-switching overload.</li>
-      </ul>
+
+      <section class="landing-grid" aria-label="Feature highlights">
+        <article class="landing-card"><span class="landing-card-icon" aria-hidden="true">🗓️</span><h3>Assignment & deadline tracking</h3><p>Sort upcoming work by class and urgency so nothing slips through.</p></article>
+        <article class="landing-card"><span class="landing-card-icon" aria-hidden="true">📝</span><h3>Notes and study organization</h3><p>Capture notes and study blocks in the same focused workflow.</p></article>
+        <article class="landing-card"><span class="landing-card-icon" aria-hidden="true">🏅</span><h3>Performance Hub for athletes</h3><p>Balance academics and training with one consistent routine system.</p></article>
+        <article class="landing-card"><span class="landing-card-icon" aria-hidden="true">📈</span><h3>Progress tracking momentum</h3><p>Build streaks and see how your daily execution compounds.</p></article>
+      </section>
+
+      <section class="landing-trust" aria-label="Trust and social proof">
+        <div class="landing-trust-strip">
+          <span class="landing-trust-badge">Used by student athletes</span>
+          <span class="landing-trust-badge">Built for high school programs</span>
+          <span class="landing-trust-badge">Designed for daily consistency</span>
+        </div>
+        <p class="landing-quote">“This is the first planner our team actually opens every day before practice and after class.” — Student captain</p>
+      </section>
+
+      <section class="landing-momentum" aria-label="Motivation">
+        <h2>Train your mind like an athlete. Build winning habits every school day.</h2>
+        <p>Stay ahead of deadlines, recover focus quickly, and keep momentum from first period to final rep.</p>
+      </section>
+
+      <section class="landing-progress" aria-label="Progress examples">
+        <h2>Track momentum, not just tasks.</h2>
+        <p>Use progress snapshots to understand completion trends, consistency, and weekly output at a glance.</p>
+        <div class="landing-progress-grid">
+          <div class="landing-progress-stat"><strong>87%</strong><span>Weekly completion rate</span></div>
+          <div class="landing-progress-stat"><strong>14 day</strong><span>Current study streak</span></div>
+          <div class="landing-progress-stat"><strong>+22%</strong><span>Focus sessions this month</span></div>
+        </div>
+      </section>
+
+      <section class="landing-final-cta" aria-label="Final call to action">
+        <h2>Ready to take control of your school day?</h2>
+        <p>Open your planner and start instantly.</p>
+        <button class="landing-enter-btn" type="button" onclick="enterApp()">Enter App</button>
+      </section>
     </div>
   </main>
 
@@ -1290,7 +1418,7 @@ function setupDemoModeGuards() {
 
   const pill = document.createElement('div');
   pill.className = 'demo-mode-pill';
-  pill.textContent = "Demo Mode: changes won't save";
+  pill.textContent = "Preview Mode";
   document.body.appendChild(pill);
 
   document.addEventListener('click', (event) => {
