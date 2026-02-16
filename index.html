@@ -646,6 +646,22 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
           <button class="ghost-btn" onclick="toggleScheduleForm()">+ Add Period</button>
         </div>
 
+        <div style="padding: 14px 20px; border-bottom: 1px solid var(--lux-border); display: grid; gap: 10px; background: var(--lux-hover);">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--lux-text-sub);">Schedule Setup</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <select id="scheduleDayStyle" class="pro-select" onchange="updateScheduleSettings()">
+              <option value="letter">Letter days (A-E)</option>
+              <option value="number">Number days (1-5)</option>
+            </select>
+            <select id="scheduleDayCount" class="pro-select" onchange="updateScheduleSettings()">
+              <option value="2">2-day cycle</option>
+              <option value="3">3-day cycle</option>
+              <option value="4">4-day cycle</option>
+              <option value="5">5-day cycle</option>
+            </select>
+          </div>
+        </div>
+
         <div id="scheduleForm" style="display:none; padding: 20px; border-bottom: 1px solid var(--lux-border); background: var(--lux-hover);">
           <div style="display: grid; gap: 10px;">
             <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
@@ -666,10 +682,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         </div>
 
         <!-- Schedule Day Tabs -->
-        <div class="section-tabs" id="dayTabs">
-          <button class="section-tab active" onclick="switchDay('A', this)">Day A</button>
-          <button class="section-tab" onclick="switchDay('B', this)">Day B</button>
-        </div>
+        <div class="section-tabs" id="dayTabs"></div>
 
         <div id="scheduleList" style="padding: 16px 20px;"></div>
 
@@ -937,6 +950,7 @@ function readJSON(key, fallback) {
 const DB = {
   tasks: readJSON('agenda_tasks', []),
   schedule: readJSON('agenda_schedule', []),
+  scheduleSettings: readJSON('agenda_scheduleSettings', { dayStyle: 'letter', dayCount: 2 }),
   notes: readJSON('agenda_notes', []),
   links: readJSON('agenda_links', []),
   uploads: readJSON('agenda_uploads', []),
@@ -1610,6 +1624,65 @@ function updateFocusStats() {
   if (elAvg) elAvg.textContent = avgMins + ' mins';
 }
 
+function getScheduleDayLabels() {
+  const maxDays = ['1', '2', '3', '4', '5'];
+  const maxLetters = ['A', 'B', 'C', 'D', 'E'];
+  const style = DB.scheduleSettings.dayStyle === 'number' ? 'number' : 'letter';
+  const rawCount = parseInt(DB.scheduleSettings.dayCount, 10);
+  const count = Number.isFinite(rawCount) ? Math.min(Math.max(rawCount, 2), 5) : 2;
+  const source = style === 'number' ? maxDays : maxLetters;
+  return source.slice(0, count);
+}
+
+function normalizeScheduleDay(day) {
+  const labels = getScheduleDayLabels();
+  if (labels.includes(day)) return day;
+  return labels[0] || 'A';
+}
+
+function dayDisplayLabel(day) {
+  return 'Day ' + day;
+}
+
+function renderScheduleTabs() {
+  const dayTabs = document.getElementById('dayTabs');
+  if (!dayTabs) return;
+
+  const labels = getScheduleDayLabels();
+  currentDay = normalizeScheduleDay(currentDay);
+
+  dayTabs.innerHTML = labels.map(day => {
+    const active = day === currentDay ? ' active' : '';
+    return `<button class="section-tab${active}" onclick="switchDay('${day}', this)">${dayDisplayLabel(day)}</button>`;
+  }).join('');
+}
+
+function updateScheduleSettings() {
+  const styleSelect = document.getElementById('scheduleDayStyle');
+  const countSelect = document.getElementById('scheduleDayCount');
+  if (!styleSelect || !countSelect) return;
+
+  DB.scheduleSettings.dayStyle = styleSelect.value === 'number' ? 'number' : 'letter';
+  DB.scheduleSettings.dayCount = Math.min(Math.max(parseInt(countSelect.value, 10) || 2, 2), 5);
+  DB.save('scheduleSettings');
+
+  currentDay = normalizeScheduleDay(currentDay);
+  renderScheduleTabs();
+  renderSchedule();
+}
+
+function initializeScheduleSettingsUI() {
+  const styleSelect = document.getElementById('scheduleDayStyle');
+  const countSelect = document.getElementById('scheduleDayCount');
+  if (!styleSelect || !countSelect) return;
+
+  styleSelect.value = DB.scheduleSettings.dayStyle === 'number' ? 'number' : 'letter';
+  const rawCount = parseInt(DB.scheduleSettings.dayCount, 10);
+  countSelect.value = String(Number.isFinite(rawCount) ? Math.min(Math.max(rawCount, 2), 5) : 2);
+
+  renderScheduleTabs();
+}
+
 // ==================== SCHEDULE ====================
 function toggleScheduleForm() {
   const f = document.getElementById('scheduleForm');
@@ -1652,18 +1725,19 @@ function deleteScheduleBlock(id) {
 }
 
 function switchDay(day, el) {
-  currentDay = day;
+  currentDay = normalizeScheduleDay(day);
   document.querySelectorAll('#dayTabs .section-tab').forEach(t => t.classList.remove('active'));
   if (el) el.classList.add('active');
   renderSchedule();
 }
 
 function renderSchedule() {
+  currentDay = normalizeScheduleDay(currentDay);
   const list = document.getElementById('scheduleList');
   const blocks = DB.schedule.filter(b => b.day === currentDay).sort((a, b) => (a.start || '').localeCompare(b.start || '') || (a.period || '').localeCompare(b.period || ''));
 
   if (blocks.length === 0) {
-    list.innerHTML = '<div class="empty-msg">No classes for Day ' + currentDay + '. Add periods above or upload your schedule.</div>';
+    list.innerHTML = '<div class="empty-msg">No classes for ' + dayDisplayLabel(currentDay) + '. Add periods above or upload your schedule.</div>';
     return;
   }
 
@@ -2287,6 +2361,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  initializeScheduleSettingsUI();
 
   // Render everything
   renderTasks(); renderSchedule(); renderUploads(); renderNotes(); renderLinks();
