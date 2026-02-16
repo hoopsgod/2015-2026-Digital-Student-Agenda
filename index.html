@@ -169,6 +169,13 @@ body.dark-mode .pro-select { background-color: #1e293b; }
 }
 .danger-btn:hover { opacity: 0.85; }
 
+.edit-btn {
+  background: var(--lux-hover); color: var(--lux-text-sub); border: 1px solid var(--lux-border);
+  padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; font-family: inherit;
+}
+.edit-btn:hover { background: var(--lux-border); color: var(--lux-text-main); }
+
 .ghost-btn {
   background: var(--lux-hover); color: var(--lux-text-main); border: 1px solid var(--lux-border);
   padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;
@@ -306,6 +313,38 @@ body.dark-mode .note-editor { background: #1e293b; }
 
 .empty-msg { padding: 40px 20px; text-align: center; color: var(--lux-text-sub); font-size: 13px; }
 
+/* CONFIRM DIALOG */
+.confirm-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.45); z-index: 2000; display: flex;
+  align-items: center; justify-content: center; opacity: 0;
+  transition: opacity 0.2s ease; pointer-events: none;
+}
+.confirm-overlay.active { opacity: 1; pointer-events: auto; }
+.confirm-box {
+  background: var(--lux-card); border-radius: 14px; padding: 28px 24px 20px;
+  max-width: 360px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  border: 1px solid var(--lux-border); transform: scale(0.95);
+  transition: transform 0.2s ease;
+}
+.confirm-overlay.active .confirm-box { transform: scale(1); }
+.confirm-icon { font-size: 32px; text-align: center; margin-bottom: 12px; }
+.confirm-title { font-size: 16px; font-weight: 700; color: var(--lux-text-main); text-align: center; margin-bottom: 6px; }
+.confirm-msg { font-size: 13px; color: var(--lux-text-sub); text-align: center; line-height: 1.5; margin-bottom: 20px; }
+.confirm-actions { display: flex; gap: 8px; justify-content: center; }
+.confirm-cancel {
+  padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--lux-border); background: var(--lux-hover);
+  color: var(--lux-text-main); font-family: inherit; transition: all 0.2s;
+}
+.confirm-cancel:hover { background: var(--lux-border); }
+.confirm-delete {
+  padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: none; background: var(--lux-danger); color: white;
+  font-family: inherit; transition: all 0.2s;
+}
+.confirm-delete:hover { opacity: 0.85; }
+
 @media (max-width: 768px) {
   .sidebar { position: fixed; top: 0; left: 0; bottom: 0; z-index: 150; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; }
   .sidebar.mobile-open { transform: translateX(0); }
@@ -419,6 +458,15 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               </div>
             </div>
           </div>
+          <!-- Due This Week -->
+          <div style="border-top: 1px solid var(--lux-border); padding-top: 28px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <div style="font-size: 10px; color: var(--titan-accent); text-transform: uppercase; letter-spacing: 2.2px; font-weight: 900;">Due This Week</div>
+              <button class="ghost-btn" style="padding: 4px 12px; font-size: 10px;" onclick="switchSection('agenda')">View All →</button>
+            </div>
+            <div id="dueThisWeek"></div>
+          </div>
+
           <!-- Inspirational Quote -->
           <div style="border-top: 1px solid var(--lux-border); padding-top: 28px;">
             <div style="font-size: 10px; color: var(--titan-accent); text-transform: uppercase; letter-spacing: 2.2px; font-weight: 900; margin-bottom: 16px;">Daily Inspiration</div>
@@ -464,6 +512,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <!-- Add Task Form -->
         <div id="taskForm" style="display:none; padding: 20px; border-bottom: 1px solid var(--lux-border); background: var(--lux-hover);">
           <div style="display: grid; gap: 10px;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--lux-text-main); margin-bottom: 2px;" id="taskFormTitle">Add Task</div>
             <input id="taskTitle" class="pro-input" placeholder="Assignment title..." />
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
               <select id="taskSubject" class="pro-select pro-input">
@@ -483,7 +532,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               <input id="taskNotes" class="pro-input" placeholder="Notes (optional)" />
             </div>
             <div style="display: flex; gap: 8px;">
-              <button class="primary-btn" onclick="addTask()">Save Task</button>
+              <button class="primary-btn" id="taskFormSaveBtn" onclick="addTask()">Save Task</button>
               <button class="ghost-btn" onclick="toggleTaskForm()">Cancel</button>
             </div>
           </div>
@@ -688,6 +737,19 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 <div id="mobileSidebarBackdrop" class="mobile-sidebar-backdrop"></div>
 <div id="settingsPanelBackdrop" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;"></div>
 
+<!-- CONFIRM DIALOG -->
+<div id="confirmOverlay" class="confirm-overlay" onclick="if(event.target===this)dismissConfirm()">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+    <div class="confirm-title" id="confirmTitle">Are you sure?</div>
+    <div class="confirm-msg" id="confirmMsg">This action cannot be undone.</div>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" onclick="dismissConfirm()">Cancel</button>
+      <button class="confirm-delete" id="confirmBtn" onclick="executeConfirm()">Delete</button>
+    </div>
+  </div>
+</div>
+
   </div>
 
   <!-- MOBILE NAV -->
@@ -722,10 +784,33 @@ if (DB.links.length === 0) {
   DB.save('links');
 }
 
+// ==================== CONFIRM DIALOG ====================
+let pendingConfirmAction = null;
+
+function showConfirm(title, msg, btnLabel, action, icon) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  document.getElementById('confirmBtn').textContent = btnLabel || 'Delete';
+  document.getElementById('confirmIcon').textContent = icon || '⚠️';
+  pendingConfirmAction = action;
+  document.getElementById('confirmOverlay').classList.add('active');
+}
+
+function dismissConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('active');
+  pendingConfirmAction = null;
+}
+
+function executeConfirm() {
+  if (pendingConfirmAction) pendingConfirmAction();
+  dismissConfirm();
+}
+
 let currentFilter = 'all';
 let currentSubjectFilter = null;
 let currentDay = 'A';
 let editingNoteId = null;
+let editingTaskId = null;
 
 const SUBJECT_COLORS = {
   'Math':    { bg: '#dbeafe', text: '#1e40af', border: '#3b82f6' },
@@ -747,23 +832,60 @@ function getSubjectColor(subject) {
 // ==================== TASKS ====================
 function toggleTaskForm() {
   const f = document.getElementById('taskForm');
-  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if (f.style.display !== 'none') {
+    f.style.display = 'none';
+    editingTaskId = null;
+    document.getElementById('taskFormTitle').textContent = 'Add Task';
+    document.getElementById('taskFormSaveBtn').textContent = 'Save Task';
+  } else {
+    f.style.display = 'block';
+  }
+}
+
+function editTask(id) {
+  const t = DB.tasks.find(x => x.id === id);
+  if (!t) return;
+  editingTaskId = id;
+  document.getElementById('taskTitle').value = t.title;
+  document.getElementById('taskSubject').value = t.subject || '';
+  document.getElementById('taskPriority').value = t.priority || 'medium';
+  document.getElementById('taskDue').value = t.due || '';
+  document.getElementById('taskNotes').value = t.notes || '';
+  document.getElementById('taskFormTitle').textContent = 'Edit Task';
+  document.getElementById('taskFormSaveBtn').textContent = 'Update Task';
+  document.getElementById('taskForm').style.display = 'block';
+  document.getElementById('taskTitle').focus();
 }
 
 function addTask() {
   const title = document.getElementById('taskTitle').value.trim();
   if (!title) return alert('Please enter a task title');
-  const task = {
-    id: Date.now(),
-    title,
-    subject: document.getElementById('taskSubject').value,
-    priority: document.getElementById('taskPriority').value,
-    due: document.getElementById('taskDue').value,
-    notes: document.getElementById('taskNotes').value,
-    completed: false,
-    createdAt: new Date().toISOString()
-  };
-  DB.tasks.unshift(task);
+
+  if (editingTaskId) {
+    const t = DB.tasks.find(x => x.id === editingTaskId);
+    if (t) {
+      t.title = title;
+      t.subject = document.getElementById('taskSubject').value;
+      t.priority = document.getElementById('taskPriority').value;
+      t.due = document.getElementById('taskDue').value;
+      t.notes = document.getElementById('taskNotes').value;
+    }
+    editingTaskId = null;
+    document.getElementById('taskFormTitle').textContent = 'Add Task';
+    document.getElementById('taskFormSaveBtn').textContent = 'Save Task';
+  } else {
+    const task = {
+      id: Date.now(),
+      title,
+      subject: document.getElementById('taskSubject').value,
+      priority: document.getElementById('taskPriority').value,
+      due: document.getElementById('taskDue').value,
+      notes: document.getElementById('taskNotes').value,
+      completed: false,
+      createdAt: new Date().toISOString()
+    };
+    DB.tasks.unshift(task);
+  }
   DB.save('tasks');
   document.getElementById('taskTitle').value = '';
   document.getElementById('taskSubject').value = '';
@@ -786,11 +908,15 @@ function toggleTask(id) {
 }
 
 function deleteTask(id) {
-  DB.tasks = DB.tasks.filter(x => x.id !== id);
-  DB.save('tasks');
-  renderTasks();
-  updateDashboard();
-  updateAnalytics();
+  const task = DB.tasks.find(x => x.id === id);
+  const name = task ? task.title : 'this task';
+  showConfirm('Delete Task?', 'Are you sure you want to delete "' + name + '"? This cannot be undone.', 'Delete', () => {
+    DB.tasks = DB.tasks.filter(x => x.id !== id);
+    DB.save('tasks');
+    renderTasks();
+    updateDashboard();
+    updateAnalytics();
+  });
 }
 
 function filterTasks(filter, el) {
@@ -871,7 +997,8 @@ function renderTasks() {
         </div>
       </div>
       <div class="task-actions">
-        <button class="danger-btn" onclick="deleteTask(${t.id})">✕</button>
+        <button class="edit-btn" onclick="editTask(${t.id})" title="Edit task">✎</button>
+        <button class="danger-btn" onclick="deleteTask(${t.id})" title="Delete task">✕</button>
       </div>
     </div>`;
   }).join('');
@@ -909,9 +1036,13 @@ function addScheduleBlock() {
 }
 
 function deleteScheduleBlock(id) {
-  DB.schedule = DB.schedule.filter(x => x.id !== id);
-  DB.save('schedule');
-  renderSchedule();
+  const block = DB.schedule.find(x => x.id === id);
+  const name = block ? block.className : 'this period';
+  showConfirm('Delete Period?', 'Are you sure you want to remove "' + name + '" from your schedule?', 'Delete', () => {
+    DB.schedule = DB.schedule.filter(x => x.id !== id);
+    DB.save('schedule');
+    renderSchedule();
+  });
 }
 
 function switchDay(day, el) {
@@ -984,9 +1115,13 @@ function handleScheduleUpload(e) {
 }
 
 function deleteUpload(id) {
-  DB.uploads = DB.uploads.filter(x => x.id !== id);
-  DB.save('uploads');
-  renderUploads();
+  const upload = DB.uploads.find(x => x.id === id);
+  const name = upload ? upload.name : 'this file';
+  showConfirm('Delete Upload?', 'Are you sure you want to delete "' + name + '"?', 'Delete', () => {
+    DB.uploads = DB.uploads.filter(x => x.id !== id);
+    DB.save('uploads');
+    renderUploads();
+  });
 }
 
 function renderUploads() {
@@ -1056,9 +1191,13 @@ function editNote(id) {
 }
 
 function deleteNote(id) {
-  DB.notes = DB.notes.filter(x => x.id !== id);
-  DB.save('notes');
-  renderNotes();
+  const note = DB.notes.find(x => x.id === id);
+  const name = note ? note.title : 'this note';
+  showConfirm('Delete Note?', 'Are you sure you want to delete "' + name + '"? This cannot be undone.', 'Delete', () => {
+    DB.notes = DB.notes.filter(x => x.id !== id);
+    DB.save('notes');
+    renderNotes();
+  });
 }
 
 function renderNotes() {
@@ -1100,9 +1239,13 @@ function addLink() {
 }
 
 function deleteLink(id) {
-  DB.links = DB.links.filter(x => x.id !== id);
-  DB.save('links');
-  renderLinks();
+  const link = DB.links.find(x => x.id === id);
+  const name = link ? link.name : 'this link';
+  showConfirm('Delete Link?', 'Are you sure you want to delete "' + name + '"? This cannot be undone.', 'Delete', () => {
+    DB.links = DB.links.filter(x => x.id !== id);
+    DB.save('links');
+    renderLinks();
+  });
 }
 
 function renderLinks() {
@@ -1178,6 +1321,61 @@ function updateDashboard() {
   const done = DB.tasks.filter(t => t.completed).length;
   document.getElementById('dashOpenTasks').textContent = open;
   document.getElementById('dashCompletedTasks').textContent = done;
+  renderDueThisWeek();
+}
+
+function renderDueThisWeek() {
+  const container = document.getElementById('dueThisWeek');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const endOfWeek = new Date(today);
+  endOfWeek.setDate(endOfWeek.getDate() + 7);
+  const todayStr = today.toISOString().split('T')[0];
+  const endStr = endOfWeek.toISOString().split('T')[0];
+
+  const upcoming = DB.tasks
+    .filter(t => !t.completed && t.due && t.due >= todayStr && t.due <= endStr)
+    .sort((a, b) => a.due.localeCompare(b.due))
+    .slice(0, 5);
+
+  const overdue = DB.tasks
+    .filter(t => !t.completed && t.due && t.due < todayStr)
+    .sort((a, b) => a.due.localeCompare(b.due))
+    .slice(0, 3);
+
+  const items = [...overdue, ...upcoming];
+
+  if (items.length === 0) {
+    container.innerHTML = '<div style="padding: 18px; text-align: center; color: var(--lux-text-sub); font-size: 13px; background: var(--lux-hover); border-radius: 10px; border: 1px solid var(--lux-border);">No upcoming deadlines this week. You\'re all caught up!</div>';
+    return;
+  }
+
+  container.innerHTML = items.map(t => {
+    const isOverdue = t.due < todayStr;
+    const dueDate = new Date(t.due + 'T00:00:00');
+    const diffDays = Math.ceil((dueDate - today) / 86400000);
+    let dueLabel = '';
+    if (isOverdue) dueLabel = Math.abs(diffDays) + ' day' + (Math.abs(diffDays) !== 1 ? 's' : '') + ' overdue';
+    else if (diffDays === 0) dueLabel = 'Due today';
+    else if (diffDays === 1) dueLabel = 'Due tomorrow';
+    else dueLabel = 'Due ' + dueDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+    const sc = getSubjectColor(t.subject);
+    const borderColor = t.subject ? sc.border : 'var(--lux-border)';
+    const subjectBadge = t.subject ? '<span style="display:inline-flex;align-items:center;gap:3px;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:700;background:' + sc.bg + ';color:' + sc.text + ';">' + t.subject + '</span>' : '';
+
+    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--lux-border);border-radius:8px;background:var(--lux-hover);margin-bottom:6px;border-left:3px solid ' + borderColor + ';cursor:pointer;transition:all 0.2s;" onclick="switchSection(\'agenda\')">' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:13px;font-weight:600;color:var(--lux-text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+          '<span class="priority-dot priority-' + t.priority + '"></span>' + t.title +
+        '</div>' +
+        '<div style="font-size:11px;color:' + (isOverdue ? 'var(--lux-danger)' : 'var(--lux-text-sub)') + ';font-weight:' + (isOverdue ? '700' : '500') + ';margin-top:2px;display:flex;align-items:center;gap:8px;">' +
+          (isOverdue ? '⚠️ ' : '📅 ') + dueLabel +
+          ' ' + subjectBadge +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 // ==================== NAVIGATION ====================
@@ -1431,7 +1629,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.toggle('font-dyslexic');
     localStorage.setItem('dyslexia', document.body.classList.contains('font-dyslexic') ? 'true' : 'false');
   });
-  document.getElementById('resetSettingsBtn').addEventListener('click', () => { localStorage.clear(); location.reload(); });
+  document.getElementById('resetSettingsBtn').addEventListener('click', () => {
+    showConfirm('Reset Everything?', 'This will erase all your tasks, notes, links, schedule, and settings. This cannot be undone.', 'Reset All', () => { localStorage.clear(); location.reload(); }, '🗑️');
+  });
 
   // Date & countdown
   const today = new Date();
