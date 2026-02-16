@@ -286,10 +286,18 @@ body.dark-mode .pro-input:focus { border-color: var(--titan-accent); box-shadow:
 }
 body.dark-mode .pro-select { background-color: #1e293b; }
 
+.form-field { display: grid; gap: 6px; min-width: 0; }
+.form-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--lux-text-sub);
+}
+
 .primary-btn {
   background: linear-gradient(135deg, var(--titan-primary), rgba(0,0,0,0.75));
   color: var(--titan-accent); border: 1px solid var(--titan-primary);
-  padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  padding: 11px 20px; border-radius: 10px; font-size: 13px; font-weight: 700;
   cursor: pointer; transition: all 0.2s; font-family: inherit;
 }
 .primary-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
@@ -297,8 +305,9 @@ body.dark-mode .pro-select { background-color: #1e293b; }
 
 .danger-btn {
   background: var(--lux-danger); color: white; border: none;
-  padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+  padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 700;
   cursor: pointer; transition: all 0.2s; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 6px;
 }
 .danger-btn:hover { opacity: 0.85; }
 
@@ -321,21 +330,22 @@ body.dark-mode .pro-select { background-color: #1e293b; }
 
 .edit-btn {
   background: var(--lux-hover); color: var(--lux-text-sub); border: 1px solid var(--lux-border);
-  padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+  padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 700;
   cursor: pointer; transition: all 0.2s; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 6px;
 }
 .edit-btn:hover { background: var(--lux-border); color: var(--lux-text-main); }
 
 .ghost-btn {
   background: var(--lux-hover); color: var(--lux-text-main); border: 1px solid var(--lux-border);
-  padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  padding: 10px 16px; border-radius: 10px; font-size: 12px; font-weight: 700;
   cursor: pointer; transition: all 0.2s; font-family: inherit;
 }
 .ghost-btn:hover { background: var(--lux-border); }
 
 /* TASK ITEMS */
 .task-item {
-  display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px;
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 16px;
   border: 1px solid var(--lux-border); border-radius: 10px; background: var(--lux-hover);
   transition: all 0.2s; margin-bottom: 8px; border-left: 4px solid var(--lux-border);
 }
@@ -344,13 +354,14 @@ body.dark-mode .pro-select { background-color: #1e293b; }
 .task-item.completed .task-title { text-decoration: line-through; }
 
 .task-checkbox {
-  width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--lux-border);
-  cursor: pointer; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center;
+  width: 44px; height: 44px; border-radius: 10px; border: 2px solid var(--lux-border);
+  cursor: pointer; flex-shrink: 0; display: flex; align-items: center;
   justify-content: center; transition: all 0.2s; background: var(--lux-card);
+  appearance: none; -webkit-appearance: none;
 }
 .task-checkbox:hover { border-color: var(--titan-primary); }
 .task-checkbox.checked { background: var(--lux-success); border-color: var(--lux-success); }
-.task-checkbox.checked::after { content: '✓'; color: white; font-size: 13px; font-weight: 700; }
+.task-checkbox.checked::after { content: '✓'; color: white; font-size: 18px; font-weight: 700; }
 
 .task-body { flex: 1; min-width: 0; }
 .task-title { font-size: 14px; font-weight: 600; color: var(--lux-text-main); margin-bottom: 4px; }
@@ -358,8 +369,8 @@ body.dark-mode .pro-select { background-color: #1e293b; }
 .task-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
 .subject-badge {
-  display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px;
-  border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.2px;
+  display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px;
+  border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.2px;
 }
 
 .priority-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
@@ -369,7 +380,7 @@ body.dark-mode .pro-select { background-color: #1e293b; }
 
 .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--lux-border); }
 .filter-chip {
-  padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  padding: 10px 16px; border-radius: 999px; font-size: 12px; font-weight: 700;
   cursor: pointer; border: 1px solid var(--lux-border); background: var(--lux-card);
   color: var(--lux-text-sub); transition: all 0.2s;
 }
@@ -741,7 +752,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <div id="quoteBox" style="position:relative; padding: 24px 28px; background: linear-gradient(135deg, var(--lux-hover), var(--lux-card)); border: 1px solid var(--lux-border); border-radius: 12px; border-left: 4px solid var(--titan-primary); min-height: 80px;">
               <div id="quoteText" style="font-size: 16px; font-style: italic; color: var(--lux-text-main); font-weight: 500; line-height: 1.6; margin-bottom: 8px; transition: opacity 0.4s ease;"></div>
               <div id="quoteAuthor" style="font-size: 12px; color: var(--lux-text-sub); font-weight: 700; letter-spacing: 0.3px; transition: opacity 0.4s ease;"></div>
-              <button onclick="nextQuote()" style="position:absolute; top:12px; right:12px; background:var(--lux-hover); border:1px solid var(--lux-border); border-radius:6px; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--lux-text-sub); transition:all 0.2s;" title="New quote">↻</button>
+              <button onclick="nextQuote()" style="position:absolute; top:12px; right:12px; background:var(--lux-hover); border:1px solid var(--lux-border); border-radius:6px; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--lux-text-sub); transition:all 0.2s;" title="New quote" aria-label="Load another inspirational quote">↻</button>
             </div>
           </div>
 
@@ -781,31 +792,49 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <div id="taskForm" style="display:none; padding: 20px; border-bottom: 1px solid var(--lux-border); background: var(--lux-hover);">
           <div style="display: grid; gap: 10px;">
             <div style="font-size: 13px; font-weight: 700; color: var(--lux-text-main); margin-bottom: 2px;" id="taskFormTitle">Add Task</div>
-            <div style="display:flex; gap:8px;">
-              <input id="taskNaturalInput" class="pro-input" placeholder="Try: Math homework due Friday at 5pm" />
-              <button class="ghost-btn" onclick="parseNaturalTaskInput()">Parse</button>
+            <div style="display:flex; gap:8px; align-items:end;">
+              <div class="form-field" style="flex:1;">
+                <label class="form-label" for="taskNaturalInput">Quick add from sentence</label>
+                <input id="taskNaturalInput" class="pro-input" placeholder="Try: Math homework due Friday at 5pm" aria-label="Quick add task from natural language" />
+              </div>
+              <button class="ghost-btn" onclick="parseNaturalTaskInput()" aria-label="Parse quick add sentence">Parse</button>
             </div>
-            <input id="taskTitle" class="pro-input" placeholder="Assignment title..." />
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <select id="taskSubject" class="pro-select pro-input">
-                <option value="">Subject...</option>
-                <option>Math</option><option>English</option><option>Science</option>
-                <option>History</option><option>Spanish</option><option>Art</option>
-                <option>PE</option><option>Music</option><option>Tech</option><option>Other</option>
-              </select>
-              <select id="taskPriority" class="pro-select pro-input">
-                <option value="low">Low Priority</option>
-                <option value="medium" selected>Medium Priority</option>
-                <option value="high">High Priority</option>
-              </select>
+            <div class="form-field">
+              <label class="form-label" for="taskTitle">Assignment title</label>
+              <input id="taskTitle" class="pro-input" placeholder="Assignment title..." aria-label="Assignment title" />
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <input id="taskDue" type="date" class="pro-input" />
-              <input id="taskNotes" class="pro-input" placeholder="Notes (optional)" />
+              <div class="form-field">
+                <label class="form-label" for="taskSubject">Subject</label>
+                <select id="taskSubject" class="pro-select pro-input" aria-label="Select subject">
+                  <option value="">Subject...</option>
+                  <option>Math</option><option>English</option><option>Science</option>
+                  <option>History</option><option>Spanish</option><option>Art</option>
+                  <option>PE</option><option>Music</option><option>Tech</option><option>Other</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="taskPriority">Priority</label>
+                <select id="taskPriority" class="pro-select pro-input" aria-label="Select priority level">
+                  <option value="low">Low Priority</option>
+                  <option value="medium" selected>Medium Priority</option>
+                  <option value="high">High Priority</option>
+                </select>
+              </div>
             </div>
-            <div style="display: flex; gap: 8px;">
-              <button class="primary-btn" id="taskFormSaveBtn" onclick="addTask()">Save Task</button>
-              <button class="ghost-btn" onclick="toggleTaskForm()">Cancel</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-field">
+                <label class="form-label" for="taskDue">Due date</label>
+                <input id="taskDue" type="date" class="pro-input" aria-label="Due date" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="taskNotes">Notes</label>
+                <input id="taskNotes" class="pro-input" placeholder="Notes (optional)" aria-label="Task notes" />
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="primary-btn" id="taskFormSaveBtn" onclick="addTask()" aria-label="Save task">Save Task</button>
+              <button class="ghost-btn" onclick="toggleTaskForm()" aria-label="Cancel adding task">Cancel</button>
             </div>
           </div>
         </div>
@@ -819,10 +848,10 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
         <!-- Filters -->
         <div class="filter-bar">
-          <button class="filter-chip active" data-filter="all" onclick="filterTasks('all', this)">All</button>
-          <button class="filter-chip" data-filter="open" onclick="filterTasks('open', this)">Open</button>
-          <button class="filter-chip" data-filter="completed" onclick="filterTasks('completed', this)">Done</button>
-          <button class="filter-chip" data-filter="overdue" onclick="filterTasks('overdue', this)">Overdue</button>
+          <button class="filter-chip active" data-filter="all" onclick="filterTasks('all', this)" aria-label="Show all homework tasks">All Tasks</button>
+          <button class="filter-chip" data-filter="open" onclick="filterTasks('open', this)" aria-label="Show homework tasks not completed">To Do</button>
+          <button class="filter-chip" data-filter="completed" onclick="filterTasks('completed', this)" aria-label="Show completed homework tasks">Completed</button>
+          <button class="filter-chip" data-filter="overdue" onclick="filterTasks('overdue', this)" aria-label="Show overdue homework tasks">Overdue</button>
           <input id="taskSearch" class="pro-input panel-focus-ring" type="search" placeholder="Search tasks" aria-label="Search tasks" style="margin-left:auto;max-width:220px;" oninput="renderTasks()" />
         </div>
         <!-- Subject Filters -->
@@ -1278,7 +1307,8 @@ const ICON_SVG = {
   chart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"/><path d="M7 16v-5M12 16V8M17 16v-8"/></svg>',
   map: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2z"/><path d="M9 4v14M15 6v14"/></svg>',
   laptop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"/><path d="M3 18h18"/></svg>',
-  gamepad: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10h10a4 4 0 013.7 5.5l-1 2.3a2.5 2.5 0 01-3.4 1.2L13 17H11l-3.3 2a2.5 2.5 0 01-3.4-1.2l-1-2.3A4 4 0 017 10z"/><path d="M8 13h3M9.5 11.5v3"/><circle cx="15.5" cy="12.5" r="1"/><circle cx="17.5" cy="14.5" r="1"/></svg>'
+  gamepad: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10h10a4 4 0 013.7 5.5l-1 2.3a2.5 2.5 0 01-3.4 1.2L13 17H11l-3.3 2a2.5 2.5 0 01-3.4-1.2l-1-2.3A4 4 0 017 10z"/><path d="M8 13h3M9.5 11.5v3"/><circle cx="15.5" cy="12.5" r="1"/><circle cx="17.5" cy="14.5" r="1"/></svg>',
+  close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
 };
 
 function icon(name) {
@@ -1462,8 +1492,9 @@ function renderTasks() {
     const sc = getSubjectColor(t.subject);
     const borderColor = t.subject ? sc.border : 'var(--lux-border)';
     const subjectBadge = t.subject ? `<span class="subject-badge" style="background:${sc.bg};color:${sc.text};">${t.subject}</span>` : '';
+    const completionLabel = t.completed ? 'Mark task as not completed' : 'Mark task as completed';
     return `<div class="task-item ${t.completed ? 'completed' : ''}" style="border-left-color:${borderColor};">
-      <div class="task-checkbox ${t.completed ? 'checked' : ''}" onclick="toggleTask(${t.id})"></div>
+      <button class="task-checkbox ${t.completed ? 'checked' : ''}" onclick="toggleTask(${t.id})" aria-label="${completionLabel}" title="${completionLabel}"></button>
       <div class="task-body">
         <div class="task-title"><span class="priority-dot priority-${t.priority}"></span>${t.title}</div>
         <div class="task-meta">
@@ -1473,8 +1504,8 @@ function renderTasks() {
         </div>
       </div>
       <div class="task-actions">
-        <button class="edit-btn" onclick="editTask(${t.id})" title="Edit task">✎</button>
-        <button class="danger-btn" onclick="deleteTask(${t.id})" title="Delete task">✕</button>
+        <button class="edit-btn" onclick="editTask(${t.id})" title="Edit task" aria-label="Edit ${t.title}"><span class="ui-icon" aria-hidden="true">${icon('edit')}</span><span>Edit</span></button>
+        <button class="danger-btn" onclick="deleteTask(${t.id})" title="Delete task" aria-label="Delete ${t.title}"><span class="ui-icon" aria-hidden="true">${icon('close')}</span><span>Delete</span></button>
       </div>
     </div>`;
   }).join('');
