@@ -16,6 +16,13 @@ A single-page web application for students to manage their tasks, schedule, note
 
 Open `index.html` in any modern web browser. All data is stored in the browser's `localStorage`.
 
+## Privacy & Data Policy
+
+- **Where data is stored:** By default, all tasks, notes, schedule entries, links, and personalization settings are saved locally in your browser storage on your device.
+- **How long data persists:** Data remains until you remove items, reset the app settings, or clear browser/site storage.
+- **Your control:** You can edit or delete records at any time in the app, and you can fully erase saved data through your browser controls or the app reset option.
+- **Cloud sync safeguards (if enabled in future):** Any cloud synchronization should use secure OAuth-based authentication and encryption both in transit and at rest to protect user data.
+
 
 ## Validation
 
