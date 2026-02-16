@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 820" role="img" aria-label="FocusFlow logo">
+  <defs>
+    <linearGradient id="ff-top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4bb7ff"/>
+      <stop offset="0.55" stop-color="#1f6fdd"/>
+      <stop offset="1" stop-color="#0d47b0"/>
+    </linearGradient>
+    <linearGradient id="ff-bottom" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1d5fcc"/>
+      <stop offset="0.6" stop-color="#174fb6"/>
+      <stop offset="1" stop-color="#082e86"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(152 92)">
+    <path d="M110 96c14-50 48-73 111-73h290c70 0 101-17 124-37-13 67-52 114-145 114H243c-55 0-86 21-123 68z" fill="url(#ff-top)"/>
+    <path d="M74 190c17-55 57-83 132-83h283c64 0 92-13 114-32-14 74-55 118-139 118H237c-58 0-91 24-132 76z" fill="url(#ff-bottom)"/>
+    <path d="M30 315c24-79 71-130 145-130h180c48 0 69-12 91-31-14 82-53 136-123 136H205c-41 0-67 17-88 59z" fill="#06266f"/>
+  </g>
+
+  <text x="410" y="725" text-anchor="middle" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="110" font-weight="700" fill="#06266f">FocusFlow</text>
+</svg>

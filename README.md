@@ -1,6 +1,6 @@
-# Digital Student Agenda
+# FocusFlow
 
-A single-page web application for students to manage their tasks, schedule, notes, and links. Built as a self-contained HTML file with no external dependencies (other than Google Fonts).
+A single-page web application designed to help students manage tasks, schedules, notes, and routines — especially students with ADHD who benefit from stronger daily structure. Built as a self-contained HTML file with no external dependencies (other than Google Fonts).
 
 ## Features
 
