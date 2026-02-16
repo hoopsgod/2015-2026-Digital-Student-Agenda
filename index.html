@@ -722,8 +722,14 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               </div>
               <div id="pomodoroTimer" class="focus-time">25:00</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-                <input id="focusMinutes" type="number" min="5" max="90" class="pro-input" value="25" placeholder="Focus mins" />
-                <input id="breakMinutes" type="number" min="1" max="30" class="pro-input" value="5" placeholder="Break mins" />
+                <div>
+                  <input id="focusMinutes" type="number" min="5" max="90" class="pro-input" value="25" placeholder="Focus mins" />
+                  <div style="font-size:10px;color:var(--lux-text-sub);margin-top:4px;">Minutes to focus before your break starts.</div>
+                </div>
+                <div>
+                  <input id="breakMinutes" type="number" min="1" max="30" class="pro-input" value="5" placeholder="Break mins" />
+                  <div style="font-size:10px;color:var(--lux-text-sub);margin-top:4px;">Minutes to take a break before the next focus session.</div>
+                </div>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="primary-btn" onclick="togglePomodoro()" id="pomodoroStartBtn">Start</button>
