@@ -528,14 +528,6 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
                 <div class="dashboard-info-label">Completed</div>
                 <div id="dashCompletedTasks" class="dashboard-info-value">0</div>
               </div>
-              <div class="dashboard-info-card light">
-                <div class="dashboard-info-label">Current Streak</div>
-                <div id="dashStreak" class="dashboard-info-value">0 days</div>
-              </div>
-              <div class="dashboard-info-card dark">
-                <div class="dashboard-info-label">Focus Points</div>
-                <div id="dashPoints" class="dashboard-info-value">0 pts</div>
-              </div>
             </div>
           </div>
           <!-- Due This Week -->
@@ -714,7 +706,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
           <div id="focusPatternChart" style="display: flex; gap: 4px; align-items: end; height: 100px; margin-bottom: 6px;"></div>
 
           <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--lux-text-sub); margin: 18px 0 12px;">Focus Studio</div>
-          <div class="focus-grid">
+          <div class="focus-grid" style="grid-template-columns: 1fr;">
             <div class="focus-card">
               <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
                 <span id="pomodoroMode" class="focus-chip">Focus Session</span>
@@ -734,6 +726,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="primary-btn" onclick="togglePomodoro()" id="pomodoroStartBtn">Start</button>
                 <button class="ghost-btn" onclick="resetPomodoro()">Reset</button>
+                <button class="ghost-btn" onclick="playAlarmTone()">Test Alarm</button>
                 <select id="noiseSelect" class="pro-select pro-input" style="max-width:180px;" onchange="playNoise()" onclick="playNoise()">
                   <option value="">White noise off</option>
                   <option value="rain">Rain</option>
@@ -742,11 +735,6 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
                 </select>
                 <button class="ghost-btn" onclick="stopNoise()">Mute</button>
               </div>
-            </div>
-            <div class="focus-card">
-              <div style="font-size:12px;font-weight:700;color:var(--lux-text-main);margin-bottom:8px;">Daily Habits</div>
-              <div style="font-size:11px;color:var(--lux-text-sub);margin-bottom:8px;">Track small wins for streaks and points.</div>
-              <div id="habitList"></div>
               <div style="margin-top:12px;font-size:11px;color:var(--lux-text-sub);">Weekly focus time: <strong id="focusMinutesWeek">0 mins</strong></div>
               <div style="font-size:11px;color:var(--lux-text-sub);">Average daily focus: <strong id="focusAvgDay">0 mins</strong></div>
             </div>
@@ -948,10 +936,6 @@ const DB = {
   uploads: readJSON('agenda_uploads', []),
   focusSessions: readJSON('agenda_focusSessions', []),
   pomodoroSettings: readJSON('agenda_pomodoroSettings', { focusMinutes: 25, breakMinutes: 5 }),
-  habits: readJSON('agenda_habits', [
-    { id: 'reading', name: 'Daily reading (20 min)', entries: {} },
-    { id: 'exercise', name: 'Exercise (30 min)', entries: {} }
-  ]),
   points: parseInt(STORAGE.getItem('agenda_points') || '0', 10) || 0,
   save(key) { STORAGE.setItem('agenda_' + key, JSON.stringify(this[key])); },
   savePoints() { STORAGE.setItem('agenda_points', String(this.points)); }
@@ -1318,7 +1302,7 @@ function completeFocusSession(secondsWorked) {
   DB.points += 10;
   DB.save('focusSessions');
   DB.savePoints();
-  updateHabitsStats();
+  updateFocusStats();
   updateDashboard();
   updateAnalytics();
 }
@@ -1388,7 +1372,35 @@ function createNoiseBuffer(color, seconds = 2) {
   return buffer;
 }
 
-function stopNoise() {
+function ensureAudioContext() {
+  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
+  return audioCtx;
+}
+
+function playAlarmTone() {
+  const ctx = ensureAudioContext();
+  const start = ctx.currentTime + 0.02;
+  const notes = [880, 660, 880];
+
+  notes.forEach((freq, i) => {
+    const t = start + (i * 0.22);
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.12, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.2);
+  });
+}
+
+function stopNoise(clearSelection = true) {
   if (noiseNode) {
     try { noiseNode.stop(); } catch (_) {}
     noiseNode.disconnect();
@@ -1399,18 +1411,15 @@ function stopNoise() {
     noiseGain = null;
   }
   const noiseSelect = document.getElementById('noiseSelect');
-  if (noiseSelect) noiseSelect.value = '';
+  if (clearSelection && noiseSelect) noiseSelect.value = '';
 }
 
 function playNoise() {
   const color = document.getElementById('noiseSelect').value;
-  stopNoise();
+  stopNoise(false);
   if (!color) return;
 
-  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
+  ensureAudioContext();
   noiseNode = audioCtx.createBufferSource();
   noiseNode.buffer = createNoiseBuffer(color, 2);
   noiseNode.loop = true;
@@ -1420,57 +1429,20 @@ function playNoise() {
   noiseNode.start();
 }
 
+function getAudioDebugStatus() {
+  return {
+    hasAudioContext: !!audioCtx,
+    audioContextState: audioCtx ? audioCtx.state : 'none',
+    whiteNoiseActive: !!noiseNode,
+    selectedNoise: document.getElementById('noiseSelect')?.value || ''
+  };
+}
+
 function todayKey() {
   return new Date().toISOString().split('T')[0];
 }
 
-function toggleHabit(id) {
-  const habit = DB.habits.find(h => h.id === id);
-  if (!habit) return;
-  const key = todayKey();
-  const nowDone = !habit.entries[key];
-  if (nowDone) {
-    habit.entries[key] = true;
-    DB.points += 5;
-    DB.savePoints();
-  } else {
-    delete habit.entries[key];
-  }
-  DB.save('habits');
-  renderHabits();
-  updateHabitsStats();
-  updateDashboard();
-}
-
-function renderHabits() {
-  const key = todayKey();
-  const list = document.getElementById('habitList');
-  if (!list) return;
-  list.innerHTML = DB.habits.map(h => {
-    const done = !!h.entries[key];
-    return `<div class="habit-item">
-      <div style="font-size:13px;font-weight:600;color:var(--lux-text-main);">${h.name}</div>
-      <div class="habit-check ${done ? 'done' : ''}" onclick="toggleHabit('${h.id}')">${done ? '✓' : ''}</div>
-    </div>`;
-  }).join('');
-}
-
-function getCurrentStreak() {
-  let streak = 0;
-  const cursor = new Date();
-  cursor.setHours(0,0,0,0);
-  while (true) {
-    const key = cursor.toISOString().split('T')[0];
-    const focused = DB.focusSessions.some(s => s.date === key && s.seconds >= 60);
-    const habitsDone = DB.habits.some(h => h.entries[key]);
-    if (!focused && !habitsDone) break;
-    streak += 1;
-    cursor.setDate(cursor.getDate() - 1);
-  }
-  return streak;
-}
-
-function updateHabitsStats() {
+function updateFocusStats() {
   const today = todayKey();
   const focusTodayCount = DB.focusSessions.filter(s => s.date === today).length;
   const sevenDays = [];
@@ -1485,7 +1457,6 @@ function updateHabitsStats() {
 
   const weekMins = Math.round(weekSeconds / 60);
   const avgMins = Math.round(weekMins / 7);
-  const streak = getCurrentStreak();
 
   const elToday = document.getElementById('focusToday');
   if (elToday) elToday.textContent = String(focusTodayCount);
@@ -1493,12 +1464,7 @@ function updateHabitsStats() {
   if (elWeek) elWeek.textContent = weekMins + ' mins';
   const elAvg = document.getElementById('focusAvgDay');
   if (elAvg) elAvg.textContent = avgMins + ' mins';
-  const dStreak = document.getElementById('dashStreak');
-  if (dStreak) dStreak.textContent = streak + ' day' + (streak === 1 ? '' : 's');
-  const dPoints = document.getElementById('dashPoints');
-  if (dPoints) dPoints.textContent = DB.points + ' pts';
 }
-
 
 // ==================== SCHEDULE ====================
 function toggleScheduleForm() {
@@ -1838,7 +1804,7 @@ function updateDashboard() {
   const done = DB.tasks.filter(t => t.completed).length;
   document.getElementById('dashOpenTasks').textContent = open;
   document.getElementById('dashCompletedTasks').textContent = done;
-  updateHabitsStats();
+  updateFocusStats();
   renderDueThisWeek();
 }
 
@@ -2166,7 +2132,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (focusInput) focusInput.value = DB.pomodoroSettings.focusMinutes || 25;
   if (breakInput) breakInput.value = DB.pomodoroSettings.breakMinutes || 5;
   resetPomodoro();
-  renderHabits();
 
   const naturalInput = document.getElementById('taskNaturalInput');
   if (naturalInput) {
