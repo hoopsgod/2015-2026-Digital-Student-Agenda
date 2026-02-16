@@ -340,6 +340,16 @@ body.dark-mode .pro-select { background-color: #1e293b; }
 body.dark-mode .note-editor { background: #1e293b; }
 .note-editor:focus { outline: none; border-color: var(--titan-primary); }
 
+.note-toolbar { display:flex; gap:10px; padding:14px 20px; border-bottom:1px solid var(--lux-border); background:var(--lux-hover); flex-wrap:wrap; }
+.note-toolbar .pro-input, .note-toolbar .pro-select { min-width: 160px; }
+.note-meta-grid { display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom:10px; }
+.tiny-helper { font-size: 10px; color: var(--lux-text-sub); margin-top: 4px; }
+.pill-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+.pill { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:700; background:var(--lux-card); border:1px solid var(--lux-border); color:var(--lux-text-sub); }
+.attachment-list { display:grid; gap:6px; margin-top:10px; }
+.attachment-item { display:flex; align-items:center; justify-content:space-between; gap:8px; border:1px solid var(--lux-border); background:var(--lux-card); border-radius:8px; padding:8px 10px; font-size:11px; }
+.attachment-link { color: var(--titan-primary); text-decoration: none; font-weight:600; }
+
 /* LINKS */
 .link-item {
   display: flex; align-items: center; gap: 12px; padding: 14px 16px;
@@ -352,6 +362,10 @@ body.dark-mode .note-editor { background: #1e293b; }
 .link-name { font-size: 14px; font-weight: 600; }
 .link-url { font-size: 11px; color: var(--lux-text-sub); }
 .link-arrow { color: var(--lux-text-sub); font-size: 14px; }
+.link-category-block { margin-bottom: 16px; }
+.link-category-header { font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--lux-text-sub); margin:0 0 8px 2px; }
+.link-item.dragging { opacity: 0.5; border-style: dashed; }
+.link-favicon { width:20px; height:20px; border-radius:5px; border:1px solid var(--lux-border); background:var(--lux-card); }
 
 /* SETTINGS PANEL */
 .settings-panel {
@@ -810,10 +824,31 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
           <button class="ghost-btn" onclick="newNote()">+ New Note</button>
         </div>
 
+        <div class="note-toolbar">
+          <input id="notesSearch" class="pro-input" placeholder="Search notes, tags, links..." oninput="renderNotes()" />
+          <select id="notesFolderFilter" class="pro-select pro-input" onchange="renderNotes()"></select>
+          <input id="notesTagFilter" class="pro-input" placeholder="Filter by tag (ex: exam)" oninput="renderNotes()" />
+        </div>
+
         <!-- Note Editor (hidden by default) -->
         <div id="noteEditor" style="display:none; padding: 20px; border-bottom: 1px solid var(--lux-border);">
           <input id="noteTitle" class="pro-input" placeholder="Note title..." style="margin-bottom: 10px; font-weight: 700;" />
+          <div class="note-meta-grid">
+            <input id="noteFolder" class="pro-input" placeholder="Folder (ex: Biology)" />
+            <input id="noteTags" class="pro-input" placeholder="Tags (comma-separated)" />
+            <select id="noteLinkedTask" class="pro-select pro-input"></select>
+            <select id="noteLinkedSchedule" class="pro-select pro-input"></select>
+          </div>
           <textarea id="noteContent" class="note-editor" placeholder="Write your note..."></textarea>
+          <div style="margin-top:10px;">
+            <label class="ghost-btn" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="file" id="noteAttachmentInput" multiple style="display:none;" onchange="handleNoteAttachment(event)" />
+              <span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 13.5l6.8-6.8a3.5 3.5 0 115 5l-8.7 8.7a5 5 0 11-7.1-7.1L12 5"/></svg></span>
+              Add Attachments
+            </label>
+            <div class="tiny-helper">Attachments are stored locally in your browser.</div>
+            <div id="noteAttachmentList" class="attachment-list"></div>
+          </div>
           <div style="display: flex; gap: 8px; margin-top: 10px;">
             <button class="primary-btn" onclick="saveNote()">Save Note</button>
             <button class="ghost-btn" onclick="cancelNote()">Cancel</button>
@@ -834,17 +869,31 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
           <div style="display: grid; gap: 10px;">
             <input id="linkName" class="pro-input" placeholder="Link name" />
             <input id="linkUrl" class="pro-input" placeholder="https://..." />
-            <select id="linkIcon" class="pro-select pro-input">
-              <option value="link">General</option><option value="graduation">School</option>
-              <option value="book">Study</option><option value="mail">Email</option>
-              <option value="chart">Grades</option><option value="map">Map</option>
-              <option value="laptop">Tech</option><option value="gamepad">Fun</option>
+            <select id="linkCategory" class="pro-select pro-input">
+              <option value="school">School</option><option value="study">Study</option>
+              <option value="communication">Communication</option><option value="productivity">Productivity</option>
+              <option value="tools">Tools</option><option value="fun">Fun</option>
+              <option value="other">Other</option>
             </select>
             <div style="display: flex; gap: 8px;">
               <button class="primary-btn" onclick="addLink()">Save Link</button>
               <button class="ghost-btn" onclick="toggleLinkForm()">Cancel</button>
             </div>
           </div>
+        </div>
+
+        <div class="note-toolbar" style="padding-top:10px;padding-bottom:10px;">
+          <select id="linkCategoryFilter" class="pro-select pro-input" onchange="renderLinks()">
+            <option value="all">All Categories</option>
+            <option value="school">School</option>
+            <option value="study">Study</option>
+            <option value="communication">Communication</option>
+            <option value="productivity">Productivity</option>
+            <option value="tools">Tools</option>
+            <option value="fun">Fun</option>
+            <option value="other">Other</option>
+          </select>
+          <div class="tiny-helper" style="align-self:center;">Drag and drop links to reorder.</div>
         </div>
 
         <div id="linksList" style="padding: 16px 20px;"></div>
@@ -1006,10 +1055,10 @@ const DB = {
 // Default links if empty
 if (DB.links.length === 0) {
   DB.links = [
-    { id: Date.now(), name: 'Google Classroom', url: 'https://classroom.google.com', icon: 'graduation' },
-    { id: Date.now()+1, name: 'Gmail', url: 'https://mail.google.com', icon: 'mail' },
-    { id: Date.now()+2, name: 'Infinite Campus', url: 'https://websterny.infinitecampus.org/campus/portal/students/webster.jsp', icon: 'chart' },
-    { id: Date.now()+3, name: 'Wayground', url: 'https://wayground.com/', icon: 'map' },
+    { id: Date.now(), name: 'Google Classroom', url: 'https://classroom.google.com', icon: 'graduation', category: 'school', order: 0 },
+    { id: Date.now()+1, name: 'Gmail', url: 'https://mail.google.com', icon: 'mail', category: 'communication', order: 1 },
+    { id: Date.now()+2, name: 'Infinite Campus', url: 'https://websterny.infinitecampus.org/campus/portal/students/webster.jsp', icon: 'chart', category: 'school', order: 2 },
+    { id: Date.now()+3, name: 'Wayground', url: 'https://wayground.com/', icon: 'map', category: 'study', order: 3 },
   ];
   DB.save('links');
 }
@@ -1877,23 +1926,132 @@ function toggleUploadPreview(id) {
 }
 
 // ==================== NOTES ====================
+function noteTaskLabel(task) {
+  const due = task.due ? ` · Due ${task.due}` : '';
+  return `${task.title}${due}`;
+}
+
+function noteScheduleLabel(block) {
+  const time = (block.start && block.end) ? ` (${formatTime(block.start)}-${formatTime(block.end)})` : '';
+  return `${dayDisplayLabel(block.day || currentDay)} · ${block.className}${time}`;
+}
+
+function parseNoteTags(raw) {
+  return String(raw || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+}
+
+function refreshNoteEditorSelectors(selectedTaskId, selectedScheduleId) {
+  const taskSelect = document.getElementById('noteLinkedTask');
+  const schedSelect = document.getElementById('noteLinkedSchedule');
+  if (taskSelect) {
+    taskSelect.innerHTML = '<option value="">Link to task (optional)</option>' + DB.tasks.map(t => `<option value="${t.id}">${noteTaskLabel(t)}</option>`).join('');
+    taskSelect.value = selectedTaskId ? String(selectedTaskId) : '';
+  }
+  if (schedSelect) {
+    const sortedSchedule = [...DB.schedule].sort((a,b) => (a.day || '').localeCompare(b.day || '') || (a.start || '').localeCompare(b.start || ''));
+    schedSelect.innerHTML = '<option value="">Link to class/schedule (optional)</option>' + sortedSchedule.map(b => `<option value="${b.id}">${noteScheduleLabel(b)}</option>`).join('');
+    schedSelect.value = selectedScheduleId ? String(selectedScheduleId) : '';
+  }
+}
+
+function renderNotesFolderFilter() {
+  const folderFilter = document.getElementById('notesFolderFilter');
+  if (!folderFilter) return;
+  const current = folderFilter.value || 'all';
+  const folders = [...new Set(DB.notes.map(n => (n.folder || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b));
+  folderFilter.innerHTML = '<option value="all">All folders</option>' + folders.map(f => `<option value="${f}">${f}</option>`).join('');
+  folderFilter.value = folders.includes(current) ? current : 'all';
+}
+
+let noteDraftAttachments = [];
+
+function renderNoteAttachmentDraft() {
+  const list = document.getElementById('noteAttachmentList');
+  if (!list) return;
+  if (!noteDraftAttachments.length) {
+    list.innerHTML = '';
+    return;
+  }
+  list.innerHTML = noteDraftAttachments.map((a, idx) => `<div class="attachment-item"><span>${a.name}</span><button class="danger-btn" style="padding:4px 8px;font-size:10px;" onclick="removeDraftAttachment(${idx})">✕</button></div>`).join('');
+}
+
+function removeDraftAttachment(index) {
+  noteDraftAttachments.splice(index, 1);
+  renderNoteAttachmentDraft();
+}
+
+function handleNoteAttachment(event) {
+  const files = Array.from(event.target.files || []);
+  if (!files.length) return;
+
+  const tooLarge = files.find(file => file.size > 2 * 1024 * 1024);
+  if (tooLarge) {
+    alert(`"${tooLarge.name}" is too large. Keep note attachments under 2MB each.`);
+    event.target.value = '';
+    return;
+  }
+
+  Promise.all(files.map(file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({ id: Date.now() + Math.random(), name: file.name, type: file.type, data: reader.result });
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  }))).then(results => {
+    noteDraftAttachments = noteDraftAttachments.concat(results);
+    renderNoteAttachmentDraft();
+  }).catch(() => alert('Unable to read one of the attachments. Please try again.'));
+
+  event.target.value = '';
+}
+
 function newNote() {
   editingNoteId = null;
+  noteDraftAttachments = [];
   document.getElementById('noteTitle').value = '';
+  document.getElementById('noteFolder').value = '';
+  document.getElementById('noteTags').value = '';
   document.getElementById('noteContent').value = '';
+  refreshNoteEditorSelectors('', '');
+  renderNoteAttachmentDraft();
   document.getElementById('noteEditor').style.display = 'block';
 }
 
 function saveNote() {
   const title = document.getElementById('noteTitle').value.trim() || 'Untitled Note';
+  const folder = document.getElementById('noteFolder').value.trim();
+  const tags = parseNoteTags(document.getElementById('noteTags').value);
   const content = document.getElementById('noteContent').value;
+  const linkedTaskId = document.getElementById('noteLinkedTask').value ? Number(document.getElementById('noteLinkedTask').value) : null;
+  const linkedScheduleId = document.getElementById('noteLinkedSchedule').value ? Number(document.getElementById('noteLinkedSchedule').value) : null;
+
   if (editingNoteId) {
     const n = DB.notes.find(x => x.id === editingNoteId);
-    if (n) { n.title = title; n.content = content; n.updatedAt = new Date().toISOString(); }
+    if (n) {
+      n.title = title;
+      n.folder = folder;
+      n.tags = tags;
+      n.content = content;
+      n.linkedTaskId = linkedTaskId;
+      n.linkedScheduleId = linkedScheduleId;
+      n.attachments = noteDraftAttachments;
+      n.updatedAt = new Date().toISOString();
+    }
   } else {
-    DB.notes.unshift({ id: Date.now(), title, content, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    DB.notes.unshift({
+      id: Date.now(),
+      title,
+      folder,
+      tags,
+      content,
+      linkedTaskId,
+      linkedScheduleId,
+      attachments: noteDraftAttachments,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
   }
   DB.save('notes');
+  renderNotesFolderFilter();
   cancelNote();
   renderNotes();
 }
@@ -1901,14 +2059,20 @@ function saveNote() {
 function cancelNote() {
   document.getElementById('noteEditor').style.display = 'none';
   editingNoteId = null;
+  noteDraftAttachments = [];
 }
 
 function editNote(id) {
   const n = DB.notes.find(x => x.id === id);
   if (!n) return;
   editingNoteId = id;
+  noteDraftAttachments = Array.isArray(n.attachments) ? [...n.attachments] : [];
   document.getElementById('noteTitle').value = n.title;
+  document.getElementById('noteFolder').value = n.folder || '';
+  document.getElementById('noteTags').value = (n.tags || []).join(', ');
   document.getElementById('noteContent').value = n.content;
+  refreshNoteEditorSelectors(n.linkedTaskId, n.linkedScheduleId);
+  renderNoteAttachmentDraft();
   document.getElementById('noteEditor').style.display = 'block';
 }
 
@@ -1918,24 +2082,52 @@ function deleteNote(id) {
   showConfirm('Delete Note?', 'Are you sure you want to delete "' + name + '"? This cannot be undone.', 'Delete', () => {
     DB.notes = DB.notes.filter(x => x.id !== id);
     DB.save('notes');
+    renderNotesFolderFilter();
     renderNotes();
   });
 }
 
 function renderNotes() {
   const list = document.getElementById('notesList');
-  if (DB.notes.length === 0) {
-    list.innerHTML = '<div class="empty-msg">No notes yet. Click "+ New Note" to start writing!</div>';
+  const query = (document.getElementById('notesSearch')?.value || '').trim().toLowerCase();
+  const folderFilter = document.getElementById('notesFolderFilter')?.value || 'all';
+  const tagFilter = (document.getElementById('notesTagFilter')?.value || '').trim().toLowerCase();
+
+  const visibleNotes = DB.notes.filter(n => {
+    const tags = Array.isArray(n.tags) ? n.tags : [];
+    const searchBlob = `${n.title} ${n.content} ${n.folder || ''} ${tags.join(' ')}`.toLowerCase();
+    const folderOK = folderFilter === 'all' || (n.folder || '') === folderFilter;
+    const tagOK = !tagFilter || tags.some(t => t.includes(tagFilter));
+    const queryOK = !query || searchBlob.includes(query);
+    return folderOK && tagOK && queryOK;
+  });
+
+  if (visibleNotes.length === 0) {
+    list.innerHTML = '<div class="empty-msg">No matching notes yet. Try another filter or create a new note.</div>';
     return;
   }
-  list.innerHTML = DB.notes.map(n => {
+
+  list.innerHTML = visibleNotes.map(n => {
     const date = new Date(n.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    const tags = (n.tags || []).map(t => `<span class="pill">#${t}</span>`).join('');
+    const linkedTask = n.linkedTaskId ? DB.tasks.find(t => t.id === n.linkedTaskId) : null;
+    const linkedSchedule = n.linkedScheduleId ? DB.schedule.find(b => b.id === n.linkedScheduleId) : null;
+    const linkedPills = [
+      n.folder ? `<span class="pill">📁 ${n.folder}</span>` : '',
+      linkedTask ? `<span class="pill">✅ ${linkedTask.title}</span>` : '',
+      linkedSchedule ? `<span class="pill">🗓️ ${linkedSchedule.className}</span>` : '',
+      n.attachments?.length ? `<span class="pill">📎 ${n.attachments.length} attachment${n.attachments.length > 1 ? 's' : ''}</span>` : ''
+    ].filter(Boolean).join('');
+    const attachmentHtml = (n.attachments || []).map(a => `<div class="attachment-item" onclick="event.stopPropagation();"><span>${a.name}</span><a class="attachment-link" href="${a.data}" download="${a.name}">Download</a></div>`).join('');
+
     return `<div class="note-card" onclick="editNote(${n.id})">
-      <div style="display:flex;justify-content:space-between;align-items:start;">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
         <div class="note-card-title">${n.title}</div>
         <button class="danger-btn" onclick="event.stopPropagation();deleteNote(${n.id})" style="flex-shrink:0;">✕</button>
       </div>
+      <div class="pill-row">${linkedPills}${tags}</div>
       <div class="note-card-preview">${n.content || 'Empty note...'}</div>
+      ${attachmentHtml ? `<div class="attachment-list" style="margin-top:8px;">${attachmentHtml}</div>` : ''}
       <div class="note-card-date">${date}</div>
     </div>`;
   }).join('');
@@ -1947,15 +2139,55 @@ function toggleLinkForm() {
   f.style.display = f.style.display === 'none' ? 'block' : 'none';
 }
 
+function inferCategoryFromUrl(url) {
+  const clean = String(url || '').toLowerCase();
+  if (/classroom|canvas|blackboard|school|campus/.test(clean)) return 'school';
+  if (/docs|notion|calendar|drive|trello/.test(clean)) return 'productivity';
+  if (/mail|teams|slack|discord/.test(clean)) return 'communication';
+  if (/khan|quizlet|coursera|study|wikipedia/.test(clean)) return 'study';
+  if (/figma|github|replit|codepen|stackoverflow/.test(clean)) return 'tools';
+  if (/youtube|twitch|netflix|spotify|game/.test(clean)) return 'fun';
+  return 'other';
+}
+
+function categoryLabel(cat) {
+  const labels = { school: 'School', study: 'Study', communication: 'Communication', productivity: 'Productivity', tools: 'Tools', fun: 'Fun', other: 'Other' };
+  return labels[cat] || 'Other';
+}
+
+function getFaviconUrl(url) {
+  try {
+    const host = new URL(url).hostname;
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64`;
+  } catch (_) {
+    return '';
+  }
+}
+
+let linkDragId = null;
+
 function addLink() {
   const name = document.getElementById('linkName').value.trim();
   let url = document.getElementById('linkUrl').value.trim();
   if (!name || !url) return alert('Please enter a name and URL');
-  if (!url.startsWith('http')) url = 'https://' + url;
-  DB.links.push({ id: Date.now(), name, url, icon: normalizeLinkIcon(document.getElementById('linkIcon').value) });
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+  const explicitCategory = document.getElementById('linkCategory').value;
+  const category = explicitCategory || inferCategoryFromUrl(url);
+
+  DB.links.push({
+    id: Date.now(),
+    name,
+    url,
+    category,
+    icon: normalizeLinkIcon(document.getElementById('linkIcon')?.value || 'link'),
+    favicon: getFaviconUrl(url),
+    order: DB.links.length
+  });
   DB.save('links');
   document.getElementById('linkName').value = '';
   document.getElementById('linkUrl').value = '';
+  document.getElementById('linkCategory').value = 'school';
   toggleLinkForm();
   renderLinks();
 }
@@ -1964,31 +2196,79 @@ function deleteLink(id) {
   const link = DB.links.find(x => x.id === id);
   const name = link ? link.name : 'this link';
   showConfirm('Delete Link?', 'Are you sure you want to delete "' + name + '"? This cannot be undone.', 'Delete', () => {
-    DB.links = DB.links.filter(x => x.id !== id);
+    DB.links = DB.links.filter(x => x.id !== id).map((linkItem, index) => ({ ...linkItem, order: index }));
     DB.save('links');
     renderLinks();
   });
 }
 
+function onLinkDragStart(id) {
+  linkDragId = id;
+}
+
+function onLinkDragOver(event) {
+  event.preventDefault();
+}
+
+function onLinkDrop(targetId) {
+  if (!linkDragId || linkDragId === targetId) return;
+  const sorted = [...DB.links].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const from = sorted.findIndex(l => l.id === linkDragId);
+  const to = sorted.findIndex(l => l.id === targetId);
+  if (from < 0 || to < 0) return;
+  const [moved] = sorted.splice(from, 1);
+  sorted.splice(to, 0, moved);
+  DB.links = sorted.map((l, index) => ({ ...l, order: index }));
+  DB.save('links');
+  renderLinks();
+}
+
 function renderLinks() {
   const list = document.getElementById('linksList');
-  if (DB.links.length === 0) {
-    list.innerHTML = '<div class="empty-msg">No links yet. Add your favorite sites!</div>';
+  const filter = document.getElementById('linkCategoryFilter')?.value || 'all';
+  const sorted = [...DB.links]
+    .map((l, index) => ({ ...l, category: l.category || inferCategoryFromUrl(l.url), favicon: l.favicon || getFaviconUrl(l.url), order: Number.isFinite(l.order) ? l.order : index }))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  if (sorted.length !== DB.links.length || sorted.some((l, i) => l.id !== DB.links[i]?.id || l.category !== DB.links[i]?.category || l.favicon !== DB.links[i]?.favicon || l.order !== DB.links[i]?.order)) {
+    DB.links = sorted;
+    DB.save('links');
+  }
+
+  const visible = sorted.filter(l => filter === 'all' || l.category === filter);
+
+  if (visible.length === 0) {
+    list.innerHTML = '<div class="empty-msg">No links yet for this category. Add one above!</div>';
     return;
   }
-  list.innerHTML = DB.links.map(l => {
-    const domain = l.url.replace(/https?:\/\//, '').split('/')[0];
-    return `<div class="link-item">
-      <a href="${l.url}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;flex:1;">
-        <span class="link-icon">${icon(normalizeLinkIcon(l.icon))}</span>
-        <div class="link-info">
-          <div class="link-name">${l.name}</div>
-          <div class="link-url">${domain}</div>
-        </div>
-        <span class="link-arrow">→</span>
-      </a>
-      <button class="danger-btn" onclick="deleteLink(${l.id})" style="flex-shrink:0;">✕</button>
-    </div>`;
+
+  const grouped = visible.reduce((acc, link) => {
+    const key = link.category || 'other';
+    acc[key] = acc[key] || [];
+    acc[key].push(link);
+    return acc;
+  }, {});
+
+  const categoryOrder = ['school', 'study', 'communication', 'productivity', 'tools', 'fun', 'other'];
+  list.innerHTML = categoryOrder.filter(cat => grouped[cat]?.length).map(cat => {
+    const items = grouped[cat].map(l => {
+      const domain = l.url.replace(/https?:\/\//, '').split('/')[0];
+      const fallbackIcon = icon(normalizeLinkIcon(l.icon));
+      return `<div class="link-item" draggable="true" ondragstart="onLinkDragStart(${l.id})" ondragover="onLinkDragOver(event)" ondrop="onLinkDrop(${l.id})">
+        <a href="${l.url}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;flex:1;min-width:0;">
+          ${l.favicon ? `<img class="link-favicon" src="${l.favicon}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';" />` : ''}
+          <span class="link-icon" style="display:${l.favicon ? 'none' : 'inline-flex'};">${fallbackIcon}</span>
+          <div class="link-info">
+            <div class="link-name">${l.name}</div>
+            <div class="link-url">${domain}</div>
+          </div>
+          <span class="link-arrow">↕</span>
+        </a>
+        <button class="danger-btn" onclick="deleteLink(${l.id})" style="flex-shrink:0;">✕</button>
+      </div>`;
+    }).join('');
+
+    return `<div class="link-category-block"><div class="link-category-header">${categoryLabel(cat)}</div>${items}</div>`;
   }).join('');
 }
 
@@ -2517,6 +2797,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initializeScheduleSettingsUI();
+  renderNotesFolderFilter();
+  refreshNoteEditorSelectors('', '');
 
   // Render everything
   renderTasks(); renderSchedule(); renderUploads(); renderNotes(); renderLinks();
