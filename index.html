@@ -346,6 +346,8 @@ body.dark-mode .note-editor { background: #1e293b; }
 .note-toolbar { display:flex; gap:10px; padding:14px 20px; border-bottom:1px solid var(--lux-border); background:var(--lux-hover); flex-wrap:wrap; }
 .note-toolbar .pro-input, .note-toolbar .pro-select { min-width: 160px; }
 .note-meta-grid { display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom:10px; }
+.note-quick-actions { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 10px; }
+.note-insights { display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-top:8px; font-size:11px; color:var(--lux-text-sub); }
 .tiny-helper { font-size: 10px; color: var(--lux-text-sub); margin-top: 4px; }
 .pill-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
 .pill { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:700; background:var(--lux-card); border:1px solid var(--lux-border); color:var(--lux-text-sub); }
@@ -834,9 +836,8 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         </div>
 
         <div class="note-toolbar">
-          <input id="notesSearch" class="pro-input" placeholder="Search notes, tags, links..." oninput="renderNotes()" />
+          <input id="notesSearch" class="pro-input" placeholder="Search title, folder, content..." oninput="renderNotes()" />
           <select id="notesFolderFilter" class="pro-select pro-input" onchange="renderNotes()"></select>
-          <input id="notesTagFilter" class="pro-input" placeholder="Filter by tag (ex: exam)" oninput="renderNotes()" />
         </div>
 
         <!-- Note Editor (hidden by default) -->
@@ -844,11 +845,20 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
           <input id="noteTitle" class="pro-input" placeholder="Note title..." style="margin-bottom: 10px; font-weight: 700;" />
           <div class="note-meta-grid">
             <input id="noteFolder" class="pro-input" placeholder="Folder (ex: Biology)" />
-            <input id="noteTags" class="pro-input" placeholder="Tags (comma-separated)" />
             <select id="noteLinkedTask" class="pro-select pro-input"></select>
             <select id="noteLinkedSchedule" class="pro-select pro-input"></select>
           </div>
+          <div class="note-quick-actions">
+            <button class="ghost-btn" onclick="insertNoteTemplate('class')">Use class template</button>
+            <button class="ghost-btn" onclick="insertNoteTemplate('checklist')">Insert checklist</button>
+            <button class="ghost-btn" onclick="scrollNoteEditor('top')">Jump to top</button>
+            <button class="ghost-btn" onclick="scrollNoteEditor('bottom')">Jump to bottom</button>
+          </div>
           <textarea id="noteContent" class="note-editor" placeholder="Write your note..."></textarea>
+          <div class="note-insights">
+            <span id="noteContentStats">0 words · 0 chars</span>
+            <span>Tip: Press Ctrl/Cmd + S to save quickly.</span>
+          </div>
           <div style="margin-top:10px;">
             <label class="ghost-btn" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
               <input type="file" id="noteAttachmentInput" multiple style="display:none;" onchange="handleNoteAttachment(event)" />
@@ -1945,10 +1955,6 @@ function noteScheduleLabel(block) {
   return `${dayDisplayLabel(block.day || currentDay)} · ${block.className}${time}`;
 }
 
-function parseNoteTags(raw) {
-  return String(raw || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-}
-
 function refreshNoteEditorSelectors(selectedTaskId, selectedScheduleId) {
   const taskSelect = document.getElementById('noteLinkedTask');
   const schedSelect = document.getElementById('noteLinkedSchedule');
@@ -2018,8 +2024,8 @@ function newNote() {
   noteDraftAttachments = [];
   document.getElementById('noteTitle').value = '';
   document.getElementById('noteFolder').value = '';
-  document.getElementById('noteTags').value = '';
   document.getElementById('noteContent').value = '';
+  updateNoteInsights();
   refreshNoteEditorSelectors('', '');
   renderNoteAttachmentDraft();
   document.getElementById('noteEditor').style.display = 'block';
@@ -2028,7 +2034,6 @@ function newNote() {
 function saveNote() {
   const title = document.getElementById('noteTitle').value.trim() || 'Untitled Note';
   const folder = document.getElementById('noteFolder').value.trim();
-  const tags = parseNoteTags(document.getElementById('noteTags').value);
   const content = document.getElementById('noteContent').value;
   const linkedTaskId = document.getElementById('noteLinkedTask').value ? Number(document.getElementById('noteLinkedTask').value) : null;
   const linkedScheduleId = document.getElementById('noteLinkedSchedule').value ? Number(document.getElementById('noteLinkedSchedule').value) : null;
@@ -2038,8 +2043,8 @@ function saveNote() {
     if (n) {
       n.title = title;
       n.folder = folder;
-      n.tags = tags;
       n.content = content;
+      delete n.tags;
       n.linkedTaskId = linkedTaskId;
       n.linkedScheduleId = linkedScheduleId;
       n.attachments = noteDraftAttachments;
@@ -2050,7 +2055,6 @@ function saveNote() {
       id: Date.now(),
       title,
       folder,
-      tags,
       content,
       linkedTaskId,
       linkedScheduleId,
@@ -2078,8 +2082,8 @@ function editNote(id) {
   noteDraftAttachments = Array.isArray(n.attachments) ? [...n.attachments] : [];
   document.getElementById('noteTitle').value = n.title;
   document.getElementById('noteFolder').value = n.folder || '';
-  document.getElementById('noteTags').value = (n.tags || []).join(', ');
   document.getElementById('noteContent').value = n.content;
+  updateNoteInsights();
   refreshNoteEditorSelectors(n.linkedTaskId, n.linkedScheduleId);
   renderNoteAttachmentDraft();
   document.getElementById('noteEditor').style.display = 'block';
@@ -2100,15 +2104,12 @@ function renderNotes() {
   const list = document.getElementById('notesList');
   const query = (document.getElementById('notesSearch')?.value || '').trim().toLowerCase();
   const folderFilter = document.getElementById('notesFolderFilter')?.value || 'all';
-  const tagFilter = (document.getElementById('notesTagFilter')?.value || '').trim().toLowerCase();
 
   const visibleNotes = DB.notes.filter(n => {
-    const tags = Array.isArray(n.tags) ? n.tags : [];
-    const searchBlob = `${n.title} ${n.content} ${n.folder || ''} ${tags.join(' ')}`.toLowerCase();
+    const searchBlob = `${n.title} ${n.content} ${n.folder || ''}`.toLowerCase();
     const folderOK = folderFilter === 'all' || (n.folder || '') === folderFilter;
-    const tagOK = !tagFilter || tags.some(t => t.includes(tagFilter));
     const queryOK = !query || searchBlob.includes(query);
-    return folderOK && tagOK && queryOK;
+    return folderOK && queryOK;
   });
 
   if (visibleNotes.length === 0) {
@@ -2118,7 +2119,6 @@ function renderNotes() {
 
   list.innerHTML = visibleNotes.map(n => {
     const date = new Date(n.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-    const tags = (n.tags || []).map(t => `<span class="pill">#${t}</span>`).join('');
     const linkedTask = n.linkedTaskId ? DB.tasks.find(t => t.id === n.linkedTaskId) : null;
     const linkedSchedule = n.linkedScheduleId ? DB.schedule.find(b => b.id === n.linkedScheduleId) : null;
     const linkedPills = [
@@ -2134,12 +2134,40 @@ function renderNotes() {
         <div class="note-card-title">${n.title}</div>
         <button class="danger-btn" onclick="event.stopPropagation();deleteNote(${n.id})" style="flex-shrink:0;">✕</button>
       </div>
-      <div class="pill-row">${linkedPills}${tags}</div>
+      <div class="pill-row">${linkedPills}</div>
       <div class="note-card-preview">${n.content || 'Empty note...'}</div>
       ${attachmentHtml ? `<div class="attachment-list" style="margin-top:8px;">${attachmentHtml}</div>` : ''}
       <div class="note-card-date">${date}</div>
     </div>`;
   }).join('');
+}
+
+function updateNoteInsights() {
+  const content = document.getElementById('noteContent')?.value || '';
+  const stat = document.getElementById('noteContentStats');
+  if (!stat) return;
+  const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+  stat.textContent = `${words} words · ${content.length} chars`;
+}
+
+function insertNoteTemplate(type) {
+  const editor = document.getElementById('noteContent');
+  if (!editor) return;
+  const templates = {
+    class: 'Summary:\n- \n\nKey ideas:\n- \n\nQuestions:\n- \n\nAction items:\n- ',
+    checklist: '- [ ] First task\n- [ ] Next task\n- [ ] Final task'
+  };
+  if (editor.value.trim()) editor.value += '\n\n';
+  editor.value += templates[type] || '';
+  editor.focus();
+  updateNoteInsights();
+}
+
+function scrollNoteEditor(position) {
+  const editor = document.getElementById('noteContent');
+  if (!editor) return;
+  editor.scrollTop = position === 'top' ? 0 : editor.scrollHeight;
+  editor.focus();
 }
 
 // ==================== LINKS ====================
@@ -2804,6 +2832,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  const noteContent = document.getElementById('noteContent');
+  if (noteContent) {
+    noteContent.addEventListener('input', updateNoteInsights);
+  }
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      const editorOpen = document.getElementById('noteEditor')?.style.display !== 'none';
+      if (editorOpen) {
+        e.preventDefault();
+        saveNote();
+      }
+    }
+  });
 
   initializeScheduleSettingsUI();
   renderNotesFolderFilter();
