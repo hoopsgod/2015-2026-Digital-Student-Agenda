@@ -336,6 +336,71 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 .stat-box { text-align: center; padding: 12px; border-radius: 8px; background: var(--lux-hover); border: 1px solid var(--lux-border); }
 .stat-num { font-size: 24px; font-weight: 900; color: var(--lux-text-main); }
 .stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--lux-text-sub); font-weight: 700; margin-top: 4px; }
+
+/* DASHBOARD WIDGETS */
+.dash-widget-section { border-top: 1px solid var(--lux-border); padding-top: 28px; }
+.dash-widget-title { font-size: 10px; color: var(--titan-accent); text-transform: uppercase; letter-spacing: 2.2px; font-weight: 900; margin-bottom: 16px; }
+
+/* Progress Ring */
+.progress-ring-container { display: flex; align-items: center; gap: 24px; padding: 20px; background: linear-gradient(135deg, var(--lux-hover), var(--lux-card)); border: 1px solid var(--lux-border); border-radius: 12px; }
+.progress-ring svg { transform: rotate(-90deg); }
+.progress-ring-bg { fill: none; stroke: var(--lux-border); stroke-width: 8; }
+.progress-ring-fill { fill: none; stroke: var(--lux-success); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+.progress-ring-text { font-size: 20px; font-weight: 900; fill: var(--lux-text-main); }
+.progress-stats { display: flex; flex-direction: column; gap: 8px; }
+.progress-stat-item { font-size: 12px; color: var(--lux-text-sub); font-weight: 500; }
+.progress-stat-item span { font-weight: 800; color: var(--lux-text-main); }
+
+/* Upcoming Deadlines */
+.deadline-list { display: flex; flex-direction: column; gap: 8px; }
+.deadline-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--lux-hover); border: 1px solid var(--lux-border); border-radius: 10px; border-left: 4px solid var(--lux-border); transition: all 0.2s; }
+.deadline-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.deadline-item.urgent { border-left-color: var(--lux-danger); }
+.deadline-item.soon { border-left-color: var(--lux-warning); }
+.deadline-item.normal { border-left-color: var(--lux-success); }
+.deadline-date { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; min-width: 60px; }
+.deadline-date.urgent { color: var(--lux-danger); }
+.deadline-date.soon { color: var(--lux-warning); }
+.deadline-date.normal { color: var(--lux-success); }
+.deadline-title { font-size: 13px; font-weight: 600; color: var(--lux-text-main); flex: 1; }
+.deadline-empty { padding: 24px; text-align: center; color: var(--lux-text-sub); font-size: 13px; background: var(--lux-hover); border: 1px dashed var(--lux-border); border-radius: 10px; }
+
+/* Pomodoro Timer */
+.pomodoro-container { padding: 24px; background: linear-gradient(135deg, var(--lux-hover), var(--lux-card)); border: 1px solid var(--lux-border); border-radius: 12px; text-align: center; }
+.pomodoro-display { font-size: 48px; font-weight: 900; color: var(--lux-text-main); font-family: 'IBM Plex Sans', monospace; letter-spacing: 2px; margin-bottom: 8px; }
+.pomodoro-label { font-size: 11px; color: var(--lux-text-sub); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+.pomodoro-buttons { display: flex; gap: 8px; justify-content: center; }
+.pomodoro-btn { padding: 8px 20px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; border: none; }
+.pomodoro-btn.start { background: var(--lux-success); color: white; }
+.pomodoro-btn.pause { background: var(--lux-warning); color: white; }
+.pomodoro-btn.reset { background: var(--lux-hover); color: var(--lux-text-main); border: 1px solid var(--lux-border); }
+.pomodoro-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+/* Weekly Overview */
+.week-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.week-day { text-align: center; padding: 10px 4px; border-radius: 10px; border: 1px solid var(--lux-border); background: var(--lux-hover); transition: all 0.2s; }
+.week-day.today { border-color: var(--titan-primary); background: linear-gradient(135deg, var(--titan-primary), rgba(0,0,0,0.75)); }
+.week-day.today .week-day-name, .week-day.today .week-day-num, .week-day.today .week-day-tasks { color: var(--titan-accent); }
+.week-day.has-tasks { border-color: var(--lux-warning); }
+.week-day-name { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--lux-text-sub); margin-bottom: 4px; }
+.week-day-num { font-size: 16px; font-weight: 900; color: var(--lux-text-main); margin-bottom: 4px; }
+.week-day-tasks { font-size: 9px; color: var(--lux-text-sub); font-weight: 600; }
+.week-day-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lux-warning); margin: 4px auto 0; }
+.week-day.today .week-day-dot { background: var(--titan-accent); }
+
+/* Quick Add */
+.quick-add-form { display: flex; gap: 8px; }
+.quick-add-form input { flex: 1; }
+.quick-add-form select { width: 120px; }
+.quick-add-form button { white-space: nowrap; }
+@media (max-width: 768px) {
+  .quick-add-form { flex-wrap: wrap; }
+  .quick-add-form input { min-width: 100%; }
+  .quick-add-form select { flex: 1; }
+  .week-day-name { font-size: 8px; }
+  .week-day-num { font-size: 13px; }
+  .pomodoro-display { font-size: 36px; }
+}
 ```
 
   </style>
@@ -429,6 +494,69 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               <div id="quoteText" style="font-size: 16px; font-style: italic; color: var(--lux-text-main); font-weight: 500; line-height: 1.6; margin-bottom: 8px; transition: opacity 0.4s ease;"></div>
               <div id="quoteAuthor" style="font-size: 12px; color: var(--lux-text-sub); font-weight: 700; letter-spacing: 0.3px; transition: opacity 0.4s ease;"></div>
               <button onclick="nextQuote()" style="position:absolute; top:12px; right:12px; background:var(--lux-hover); border:1px solid var(--lux-border); border-radius:6px; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--lux-text-sub); transition:all 0.2s;" title="New quote">↻</button>
+            </div>
+          </div>
+
+          <!-- Progress Ring -->
+          <div class="dash-widget-section">
+            <div class="dash-widget-title">Completion Progress</div>
+            <div class="progress-ring-container">
+              <div class="progress-ring">
+                <svg width="100" height="100" viewBox="0 0 100 100">
+                  <circle class="progress-ring-bg" cx="50" cy="50" r="42"/>
+                  <circle id="progressRingFill" class="progress-ring-fill" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
+                  <text class="progress-ring-text" x="50" y="50" text-anchor="middle" dominant-baseline="central" transform="rotate(90 50 50)" id="progressRingPct">0%</text>
+                </svg>
+              </div>
+              <div class="progress-stats">
+                <div class="progress-stat-item"><span id="prOpen">0</span> tasks open</div>
+                <div class="progress-stat-item"><span id="prDone">0</span> tasks completed</div>
+                <div class="progress-stat-item"><span id="prOverdue">0</span> overdue</div>
+                <div class="progress-stat-item" style="margin-top:4px; font-size:11px; color:var(--lux-text-sub);">Keep pushing forward!</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Upcoming Deadlines -->
+          <div class="dash-widget-section">
+            <div class="dash-widget-title">Upcoming Deadlines</div>
+            <div id="upcomingDeadlines" class="deadline-list">
+              <div class="deadline-empty">No upcoming deadlines. You're all caught up!</div>
+            </div>
+          </div>
+
+          <!-- Weekly Overview -->
+          <div class="dash-widget-section">
+            <div class="dash-widget-title">This Week</div>
+            <div id="weekStrip" class="week-strip"></div>
+          </div>
+
+          <!-- Quick Add Task -->
+          <div class="dash-widget-section">
+            <div class="dash-widget-title">Quick Add Task</div>
+            <div class="quick-add-form">
+              <input id="quickTaskTitle" class="pro-input" placeholder="Task title..." />
+              <select id="quickTaskSubject" class="pro-select pro-input" style="width:120px;">
+                <option value="">Subject</option>
+                <option>Math</option><option>English</option><option>Science</option>
+                <option>History</option><option>Spanish</option><option>Art</option>
+                <option>PE</option><option>Music</option><option>Tech</option><option>Other</option>
+              </select>
+              <input id="quickTaskDue" type="date" class="pro-input" style="width:140px;" />
+              <button class="primary-btn" onclick="quickAddTask()">Add</button>
+            </div>
+          </div>
+
+          <!-- Pomodoro Timer -->
+          <div class="dash-widget-section">
+            <div class="dash-widget-title">Study Timer</div>
+            <div class="pomodoro-container">
+              <div class="pomodoro-display" id="pomodoroDisplay">25:00</div>
+              <div class="pomodoro-label" id="pomodoroLabel">Focus Session</div>
+              <div class="pomodoro-buttons">
+                <button class="pomodoro-btn start" id="pomodoroStartBtn" onclick="togglePomodoro()">Start</button>
+                <button class="pomodoro-btn reset" onclick="resetPomodoro()">Reset</button>
+              </div>
             </div>
           </div>
 
@@ -1182,6 +1310,9 @@ function updateDashboard() {
   const done = DB.tasks.filter(t => t.completed).length;
   document.getElementById('dashOpenTasks').textContent = open;
   document.getElementById('dashCompletedTasks').textContent = done;
+  updateProgressRing();
+  updateUpcomingDeadlines();
+  updateWeekStrip();
 }
 
 // ==================== NAVIGATION ====================
@@ -1416,6 +1547,172 @@ function initQuote() {
 }
 
 // ==================== INIT ====================
+// ==================== PROGRESS RING ====================
+function updateProgressRing() {
+  const total = DB.tasks.length;
+  const done = DB.tasks.filter(t => t.completed).length;
+  const open = DB.tasks.filter(t => !t.completed).length;
+  const overdue = DB.tasks.filter(t => !t.completed && t.due && new Date(t.due) < new Date(new Date().toDateString())).length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const circumference = 2 * Math.PI * 42;
+  const offset = circumference - (pct / 100) * circumference;
+  const fill = document.getElementById('progressRingFill');
+  if (fill) {
+    fill.style.strokeDasharray = circumference;
+    fill.style.strokeDashoffset = offset;
+    if (pct >= 75) fill.style.stroke = 'var(--lux-success)';
+    else if (pct >= 40) fill.style.stroke = 'var(--lux-warning)';
+    else fill.style.stroke = 'var(--lux-danger)';
+  }
+  const pctEl = document.getElementById('progressRingPct');
+  if (pctEl) pctEl.textContent = pct + '%';
+  const prOpen = document.getElementById('prOpen');
+  const prDone = document.getElementById('prDone');
+  const prOverdue = document.getElementById('prOverdue');
+  if (prOpen) prOpen.textContent = open;
+  if (prDone) prDone.textContent = done;
+  if (prOverdue) prOverdue.textContent = overdue;
+}
+
+// ==================== UPCOMING DEADLINES ====================
+function updateUpcomingDeadlines() {
+  const container = document.getElementById('upcomingDeadlines');
+  if (!container) return;
+  const today = new Date(new Date().toDateString());
+  const upcoming = DB.tasks
+    .filter(t => !t.completed && t.due)
+    .sort((a, b) => new Date(a.due) - new Date(b.due))
+    .slice(0, 5);
+  if (upcoming.length === 0) {
+    container.innerHTML = '<div class="deadline-empty">No upcoming deadlines. You\'re all caught up!</div>';
+    return;
+  }
+  container.innerHTML = upcoming.map(t => {
+    const due = new Date(t.due + 'T00:00:00');
+    const diff = Math.ceil((due - today) / 86400000);
+    let urgency = 'normal', dateLabel;
+    if (diff < 0) { urgency = 'urgent'; dateLabel = 'Overdue'; }
+    else if (diff === 0) { urgency = 'urgent'; dateLabel = 'Today'; }
+    else if (diff === 1) { urgency = 'soon'; dateLabel = 'Tomorrow'; }
+    else if (diff <= 3) { urgency = 'soon'; dateLabel = diff + ' days'; }
+    else { dateLabel = due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+    const sc = getSubjectColor(t.subject);
+    return `<div class="deadline-item ${urgency}">
+      <div class="deadline-date ${urgency}">${dateLabel}</div>
+      <div class="deadline-title">${t.title}</div>
+      ${t.subject ? `<span class="subject-badge" style="background:${sc.bg};color:${sc.text};border:1px solid ${sc.border};">${t.subject}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ==================== WEEKLY OVERVIEW ====================
+function updateWeekStrip() {
+  const container = document.getElementById('weekStrip');
+  if (!container) return;
+  const today = new Date();
+  const todayStr = today.toDateString();
+  const dayOfWeek = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dStr = d.toISOString().split('T')[0];
+    const isToday = d.toDateString() === todayStr;
+    const taskCount = DB.tasks.filter(t => !t.completed && t.due === dStr).length;
+    const hasTasks = taskCount > 0;
+    html += `<div class="week-day${isToday ? ' today' : ''}${hasTasks ? ' has-tasks' : ''}">
+      <div class="week-day-name">${days[i]}</div>
+      <div class="week-day-num">${d.getDate()}</div>
+      <div class="week-day-tasks">${taskCount > 0 ? taskCount + ' due' : '-'}</div>
+      ${hasTasks ? '<div class="week-day-dot"></div>' : ''}
+    </div>`;
+  }
+  container.innerHTML = html;
+}
+
+// ==================== QUICK ADD TASK ====================
+function quickAddTask() {
+  const title = document.getElementById('quickTaskTitle').value.trim();
+  if (!title) return;
+  const task = {
+    id: Date.now(),
+    title,
+    subject: document.getElementById('quickTaskSubject').value,
+    priority: 'medium',
+    due: document.getElementById('quickTaskDue').value,
+    notes: '',
+    completed: false
+  };
+  DB.tasks.push(task);
+  DB.save('tasks');
+  document.getElementById('quickTaskTitle').value = '';
+  document.getElementById('quickTaskSubject').value = '';
+  renderTasks();
+  updateDashboard();
+}
+
+// ==================== POMODORO TIMER ====================
+let pomodoroInterval = null;
+let pomodoroSeconds = 25 * 60;
+let pomodoroRunning = false;
+let pomodoroIsBreak = false;
+
+function updatePomodoroDisplay() {
+  const min = Math.floor(pomodoroSeconds / 60).toString().padStart(2, '0');
+  const sec = (pomodoroSeconds % 60).toString().padStart(2, '0');
+  const display = document.getElementById('pomodoroDisplay');
+  if (display) display.textContent = min + ':' + sec;
+}
+
+function togglePomodoro() {
+  if (pomodoroRunning) {
+    clearInterval(pomodoroInterval);
+    pomodoroRunning = false;
+    document.getElementById('pomodoroStartBtn').textContent = 'Resume';
+    document.getElementById('pomodoroStartBtn').className = 'pomodoro-btn start';
+  } else {
+    pomodoroRunning = true;
+    document.getElementById('pomodoroStartBtn').textContent = 'Pause';
+    document.getElementById('pomodoroStartBtn').className = 'pomodoro-btn pause';
+    pomodoroInterval = setInterval(() => {
+      pomodoroSeconds--;
+      updatePomodoroDisplay();
+      if (pomodoroSeconds <= 0) {
+        clearInterval(pomodoroInterval);
+        pomodoroRunning = false;
+        if (!pomodoroIsBreak) {
+          pomodoroIsBreak = true;
+          pomodoroSeconds = 5 * 60;
+          document.getElementById('pomodoroLabel').textContent = 'Break Time!';
+          document.getElementById('pomodoroStartBtn').textContent = 'Start Break';
+          document.getElementById('pomodoroStartBtn').className = 'pomodoro-btn start';
+        } else {
+          pomodoroIsBreak = false;
+          pomodoroSeconds = 25 * 60;
+          document.getElementById('pomodoroLabel').textContent = 'Focus Session';
+          document.getElementById('pomodoroStartBtn').textContent = 'Start';
+          document.getElementById('pomodoroStartBtn').className = 'pomodoro-btn start';
+        }
+        updatePomodoroDisplay();
+      }
+    }, 1000);
+  }
+}
+
+function resetPomodoro() {
+  clearInterval(pomodoroInterval);
+  pomodoroRunning = false;
+  pomodoroIsBreak = false;
+  pomodoroSeconds = 25 * 60;
+  updatePomodoroDisplay();
+  document.getElementById('pomodoroLabel').textContent = 'Focus Session';
+  document.getElementById('pomodoroStartBtn').textContent = 'Start';
+  document.getElementById('pomodoroStartBtn').className = 'pomodoro-btn start';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Load preferences
   if (localStorage.getItem('dyslexia') === 'true') document.body.classList.add('font-dyslexic');
@@ -1444,8 +1741,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (today > summer) summer.setFullYear(summer.getFullYear() + 1);
   document.getElementById('schoolCountdown').textContent = Math.ceil((summer - today) / 86400000) + ' days';
 
-  // Set default date for task form
+  // Set default date for task forms
   document.getElementById('taskDue').valueAsDate = new Date(Date.now() + 86400000);
+  const quickDue = document.getElementById('quickTaskDue');
+  if (quickDue) quickDue.valueAsDate = new Date(Date.now() + 86400000);
 
   // Render everything
   renderTasks(); renderSchedule(); renderUploads(); renderNotes(); renderLinks();
