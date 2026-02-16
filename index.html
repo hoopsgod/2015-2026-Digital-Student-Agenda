@@ -986,6 +986,8 @@ let pomodoroMode = 'focus';
 let audioCtx = null;
 let noiseNode = null;
 let noiseGain = null;
+let rainDropInterval = null;
+let hasRequestedNotificationPermission = false;
 
 const SUBJECT_COLORS = {
   'Math':    { bg: '#dbeafe', text: '#1e40af', border: '#3b82f6' },
@@ -1322,6 +1324,7 @@ function togglePomodoro() {
 
   const focusMinutes = Math.max(1, parseInt(document.getElementById('focusMinutes').value || '25', 10));
   const breakMinutes = Math.max(1, parseInt(document.getElementById('breakMinutes').value || '5', 10));
+  requestNotificationPermission();
   DB.pomodoroSettings.focusMinutes = focusMinutes;
   DB.pomodoroSettings.breakMinutes = breakMinutes;
   DB.save('pomodoroSettings');
@@ -1340,9 +1343,11 @@ function togglePomodoro() {
       pomodoroRunning = false;
       if (pomodoroMode === 'focus') {
         completeFocusSession(focusMinutes * 60);
+        handlePomodoroPhaseChange('focus');
         pomodoroMode = 'break';
         pomodoroTimeLeft = breakMinutes * 60;
       } else {
+        handlePomodoroPhaseChange('break');
         pomodoroMode = 'focus';
         pomodoroTimeLeft = focusMinutes * 60;
       }
@@ -1365,11 +1370,57 @@ function createNoiseBuffer(color, seconds = 2) {
     } else if (color === 'pink') {
       data[i] = (0.7 * lastOut) + (0.3 * white);
       lastOut = data[i];
+    } else if (color === 'rain') {
+      const rumble = (Math.sin(i / 250) + Math.sin(i / 500)) * 0.05;
+      data[i] = (white * 0.2) + rumble;
     } else {
       data[i] = white * 0.6;
     }
   }
   return buffer;
+}
+
+function requestNotificationPermission() {
+  if (hasRequestedNotificationPermission || !('Notification' in window)) return;
+  hasRequestedNotificationPermission = true;
+  if (Notification.permission === 'default') {
+    Notification.requestPermission().catch(() => {});
+  }
+}
+
+function showPomodoroCompletionPopup(completedMode) {
+  const message = completedMode === 'focus'
+    ? 'Focus session complete. Time for a break.'
+    : 'Break complete. Time to focus again.';
+
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification('Digital Student Agenda', { body: message });
+  }
+
+  setTimeout(() => {
+    alert(message);
+  }, 100);
+}
+
+function handlePomodoroPhaseChange(completedMode) {
+  playAlarmTone();
+  showPomodoroCompletionPopup(completedMode);
+}
+
+function playRainDrop() {
+  if (!audioCtx || !noiseGain) return;
+  const drop = audioCtx.createOscillator();
+  const dropGain = audioCtx.createGain();
+  const start = audioCtx.currentTime;
+  drop.type = 'triangle';
+  drop.frequency.setValueAtTime(850 + (Math.random() * 500), start);
+  drop.frequency.exponentialRampToValueAtTime(420, start + 0.08);
+  dropGain.gain.setValueAtTime(0.0001, start);
+  dropGain.gain.exponentialRampToValueAtTime(0.035, start + 0.01);
+  dropGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.1);
+  drop.connect(dropGain).connect(noiseGain);
+  drop.start(start);
+  drop.stop(start + 0.11);
 }
 
 function ensureAudioContext() {
@@ -1401,6 +1452,10 @@ function playAlarmTone() {
 }
 
 function stopNoise(clearSelection = true) {
+  if (rainDropInterval) {
+    clearInterval(rainDropInterval);
+    rainDropInterval = null;
+  }
   if (noiseNode) {
     try { noiseNode.stop(); } catch (_) {}
     noiseNode.disconnect();
@@ -1424,9 +1479,16 @@ function playNoise() {
   noiseNode.buffer = createNoiseBuffer(color, 2);
   noiseNode.loop = true;
   noiseGain = audioCtx.createGain();
-  noiseGain.gain.value = 0.08;
+  noiseGain.gain.value = color === 'rain' ? 0.06 : 0.08;
   noiseNode.connect(noiseGain).connect(audioCtx.destination);
   noiseNode.start();
+
+  if (color === 'rain') {
+    rainDropInterval = setInterval(() => {
+      const drops = 1 + Math.floor(Math.random() * 2);
+      for (let i = 0; i < drops; i++) playRainDrop();
+    }, 280 + Math.floor(Math.random() * 220));
+  }
 }
 
 function getAudioDebugStatus() {
