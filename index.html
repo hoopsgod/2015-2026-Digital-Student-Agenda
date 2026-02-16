@@ -157,7 +157,23 @@ body.dark-mode .sidebar { border-right-color: rgba(255,255,255,0.08); box-shadow
 .breadcrumb-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .breadcrumb-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--lux-text-sub); font-weight: 700; }
 .breadcrumb-current { font-size: 13px; color: var(--lux-text-main); font-weight: 700; }
-.back-btn { padding: 6px 10px; min-height: auto; font-size: 11px; }
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  min-height: 36px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 8px;
+  color: var(--lux-text-sub);
+  background: var(--lux-card);
+  border: 1px solid var(--lux-border);
+}
+.back-btn:hover {
+  background: var(--lux-hover);
+  color: var(--lux-text-main);
+}
 
 .panel-focus-ring:focus-visible,
 .settings-panel :is(button, input, select, textarea, [tabindex]):focus-visible,
@@ -556,12 +572,13 @@ body.dark-mode .mobile-nav button { color: #e2e8f0; }
     gap: 12px;
   }
   .back-btn {
-    width: 100%;
-    min-height: 44px;
-    font-size: 13px;
-    display: inline-flex;
-    justify-content: center;
+    width: auto;
+    min-height: 36px;
+    font-size: 11px;
+    padding: 6px 11px;
+    justify-content: flex-start;
     align-items: center;
+    align-self: flex-start;
   }
   #taskSearch,
   #notesSearch {
