@@ -26,7 +26,9 @@
   --lux-border: #e2e8f0;
   --lux-hover: #f8fafc;
   --lux-card: #ffffff;
-  --content-overlay: rgba(255,255,255,0.88);
+  --content-overlay: rgba(255,255,255,0.94);
+  --header-overlay-strong: rgba(2, 6, 23, 0.84);
+  --header-overlay-soft: rgba(15, 23, 42, 0.78);
   --lux-danger: #ef4444;
   --lux-success: #22c55e;
   --lux-warning: #f59e0b;
@@ -39,7 +41,9 @@ body.dark-mode {
   --lux-text-main: #f1f5f9; --lux-text-sub: #dbe7f5; --lux-border: #334155;
   --lux-hover: #1e293b; --lux-card: #0f172a;
   --sidebar-gradient: linear-gradient(180deg, #0a0e27 0%, #0d1829 100%);
-  --content-overlay: rgba(8,12,26,0.76);
+  --content-overlay: rgba(8,12,26,0.9);
+  --header-overlay-strong: rgba(2, 6, 23, 0.9);
+  --header-overlay-soft: rgba(15, 23, 42, 0.86);
 }
 
 body.font-dyslexic { font-family: 'OpenDyslexic', 'Courier New', monospace; }
@@ -96,7 +100,9 @@ body.dark-mode .sidebar { border-right-color: rgba(255,255,255,0.08); box-shadow
 .main-content { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 1; overflow: hidden; }
 
 .app-header {
-  background: linear-gradient(120deg, #040712 0%, #0f172a 45%, #0f2238 100%);
+  background:
+    linear-gradient(120deg, var(--header-overlay-strong) 0%, var(--header-overlay-soft) 55%, rgba(15, 34, 56, 0.78) 100%),
+    linear-gradient(120deg, #040712 0%, #0f172a 45%, #0f2238 100%);
   border: 1px solid rgba(255,255,255,0.1);
   border-left: none;
   border-right: none;
@@ -130,9 +136,8 @@ body.dark-mode .sidebar { border-right-color: rgba(255,255,255,0.08); box-shadow
 }
 .header-title {
   font-family: 'Playfair Display', serif; font-size: 25px; font-weight: 800; line-height: 1;
-  color: var(--titan-accent); text-transform: uppercase; letter-spacing: 2.5px;
-  background: linear-gradient(135deg, #ffffff, #f1f5f9 55%, #cbd5e1 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  color: #f8fafc; text-transform: uppercase; letter-spacing: 2.5px;
+  text-shadow: 0 2px 12px rgba(2, 6, 23, 0.72);
 }
 .header-subtitle { font-size: 12px; color: #dbe7f5; font-weight: 500; letter-spacing: 0.3px; }
 .header-actions { display: flex; gap: 10px; align-items: center; z-index: 2; }
@@ -201,13 +206,13 @@ body.dark-mode .card-title { color: var(--titan-accent); }
 .dashboard-info-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .dashboard-info-card { padding: 18px 20px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
 .dashboard-info-card.dark { background: linear-gradient(135deg, rgba(13,13,13,0.95), rgba(26,26,26,0.9)); border-color: rgba(0,0,0,0.2); }
-.dashboard-info-card.light { background: linear-gradient(135deg, var(--titan-accent), rgba(248,248,248,0.9)); }
+.dashboard-info-card.light { background: linear-gradient(135deg, #ffffff, #f1f5f9); }
 .dashboard-info-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 800; margin-bottom: 8px; }
 .dashboard-info-card.dark .dashboard-info-label { color: rgba(255,255,255,0.5); }
-.dashboard-info-card.light .dashboard-info-label { color: rgba(15,23,42,0.84); }
+.dashboard-info-card.light .dashboard-info-label { color: #334155; }
 .dashboard-info-value { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; }
 .dashboard-info-card.dark .dashboard-info-value { color: var(--titan-accent); }
-.dashboard-info-card.light .dashboard-info-value { color: var(--titan-primary); }
+.dashboard-info-card.light .dashboard-info-value { color: #020617; }
 
 /* FORMS & INPUTS */
 .pro-input {
@@ -415,10 +420,12 @@ body.dark-mode .note-editor { background: #1e293b; }
 
 .mobile-nav {
   display: none; position: fixed; bottom: 0; left: 0; right: 0;
-  background: var(--lux-card); border-top: 1px solid var(--lux-border);
+  background: rgba(255, 255, 255, 0.98); border-top: 1px solid #cbd5e1;
   padding: 10px 0; z-index: 99; justify-content: space-around; box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
 }
-.mobile-nav button { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--lux-text-sub); font-size: 9px; font-weight: 600; }
+.mobile-nav button { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; color: #1e293b; font-size: 9px; font-weight: 700; }
+body.dark-mode .mobile-nav { background: rgba(15, 23, 42, 0.98); border-top-color: #475569; }
+body.dark-mode .mobile-nav button { color: #e2e8f0; }
 
 .empty-msg { padding: 40px 20px; text-align: center; color: var(--lux-text-sub); font-size: 13px; }
 
@@ -476,9 +483,18 @@ body.dark-mode .note-editor { background: #1e293b; }
   .sidebar.mobile-open { transform: translateX(0); }
   .hamburger-btn { display: flex; }
   .mobile-sidebar-backdrop { display: block; }
-  .app-container { padding: 14px; }
+  .app-container {
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.97);
+  }
+  body.dark-mode .app-container { background: rgba(8, 12, 26, 0.94); }
   .mobile-nav { display: none; }
-  .app-header { padding: 12px 14px; position: sticky; top: 0; z-index: 120; border-top: none; }
+  .app-header {
+    padding: 12px 14px; position: sticky; top: 0; z-index: 120; border-top: none;
+    background:
+      linear-gradient(120deg, rgba(2, 6, 23, 0.94) 0%, rgba(15, 23, 42, 0.9) 55%, rgba(15, 34, 56, 0.86) 100%),
+      linear-gradient(120deg, #040712 0%, #0f172a 45%, #0f2238 100%);
+  }
   .header-title { font-size: 18px; letter-spacing: 1.2px; }
   .header-eyebrow, .header-subtitle, .header-status-pill { display: none; }
   .header-logo { width: 40px; height: 40px; padding: 7px; }
@@ -491,6 +507,28 @@ body.dark-mode .note-editor { background: #1e293b; }
   .dashboard-info-cards { grid-template-columns: 1fr; }
   .card, .focus-card, .dashboard-info-card, .task-item, .link-item, .schedule-item {
     border-radius: 16px;
+  }
+  .card,
+  .focus-card,
+  .dashboard-info-card,
+  .task-item,
+  .note-card,
+  .schedule-block,
+  .link-item,
+  #quoteBox {
+    background: rgba(255, 255, 255, 0.98);
+    border-color: #cbd5e1;
+  }
+  body.dark-mode .card,
+  body.dark-mode .focus-card,
+  body.dark-mode .dashboard-info-card,
+  body.dark-mode .task-item,
+  body.dark-mode .note-card,
+  body.dark-mode .schedule-block,
+  body.dark-mode .link-item,
+  body.dark-mode #quoteBox {
+    background: rgba(15, 23, 42, 0.96);
+    border-color: #475569;
   }
   .card-header { padding: 14px; align-items: flex-start; gap: 10px; }
   .task-item, .link-item { padding: 14px; }
