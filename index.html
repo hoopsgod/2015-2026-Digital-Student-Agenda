@@ -221,6 +221,19 @@ body.dark-mode .pro-select { background-color: #1e293b; }
 }
 .danger-btn:hover { opacity: 0.85; }
 
+.focus-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; margin-top: 16px; }
+.focus-card { border: 1px solid var(--lux-border); border-radius: 12px; padding: 16px; background: var(--lux-hover); }
+.focus-time { font-size: 40px; font-weight: 900; letter-spacing: 1px; color: var(--lux-text-main); margin: 8px 0 12px; }
+.focus-chip { display: inline-flex; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border: 1px solid var(--lux-border); color: var(--lux-text-sub); }
+.habit-item { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 0; border-bottom:1px solid var(--lux-border); }
+.habit-item:last-child { border-bottom:none; }
+.habit-check { width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--lux-border); cursor: pointer; display:inline-flex; align-items:center; justify-content:center; font-size: 11px; }
+.habit-check.done { background: var(--lux-success); border-color: var(--lux-success); color: #fff; }
+
+@media (max-width: 900px) {
+  .focus-grid { grid-template-columns: 1fr; }
+}
+
 .edit-btn {
   background: var(--lux-hover); color: var(--lux-text-sub); border: 1px solid var(--lux-border);
   padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
@@ -515,6 +528,14 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
                 <div class="dashboard-info-label">Completed</div>
                 <div id="dashCompletedTasks" class="dashboard-info-value">0</div>
               </div>
+              <div class="dashboard-info-card light">
+                <div class="dashboard-info-label">Current Streak</div>
+                <div id="dashStreak" class="dashboard-info-value">0 days</div>
+              </div>
+              <div class="dashboard-info-card dark">
+                <div class="dashboard-info-label">Focus Points</div>
+                <div id="dashPoints" class="dashboard-info-value">0 pts</div>
+              </div>
             </div>
           </div>
           <!-- Due This Week -->
@@ -572,6 +593,10 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <div id="taskForm" style="display:none; padding: 20px; border-bottom: 1px solid var(--lux-border); background: var(--lux-hover);">
           <div style="display: grid; gap: 10px;">
             <div style="font-size: 13px; font-weight: 700; color: var(--lux-text-main); margin-bottom: 2px;" id="taskFormTitle">Add Task</div>
+            <div style="display:flex; gap:8px;">
+              <input id="taskNaturalInput" class="pro-input" placeholder="Try: Math homework due Friday at 5pm" />
+              <button class="ghost-btn" onclick="parseNaturalTaskInput()">Parse</button>
+            </div>
             <input id="taskTitle" class="pro-input" placeholder="Assignment title..." />
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
               <select id="taskSubject" class="pro-select pro-input">
@@ -684,6 +709,42 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
           <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--lux-text-sub); margin-bottom: 12px;">7-Day Activity</div>
           <div id="weekChart" style="display: flex; gap: 4px; align-items: end; height: 100px;"></div>
+
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--lux-text-sub); margin: 18px 0 12px;">Focus Minutes (7-Day)</div>
+          <div id="focusPatternChart" style="display: flex; gap: 4px; align-items: end; height: 100px; margin-bottom: 6px;"></div>
+
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--lux-text-sub); margin: 18px 0 12px;">Focus Studio</div>
+          <div class="focus-grid">
+            <div class="focus-card">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                <span id="pomodoroMode" class="focus-chip">Focus Session</span>
+                <div style="font-size:11px;color:var(--lux-text-sub);">Completed today: <strong id="focusToday">0</strong></div>
+              </div>
+              <div id="pomodoroTimer" class="focus-time">25:00</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+                <input id="focusMinutes" type="number" min="5" max="90" class="pro-input" value="25" placeholder="Focus mins" />
+                <input id="breakMinutes" type="number" min="1" max="30" class="pro-input" value="5" placeholder="Break mins" />
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="primary-btn" onclick="togglePomodoro()" id="pomodoroStartBtn">Start</button>
+                <button class="ghost-btn" onclick="resetPomodoro()">Reset</button>
+                <select id="noiseSelect" class="pro-select pro-input" style="max-width:180px;" onchange="playNoise()">
+                  <option value="">White noise off</option>
+                  <option value="rain">Rain</option>
+                  <option value="brown">Brown noise</option>
+                  <option value="pink">Pink noise</option>
+                </select>
+                <button class="ghost-btn" onclick="stopNoise()">Mute</button>
+              </div>
+            </div>
+            <div class="focus-card">
+              <div style="font-size:12px;font-weight:700;color:var(--lux-text-main);margin-bottom:8px;">Daily Habits</div>
+              <div style="font-size:11px;color:var(--lux-text-sub);margin-bottom:8px;">Track small wins for streaks and points.</div>
+              <div id="habitList"></div>
+              <div style="margin-top:12px;font-size:11px;color:var(--lux-text-sub);">Weekly focus time: <strong id="focusMinutesWeek">0 mins</strong></div>
+              <div style="font-size:11px;color:var(--lux-text-sub);">Average daily focus: <strong id="focusAvgDay">0 mins</strong></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -879,7 +940,15 @@ const DB = {
   notes: readJSON('agenda_notes', []),
   links: readJSON('agenda_links', []),
   uploads: readJSON('agenda_uploads', []),
-  save(key) { STORAGE.setItem('agenda_' + key, JSON.stringify(this[key])); }
+  focusSessions: readJSON('agenda_focusSessions', []),
+  pomodoroSettings: readJSON('agenda_pomodoroSettings', { focusMinutes: 25, breakMinutes: 5 }),
+  habits: readJSON('agenda_habits', [
+    { id: 'reading', name: 'Daily reading (20 min)', entries: {} },
+    { id: 'exercise', name: 'Exercise (30 min)', entries: {} }
+  ]),
+  points: parseInt(STORAGE.getItem('agenda_points') || '0', 10) || 0,
+  save(key) { STORAGE.setItem('agenda_' + key, JSON.stringify(this[key])); },
+  savePoints() { STORAGE.setItem('agenda_points', String(this.points)); }
 };
 
 // Default links if empty
@@ -920,6 +989,13 @@ let currentSubjectFilter = null;
 let currentDay = 'A';
 let editingNoteId = null;
 let editingTaskId = null;
+let pomodoroInterval = null;
+let pomodoroTimeLeft = 25 * 60;
+let pomodoroRunning = false;
+let pomodoroMode = 'focus';
+let audioCtx = null;
+let noiseNode = null;
+let noiseGain = null;
 
 const SUBJECT_COLORS = {
   'Math':    { bg: '#dbeafe', text: '#1e40af', border: '#3b82f6' },
@@ -1003,7 +1079,12 @@ function editTask(id) {
 }
 
 function addTask() {
-  const title = document.getElementById('taskTitle').value.trim();
+  let title = document.getElementById('taskTitle').value.trim();
+  const naturalText = document.getElementById('taskNaturalInput').value.trim();
+  if (!title && naturalText) {
+    parseNaturalTaskInput();
+    title = document.getElementById('taskTitle').value.trim();
+  }
   if (!title) return alert('Please enter a task title');
 
   if (editingTaskId) {
@@ -1037,6 +1118,7 @@ function addTask() {
   document.getElementById('taskPriority').value = 'medium';
   document.getElementById('taskDue').value = '';
   document.getElementById('taskNotes').value = '';
+  document.getElementById('taskNaturalInput').value = '';
   toggleTaskForm();
   renderTasks();
   updateDashboard();
@@ -1148,6 +1230,261 @@ function renderTasks() {
     </div>`;
   }).join('');
 }
+
+
+function parseNaturalTaskInput() {
+  const input = document.getElementById('taskNaturalInput');
+  const raw = (input.value || '').trim();
+  if (!raw) return alert('Type a natural-language task first.');
+
+  const parsed = parseTaskFromNaturalLanguage(raw);
+  document.getElementById('taskTitle').value = parsed.title;
+  document.getElementById('taskSubject').value = parsed.subject;
+  document.getElementById('taskPriority').value = parsed.priority;
+  document.getElementById('taskDue').value = parsed.due;
+  document.getElementById('taskNotes').value = parsed.notes;
+}
+
+function parseTaskFromNaturalLanguage(text) {
+  const lower = text.toLowerCase();
+  const subjects = ['Math', 'English', 'Science', 'History', 'Spanish', 'Art', 'PE', 'Music', 'Tech'];
+  const foundSubject = subjects.find(s => lower.includes(s.toLowerCase())) || '';
+
+  let dueDate = '';
+  const now = new Date();
+  const dayMap = { sunday:0,monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6 };
+  const dayMatch = lower.match(/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/);
+  if (dayMatch) {
+    const target = dayMap[dayMatch[1]];
+    const d = new Date(now);
+    let delta = (target - d.getDay() + 7) % 7;
+    if (delta === 0) delta = 7;
+    d.setDate(d.getDate() + delta);
+    dueDate = d.toISOString().split('T')[0];
+  }
+
+  const priority = /\burgent|asap|important|exam\b/.test(lower) ? 'high' : (/\bquick|easy|later\b/.test(lower) ? 'low' : 'medium');
+  const cleaned = text
+    .replace(/\bdue\b.*$/i, '')
+    .replace(/\bat\s+\d{1,2}(:\d{2})?\s*(am|pm)?\b/i, '')
+    .replace(/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const notes = dueDate && /\bat\s+\d{1,2}(:\d{2})?\s*(am|pm)?\b/i.test(lower)
+    ? 'Time noted in original entry'
+    : '';
+
+  return {
+    title: cleaned || text,
+    subject: foundSubject,
+    priority,
+    due: dueDate,
+    notes
+  };
+}
+
+function formatSeconds(sec) {
+  const m = Math.floor(sec / 60).toString().padStart(2, '0');
+  const s = (sec % 60).toString().padStart(2, '0');
+  return m + ':' + s;
+}
+
+function setPomodoroDisplay() {
+  document.getElementById('pomodoroTimer').textContent = formatSeconds(pomodoroTimeLeft);
+  document.getElementById('pomodoroMode').textContent = pomodoroMode === 'focus' ? 'Focus Session' : 'Break Session';
+  document.getElementById('pomodoroStartBtn').textContent = pomodoroRunning ? 'Pause' : 'Start';
+}
+
+function resetPomodoro() {
+  clearInterval(pomodoroInterval);
+  pomodoroRunning = false;
+  pomodoroMode = 'focus';
+  const focusMinutes = parseInt(document.getElementById('focusMinutes').value || DB.pomodoroSettings.focusMinutes, 10);
+  pomodoroTimeLeft = Math.max(1, focusMinutes) * 60;
+  setPomodoroDisplay();
+}
+
+function completeFocusSession(secondsWorked) {
+  const today = new Date().toISOString().split('T')[0];
+  DB.focusSessions.unshift({ id: Date.now(), date: today, seconds: secondsWorked });
+  DB.focusSessions = DB.focusSessions.slice(0, 600);
+  DB.points += 10;
+  DB.save('focusSessions');
+  DB.savePoints();
+  updateHabitsStats();
+  updateDashboard();
+  updateAnalytics();
+}
+
+function togglePomodoro() {
+  if (pomodoroRunning) {
+    pomodoroRunning = false;
+    clearInterval(pomodoroInterval);
+    setPomodoroDisplay();
+    return;
+  }
+
+  const focusMinutes = Math.max(1, parseInt(document.getElementById('focusMinutes').value || '25', 10));
+  const breakMinutes = Math.max(1, parseInt(document.getElementById('breakMinutes').value || '5', 10));
+  DB.pomodoroSettings.focusMinutes = focusMinutes;
+  DB.pomodoroSettings.breakMinutes = breakMinutes;
+  DB.save('pomodoroSettings');
+
+  if (!pomodoroTimeLeft || pomodoroTimeLeft < 1) {
+    pomodoroTimeLeft = (pomodoroMode === 'focus' ? focusMinutes : breakMinutes) * 60;
+  }
+
+  pomodoroRunning = true;
+  setPomodoroDisplay();
+
+  pomodoroInterval = setInterval(() => {
+    pomodoroTimeLeft -= 1;
+    if (pomodoroTimeLeft <= 0) {
+      clearInterval(pomodoroInterval);
+      pomodoroRunning = false;
+      if (pomodoroMode === 'focus') {
+        completeFocusSession(focusMinutes * 60);
+        pomodoroMode = 'break';
+        pomodoroTimeLeft = breakMinutes * 60;
+      } else {
+        pomodoroMode = 'focus';
+        pomodoroTimeLeft = focusMinutes * 60;
+      }
+      setPomodoroDisplay();
+      return;
+    }
+    setPomodoroDisplay();
+  }, 1000);
+}
+
+function createNoiseBuffer(color, seconds = 2) {
+  const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * seconds, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  let lastOut = 0;
+  for (let i = 0; i < data.length; i++) {
+    const white = Math.random() * 2 - 1;
+    if (color === 'brown') {
+      lastOut = (lastOut + (0.02 * white)) / 1.02;
+      data[i] = lastOut * 3.5;
+    } else if (color === 'pink') {
+      data[i] = (0.7 * lastOut) + (0.3 * white);
+      lastOut = data[i];
+    } else {
+      data[i] = white * 0.6;
+    }
+  }
+  return buffer;
+}
+
+function stopNoise() {
+  if (noiseNode) {
+    try { noiseNode.stop(); } catch (_) {}
+    noiseNode.disconnect();
+    noiseNode = null;
+  }
+  if (noiseGain) {
+    noiseGain.disconnect();
+    noiseGain = null;
+  }
+  const noiseSelect = document.getElementById('noiseSelect');
+  if (noiseSelect) noiseSelect.value = '';
+}
+
+function playNoise() {
+  const color = document.getElementById('noiseSelect').value;
+  stopNoise();
+  if (!color) return;
+
+  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+  noiseNode = audioCtx.createBufferSource();
+  noiseNode.buffer = createNoiseBuffer(color, 2);
+  noiseNode.loop = true;
+  noiseGain = audioCtx.createGain();
+  noiseGain.gain.value = 0.08;
+  noiseNode.connect(noiseGain).connect(audioCtx.destination);
+  noiseNode.start();
+}
+
+function todayKey() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function toggleHabit(id) {
+  const habit = DB.habits.find(h => h.id === id);
+  if (!habit) return;
+  const key = todayKey();
+  const nowDone = !habit.entries[key];
+  if (nowDone) {
+    habit.entries[key] = true;
+    DB.points += 5;
+    DB.savePoints();
+  } else {
+    delete habit.entries[key];
+  }
+  DB.save('habits');
+  renderHabits();
+  updateHabitsStats();
+  updateDashboard();
+}
+
+function renderHabits() {
+  const key = todayKey();
+  const list = document.getElementById('habitList');
+  if (!list) return;
+  list.innerHTML = DB.habits.map(h => {
+    const done = !!h.entries[key];
+    return `<div class="habit-item">
+      <div style="font-size:13px;font-weight:600;color:var(--lux-text-main);">${h.name}</div>
+      <div class="habit-check ${done ? 'done' : ''}" onclick="toggleHabit('${h.id}')">${done ? '✓' : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+function getCurrentStreak() {
+  let streak = 0;
+  const cursor = new Date();
+  cursor.setHours(0,0,0,0);
+  while (true) {
+    const key = cursor.toISOString().split('T')[0];
+    const focused = DB.focusSessions.some(s => s.date === key && s.seconds >= 60);
+    const habitsDone = DB.habits.some(h => h.entries[key]);
+    if (!focused && !habitsDone) break;
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
+function updateHabitsStats() {
+  const today = todayKey();
+  const focusTodayCount = DB.focusSessions.filter(s => s.date === today).length;
+  const sevenDays = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    sevenDays.push(d.toISOString().split('T')[0]);
+  }
+  const weekSeconds = DB.focusSessions
+    .filter(s => sevenDays.includes(s.date))
+    .reduce((sum, s) => sum + s.seconds, 0);
+
+  const weekMins = Math.round(weekSeconds / 60);
+  const avgMins = Math.round(weekMins / 7);
+  const streak = getCurrentStreak();
+
+  const elToday = document.getElementById('focusToday');
+  if (elToday) elToday.textContent = String(focusTodayCount);
+  const elWeek = document.getElementById('focusMinutesWeek');
+  if (elWeek) elWeek.textContent = weekMins + ' mins';
+  const elAvg = document.getElementById('focusAvgDay');
+  if (elAvg) elAvg.textContent = avgMins + ' mins';
+  const dStreak = document.getElementById('dashStreak');
+  if (dStreak) dStreak.textContent = streak + ' day' + (streak === 1 ? '' : 's');
+  const dPoints = document.getElementById('dashPoints');
+  if (dPoints) dPoints.textContent = DB.points + ' pts';
+}
+
 
 // ==================== SCHEDULE ====================
 function toggleScheduleForm() {
@@ -1459,6 +1796,27 @@ function updateAnalytics() {
       <div style="font-size:9px;color:var(--lux-text-sub);font-weight:600;">${d.label}</div>
     </div>`;
   }).join('');
+
+  const focusChart = document.getElementById('focusPatternChart');
+  if (focusChart) {
+    const focusDays = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      const mins = Math.round(DB.focusSessions.filter(s => s.date === key).reduce((sum, s) => sum + s.seconds, 0) / 60);
+      focusDays.push({ label: d.toLocaleDateString('en-US', { weekday: 'short' }), mins });
+    }
+    const maxFocus = Math.max(...focusDays.map(d => d.mins), 1);
+    focusChart.innerHTML = focusDays.map(d => {
+      const h = Math.max(4, (d.mins / maxFocus) * 100);
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="font-size:10px;font-weight:700;color:var(--lux-text-main);">${d.mins}</div>
+        <div style="width:100%;height:${h}%;background:var(--lux-success);border-radius:4px;min-height:4px;transition:height 0.3s;opacity:${d.mins ? 0.95 : 0.25};"></div>
+        <div style="font-size:9px;color:var(--lux-text-sub);font-weight:600;">${d.label}</div>
+      </div>`;
+    }).join('');
+  }
 }
 
 function updateDashboard() {
@@ -1466,6 +1824,7 @@ function updateDashboard() {
   const done = DB.tasks.filter(t => t.completed).length;
   document.getElementById('dashOpenTasks').textContent = open;
   document.getElementById('dashCompletedTasks').textContent = done;
+  updateHabitsStats();
   renderDueThisWeek();
 }
 
@@ -1787,6 +2146,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Set default date for task form
   document.getElementById('taskDue').valueAsDate = new Date(Date.now() + 86400000);
+
+  const focusInput = document.getElementById('focusMinutes');
+  const breakInput = document.getElementById('breakMinutes');
+  if (focusInput) focusInput.value = DB.pomodoroSettings.focusMinutes || 25;
+  if (breakInput) breakInput.value = DB.pomodoroSettings.breakMinutes || 5;
+  resetPomodoro();
+  renderHabits();
+
+  const naturalInput = document.getElementById('taskNaturalInput');
+  if (naturalInput) {
+    naturalInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        parseNaturalTaskInput();
+      }
+    });
+  }
 
   // Render everything
   renderTasks(); renderSchedule(); renderUploads(); renderNotes(); renderLinks();
