@@ -16,6 +16,17 @@ A single-page web application for students to manage their tasks, schedule, note
 
 Open `index.html` in any modern web browser. All data is stored in the browser's `localStorage`.
 
+
+## Validation
+
+Run the built-in validator before committing UI/JS edits:
+
+```bash
+./scripts/validate.sh
+```
+
+This extracts the inline `<script>` payload from `index.html` and performs a JavaScript syntax check with Node (`node --check`).
+
 ## Tech Stack
 
 - Vanilla HTML, CSS, and JavaScript (no build tools or frameworks)
