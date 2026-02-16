@@ -822,14 +822,64 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   </nav>
 
 <script>
+// ==================== SAFE STORAGE ====================
+const memoryStore = {};
+
+const STORAGE = {
+  available: (() => {
+    try {
+      const key = '__agenda_storage_test__';
+      localStorage.setItem(key, '1');
+      localStorage.removeItem(key);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  })(),
+  getItem(key) {
+    if (this.available) return localStorage.getItem(key);
+    return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+  },
+  setItem(key, value) {
+    if (this.available) {
+      localStorage.setItem(key, value);
+      return;
+    }
+    memoryStore[key] = value;
+  },
+  removeItem(key) {
+    if (this.available) {
+      localStorage.removeItem(key);
+      return;
+    }
+    delete memoryStore[key];
+  },
+  clear() {
+    if (this.available) {
+      localStorage.clear();
+      return;
+    }
+    for (const key of Object.keys(memoryStore)) delete memoryStore[key];
+  }
+};
+
+function readJSON(key, fallback) {
+  try {
+    const raw = STORAGE.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+
 // ==================== DATA STORE ====================
 const DB = {
-  tasks: JSON.parse(localStorage.getItem('agenda_tasks') || '[]'),
-  schedule: JSON.parse(localStorage.getItem('agenda_schedule') || '[]'),
-  notes: JSON.parse(localStorage.getItem('agenda_notes') || '[]'),
-  links: JSON.parse(localStorage.getItem('agenda_links') || '[]'),
-  uploads: JSON.parse(localStorage.getItem('agenda_uploads') || '[]'),
-  save(key) { localStorage.setItem('agenda_' + key, JSON.stringify(this[key])); }
+  tasks: readJSON('agenda_tasks', []),
+  schedule: readJSON('agenda_schedule', []),
+  notes: readJSON('agenda_notes', []),
+  links: readJSON('agenda_links', []),
+  uploads: readJSON('agenda_uploads', []),
+  save(key) { STORAGE.setItem('agenda_' + key, JSON.stringify(this[key])); }
 };
 
 // Default links if empty
@@ -1531,7 +1581,7 @@ function applyColorTheme(name) {
   r.style.setProperty('--titan-accent', t.accent);
   r.style.setProperty('--sidebar-gradient', `linear-gradient(180deg, ${t.primary} 0%, ${shadeColor(t.primary, -15)} 100%)`);
   document.getElementById('appBg').style.background = `linear-gradient(135deg, ${shadeColor(t.primary, 95)} 0%, ${shadeColor(t.primary, 85)} 40%, ${t.accent} 100%)`;
-  localStorage.setItem('currentTheme', name); currentTheme = name; renderThemeGrid();
+  STORAGE.setItem('currentTheme', name); currentTheme = name; renderThemeGrid();
 }
 
 function renderThemeGrid() {
@@ -1563,7 +1613,7 @@ function handleLogoUpload(e) {
   reader.onload = function(ev) {
     try {
       const dataUri = ev.target.result;
-      localStorage.setItem('brand_logo', dataUri);
+      STORAGE.setItem('brand_logo', dataUri);
       applyLogo(dataUri);
     } catch (err) {
       alert('Logo too large to store. Try a smaller image.');
@@ -1583,27 +1633,27 @@ function applyLogo(src) {
 
 function updateBrandName(val) {
   const name = val.trim() || DEFAULT_NAME;
-  localStorage.setItem('brand_name', val.trim());
+  STORAGE.setItem('brand_name', val.trim());
   document.querySelectorAll('.brand-app-name').forEach(el => el.textContent = name);
 }
 
 function updateBrandSubtitle(val) {
   const sub = val.trim() || DEFAULT_SUBTITLE;
-  localStorage.setItem('brand_subtitle', val.trim());
+  STORAGE.setItem('brand_subtitle', val.trim());
   document.querySelectorAll('.brand-subtitle').forEach(el => el.textContent = sub);
 }
 
 function updateBrandTagline(val) {
   const tag = val.trim() || DEFAULT_TAGLINE;
-  localStorage.setItem('brand_tagline', val.trim());
+  STORAGE.setItem('brand_tagline', val.trim());
   document.querySelectorAll('.brand-tagline').forEach(el => el.textContent = tag);
 }
 
 function resetBranding() {
-  localStorage.removeItem('brand_logo');
-  localStorage.removeItem('brand_name');
-  localStorage.removeItem('brand_subtitle');
-  localStorage.removeItem('brand_tagline');
+  STORAGE.removeItem('brand_logo');
+  STORAGE.removeItem('brand_name');
+  STORAGE.removeItem('brand_subtitle');
+  STORAGE.removeItem('brand_tagline');
   applyLogo(DEFAULT_LOGO);
   document.querySelectorAll('.brand-app-name').forEach(el => el.textContent = DEFAULT_NAME);
   document.querySelectorAll('.brand-subtitle').forEach(el => el.textContent = DEFAULT_SUBTITLE);
@@ -1617,23 +1667,23 @@ function loadBranding() {
   // Capture default logo from DOM on first load
   if (!DEFAULT_LOGO) DEFAULT_LOGO = document.querySelector('.header-logo').src;
 
-  const logo = localStorage.getItem('brand_logo');
+  const logo = STORAGE.getItem('brand_logo');
   if (logo) applyLogo(logo);
   else applyLogo(DEFAULT_LOGO);
 
-  const name = localStorage.getItem('brand_name');
+  const name = STORAGE.getItem('brand_name');
   if (name) {
     document.getElementById('brandName').value = name;
     document.querySelectorAll('.brand-app-name').forEach(el => el.textContent = name);
   }
 
-  const subtitle = localStorage.getItem('brand_subtitle');
+  const subtitle = STORAGE.getItem('brand_subtitle');
   if (subtitle) {
     document.getElementById('brandSubtitle').value = subtitle;
     document.querySelectorAll('.brand-subtitle').forEach(el => el.textContent = subtitle);
   }
 
-  const tagline = localStorage.getItem('brand_tagline');
+  const tagline = STORAGE.getItem('brand_tagline');
   if (tagline) {
     document.getElementById('brandTagline').value = tagline;
     document.querySelectorAll('.brand-tagline').forEach(el => el.textContent = tagline);
@@ -1707,9 +1757,9 @@ function initQuote() {
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
   // Load preferences
-  if (localStorage.getItem('dyslexia') === 'true') document.body.classList.add('font-dyslexic');
-  if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
-  applyColorTheme(localStorage.getItem('currentTheme') || 'deep-ocean');
+  if (STORAGE.getItem('dyslexia') === 'true') document.body.classList.add('font-dyslexic');
+  if (STORAGE.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+  applyColorTheme(STORAGE.getItem('currentTheme') || 'deep-ocean');
 
   // Event listeners
   document.getElementById('settingsToggle').addEventListener('click', toggleSettingsPanel);
@@ -1718,14 +1768,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('mobileSidebarBackdrop').addEventListener('click', closeMobileSidebar);
   document.getElementById('darkModeToggle').addEventListener('click', () => {
     document.body.classList.toggle('dark-mode');
-    localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    STORAGE.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
   });
   document.getElementById('dyslexiaToggle').addEventListener('click', () => {
     document.body.classList.toggle('font-dyslexic');
-    localStorage.setItem('dyslexia', document.body.classList.contains('font-dyslexic') ? 'true' : 'false');
+    STORAGE.setItem('dyslexia', document.body.classList.contains('font-dyslexic') ? 'true' : 'false');
   });
   document.getElementById('resetSettingsBtn').addEventListener('click', () => {
-    showConfirm('Reset Everything?', 'This will erase all your tasks, notes, links, schedule, and settings. This cannot be undone.', 'Reset All', () => { localStorage.clear(); location.reload(); }, '🗑️');
+    showConfirm('Reset Everything?', 'This will erase all your tasks, notes, links, schedule, and settings. This cannot be undone.', 'Reset All', () => { STORAGE.clear(); location.reload(); }, '🗑️');
   });
 
   // Date & countdown
