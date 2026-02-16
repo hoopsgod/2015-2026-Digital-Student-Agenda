@@ -1391,6 +1391,7 @@ const ROUTES = {
   APP: '#/app'
 };
 const DEMO_MODE = new URLSearchParams(window.location.search).get('demo') === '1';
+const MOBILE_BREAKPOINT = 768;
 
 function normalizedHash() {
   const hash = window.location.hash || '';
@@ -1403,7 +1404,22 @@ function isLandingRoute() {
 }
 
 function enterApp() {
+  try {
+    sessionStorage.setItem('focusflow-mobile-entered-app', '1');
+  } catch (_) {}
   window.location.hash = ROUTES.APP;
+}
+
+function shouldForceMobileLanding() {
+  if (DEMO_MODE) return false;
+  if (!window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches) return false;
+  if (normalizedHash() !== ROUTES.APP) return false;
+
+  try {
+    return sessionStorage.getItem('focusflow-mobile-entered-app') !== '1';
+  } catch (_) {
+    return true;
+  }
 }
 
 function scrollToPreview(event) {
@@ -3306,6 +3322,8 @@ function renderApp({ demoMode = false } = {}) {
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.location.hash || window.location.hash === '#') {
+    window.location.hash = ROUTES.LANDING;
+  } else if (shouldForceMobileLanding()) {
     window.location.hash = ROUTES.LANDING;
   }
   setupDemoModeGuards();
