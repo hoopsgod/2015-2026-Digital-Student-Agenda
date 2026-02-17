@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#0a1628">
   <meta name="description" content="FocusFlow keeps assignments, schedules, notes, and study routines in one focused workspace built for real student momentum, especially for students with ADHD.">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="assets/focusflow-mark.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/focusflow-logo.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <title>FocusFlow</title>
@@ -986,7 +986,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
     <div class="sidebar" id="mobileSidebar">
       <div class="sidebar-header">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-          <img class="sidebar-logo-img" src="assets/focusflow-mark.svg" alt="FocusFlow" style="height: 32px; width: 32px; object-fit: contain;">
+          <img class="sidebar-logo-img" src="assets/focusflow-logo.svg" alt="FocusFlow" style="height: 32px; width: 32px; object-fit: contain;">
           <div class="sidebar-title brand-app-name" style="margin: 0;">FocusFlow</div>
         </div>
         <div class="sidebar-subtitle brand-subtitle">2025-2026 Digital Agenda</div>
@@ -1055,7 +1055,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <div class="dashboard-container">
           <div class="dashboard-header">
             <div class="dashboard-left">
-              <div class="dashboard-logo"><img id="dashboardLogoImg" src="assets/focusflow-mark.svg" alt="FocusFlow"></div>
+              <div class="dashboard-logo"><img id="dashboardLogoImg" src="assets/focusflow-logo.svg" alt="FocusFlow"></div>
               <div class="dashboard-title-section">
                 <h2>Performance Hub</h2>
                 <h1 class="brand-app-name">FocusFlow</h1>
@@ -3164,8 +3164,7 @@ function renderThemeGrid() {
 }
 
 // ==================== BRANDING ====================
-const COMPANY_LOGO = 'assets/focusflow-mark.svg';
-const COMPANY_WORDMARK_LOGO = 'assets/focusflow-logo.svg';
+const COMPANY_LOGO = 'assets/focusflow-logo.svg';
 const DEFAULT_DASHBOARD_LOGO = COMPANY_LOGO;
 const DEFAULT_NAME = 'FocusFlow';
 const DEFAULT_SUBTITLE = '2025-2026 Digital Agenda';
@@ -3195,7 +3194,7 @@ function handleLogoUpload(e) {
 
 function applyLogo() {
   document.querySelectorAll('.sidebar-logo-img').forEach(img => img.src = COMPANY_LOGO);
-  document.querySelectorAll('.header-logo, .landing-brand-logo').forEach(img => img.src = COMPANY_WORDMARK_LOGO);
+  document.querySelectorAll('.header-logo, .landing-brand-logo').forEach(img => img.src = COMPANY_LOGO);
 
   const savedDashboardLogo = STORAGE.getItem('dashboard_logo');
   applyDashboardLogo(savedDashboardLogo || DEFAULT_DASHBOARD_LOGO);

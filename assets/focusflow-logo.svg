@@ -1,33 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="FocusFlow logo">
   <defs>
-    <radialGradient id="bgGlow" cx="50%" cy="38%" r="52%">
-      <stop offset="0%" stop-color="#e8ff5d" stop-opacity="0.92"/>
-      <stop offset="100%" stop-color="#e8ff5d" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="leafLime" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#dcff37"/>
-      <stop offset="55%" stop-color="#97e800"/>
-      <stop offset="100%" stop-color="#4aa600"/>
+    <linearGradient id="focusflowBg" x1="14%" y1="86%" x2="88%" y2="18%">
+      <stop offset="0%" stop-color="#27c72a"/>
+      <stop offset="100%" stop-color="#b8ff10"/>
     </linearGradient>
-    <linearGradient id="leafDeep" x1="0" y1="0.1" x2="1" y2="0.95">
-      <stop offset="0%" stop-color="#38a500"/>
-      <stop offset="65%" stop-color="#1f7b00"/>
-      <stop offset="100%" stop-color="#0d4f00"/>
-    </linearGradient>
-    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#6cad00" flood-opacity="0.36"/>
-    </filter>
   </defs>
 
-  <rect width="1024" height="1024" fill="url(#bgGlow)"/>
+  <rect width="1024" height="1024" fill="#ececec"/>
+  <rect x="166" y="166" width="692" height="692" rx="132" fill="url(#focusflowBg)"/>
 
-  <g transform="translate(250 120)" filter="url(#soft)">
-    <path d="M82 108c48-67 117-100 213-100h157c43 0 84-9 123-31-21 73-72 121-155 142l-165 43c-61 16-105 48-163 114 1-49 6-97 22-168z" fill="url(#leafLime)"/>
-    <path d="M90 177c57-72 124-107 208-107h166c38 0 74-8 109-26-28 72-79 115-158 132l-154 37c-70 17-120 54-186 129 0-62 6-110 15-165z" fill="url(#leafDeep)"/>
-
-    <path d="M64 341c38-96 104-149 201-166l175-33c53-10 95-28 131-58-18 71-58 126-126 162l-158 78c-61 31-102 73-148 166-22 29-61 43-119 45 10-48 16-107 44-194z" fill="url(#leafLime)"/>
-    <path d="M74 395c43-109 116-167 214-184l155-25c48-8 92-25 128-53-22 72-63 128-131 167l-139 72c-67 35-111 84-155 181-30 30-69 46-126 48 14-53 19-113 54-206z" fill="url(#leafDeep)"/>
-  </g>
-
-  <text x="512" y="860" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-size="118" font-weight="700" fill="#17345b">FocusFlow</text>
+  <path fill="#ececec" d="M344 696l49-365c3-24 23-43 47-43h244l64 51-111 75 20-45H452l-16 94h183c20 0 33 21 24 40l-31 69c-14 30-44 49-77 49H415l-14 94c-2 15-12 28-26 34z"/>
 </svg>
