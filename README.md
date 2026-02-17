@@ -1,6 +1,6 @@
 # FocusFlow
 
-A single-page web application designed to help students manage tasks, schedules, notes, and routines — especially students with ADHD who benefit from stronger daily structure. Built as a self-contained HTML file with no external dependencies (other than Google Fonts).
+A single-page web application designed to help students manage tasks, schedules, notes, and routines — especially students with ADHD who benefit from stronger daily structure. Built as a lightweight static web app (`index.html` + `app.js`) with no runtime dependencies (other than Google Fonts).
 
 ## Features
 
@@ -32,7 +32,7 @@ Run the built-in validator before committing UI/JS edits:
 ./scripts/validate.sh
 ```
 
-This extracts the inline `<script>` payload from `index.html` and performs a JavaScript syntax check with Node (`node --check`).
+This checks `app.js` syntax with Node (`node --check`).
 
 ## Tech Stack
 
