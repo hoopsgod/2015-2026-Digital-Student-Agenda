@@ -172,6 +172,13 @@ body.dark-mode .sidebar { border-right-color: rgba(255,255,255,0.08); box-shadow
   text-shadow: 0 2px 12px rgba(2, 6, 23, 0.72);
 }
 .header-subtitle { font-size: 12px; color: #dbe7f5; font-weight: 500; letter-spacing: 0.3px; }
+.mobile-header-subtitle {
+  display: none;
+  font-size: 12px;
+  color: #ffffff;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
 .header-actions { display: flex; gap: 14px; align-items: center; z-index: 2; margin-left: auto; }
 .global-search {
   width: min(340px, 38vw);
@@ -658,6 +665,7 @@ body.dark-mode .mobile-nav button { color: #e2e8f0; }
   .header-left { width: 100%; }
   .header-title { font-size: 18px; letter-spacing: 1.2px; }
   .header-eyebrow, .header-subtitle, .header-status-pill { display: none; }
+  .mobile-header-subtitle { display: block; }
   .header-logo { width: 48px; height: 48px; }
   .header-actions {
     width: 100%;
@@ -1029,6 +1037,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <div class="header-brand">
         <div class="header-title">FocusFlow</div>
         <div class="header-subtitle">Plan smarter every day</div>
+        <div class="mobile-header-subtitle">Plan Smarter Everyday</div>
       </div>
     </div>
     <div class="header-actions">
