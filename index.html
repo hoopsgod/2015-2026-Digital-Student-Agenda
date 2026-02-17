@@ -539,6 +539,10 @@ body.dark-mode .pro-select { background-color: #1e293b; }
 .priority-high { background: var(--lux-danger); }
 .priority-medium { background: var(--lux-warning); }
 .priority-low { background: var(--lux-success); }
+.priority-label { font-weight: 700; }
+.task-meta .priority-high { color: var(--lux-danger); }
+.task-meta .priority-medium { color: #b58900; }
+.task-meta .priority-low { color: var(--lux-success); }
 
 .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--lux-border); }
 .filter-chip {
@@ -1421,7 +1425,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <div style="font-size: 13px; font-weight: 700; color: var(--lux-text-main); margin-bottom: 2px;" id="taskFormTitle">Add Task</div>
             <div class="task-stepper" aria-label="Homework form progress">
               <span class="task-step-dot active" data-task-step="1">1. Assignment</span>
-              <span class="task-step-dot" data-task-step="2">2. Class + due date</span>
+              <span class="task-step-dot" data-task-step="2">2. Class + dates</span>
               <span class="task-step-dot" data-task-step="3">3. Priority + notes</span>
             </div>
             <div class="task-step-pane active" data-task-pane="1">
@@ -1461,6 +1465,10 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
                 <label class="form-label" for="taskDue">Due date</label>
                 <input id="taskDue" type="date" class="pro-input" aria-label="Due date" />
               </div>
+              <div class="form-field">
+                <label class="form-label" for="taskAssignedDate">Assignment date</label>
+                <input id="taskAssignedDate" type="date" class="pro-input" aria-label="Assignment date" />
+              </div>
               <div style="display: flex; gap: 10px;">
                 <button class="ghost-btn" onclick="setTaskStep(1)">Back</button>
                 <button class="primary-btn" onclick="setTaskStep(3)">Next</button>
@@ -1470,9 +1478,9 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               <div class="form-field">
                 <label class="form-label" for="taskPriority">Priority</label>
                 <select id="taskPriority" class="pro-select pro-input" aria-label="Select priority level">
-                  <option value="low">Low (can wait)</option>
-                  <option value="medium" selected>Medium (this week)</option>
-                  <option value="high">High (urgent)</option>
+                  <option value="high">High (red)</option>
+                  <option value="medium" selected>Medium (yellow)</option>
+                  <option value="low">Low (green)</option>
                 </select>
               </div>
               <div class="form-field">

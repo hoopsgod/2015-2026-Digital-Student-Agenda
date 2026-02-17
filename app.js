@@ -371,6 +371,7 @@ function editTask(id) {
   document.getElementById('taskSubject').value = t.subject || '';
   document.getElementById('taskPriority').value = t.priority || 'medium';
   document.getElementById('taskDue').value = t.due || '';
+  document.getElementById('taskAssignedDate').value = t.assignedDate || '';
   document.getElementById('taskNotes').value = t.notes || '';
   document.getElementById('taskFormTitle').textContent = 'Edit Task';
   document.getElementById('taskFormSaveBtn').textContent = 'Update Task';
@@ -394,6 +395,7 @@ function addTask() {
       t.subject = document.getElementById('taskSubject').value;
       t.priority = document.getElementById('taskPriority').value;
       t.due = document.getElementById('taskDue').value;
+      t.assignedDate = document.getElementById('taskAssignedDate').value;
       t.notes = document.getElementById('taskNotes').value;
     }
     editingTaskId = null;
@@ -406,6 +408,7 @@ function addTask() {
       subject: document.getElementById('taskSubject').value,
       priority: document.getElementById('taskPriority').value,
       due: document.getElementById('taskDue').value,
+      assignedDate: document.getElementById('taskAssignedDate').value,
       notes: document.getElementById('taskNotes').value,
       completed: false,
       createdAt: new Date().toISOString()
@@ -417,9 +420,11 @@ function addTask() {
   document.getElementById('taskSubject').value = '';
   document.getElementById('taskPriority').value = 'medium';
   document.getElementById('taskDue').value = '';
+  document.getElementById('taskAssignedDate').value = '';
   document.getElementById('taskNotes').value = '';
   document.getElementById('taskNaturalInput').value = '';
   document.getElementById('taskDue').valueAsDate = new Date(Date.now() + 86400000);
+  document.getElementById('taskAssignedDate').valueAsDate = new Date();
   setTaskStep(1);
   toggleTaskForm();
   renderTasks();
@@ -516,6 +521,7 @@ function renderTasks() {
 
   list.innerHTML = tasks.map(t => {
     const isOverdue = !t.completed && t.due && t.due < today;
+    const assignedDateStr = t.assignedDate ? new Date(t.assignedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
     const dueStr = t.due ? new Date(t.due + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
     const sc = getSubjectColor(t.subject);
     const borderColor = t.subject ? sc.border : 'var(--lux-border)';
@@ -527,7 +533,9 @@ function renderTasks() {
         <div class="task-title"><span class="priority-dot priority-${t.priority}"></span>${t.title}</div>
         <div class="task-meta">
           ${subjectBadge}
+          ${assignedDateStr ? '<span><span class="ui-icon" aria-hidden="true">' + icon('calendar') + '</span> Assigned: ' + assignedDateStr + '</span>' : ''}
           ${dueStr ? '<span' + (isOverdue ? ' style="color:var(--lux-danger);font-weight:700"' : '') + '><span class="ui-icon" aria-hidden="true">' + icon('calendar') + '</span> ' + dueStr + (isOverdue ? ' (overdue)' : '') + '</span>' : ''}
+          <span class="priority-label priority-${t.priority}">${t.priority.charAt(0).toUpperCase() + t.priority.slice(1)} priority</span>
           ${t.notes ? '<span><span class="ui-icon" aria-hidden="true">' + icon('note') + '</span> ' + t.notes + '</span>' : ''}
         </div>
       </div>
@@ -550,6 +558,7 @@ function parseNaturalTaskInput() {
   document.getElementById('taskSubject').value = parsed.subject;
   document.getElementById('taskPriority').value = parsed.priority;
   document.getElementById('taskDue').value = parsed.due;
+  document.getElementById('taskAssignedDate').valueAsDate = new Date();
   document.getElementById('taskNotes').value = parsed.notes;
 }
 
@@ -2115,6 +2124,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Set default date for task form
   document.getElementById('taskDue').valueAsDate = new Date(Date.now() + 86400000);
+  document.getElementById('taskAssignedDate').valueAsDate = new Date();
 
   const focusInput = document.getElementById('focusMinutes');
   const breakInput = document.getElementById('breakMinutes');
