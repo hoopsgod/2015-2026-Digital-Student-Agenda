@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#0a1628">
   <meta name="description" content="FocusFlow keeps assignments, schedules, notes, and study routines in one focused workspace built for real student momentum, especially for students with ADHD.">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="assets/focusflow-logo.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/main-logo.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <title>FocusFlow</title>
@@ -912,7 +912,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <section class="landing-hero">
         <div class="landing-copy">
           <div class="landing-brand-lockup">
-            <img class="landing-brand-logo" src="assets/focusflow-logo.svg" alt="FocusFlow logo">
+            <img class="landing-brand-logo" src="assets/main-logo.svg" alt="FocusFlow logo">
           </div>
           <h1>FocusFlow keeps you ahead of every class, assignment, and deadline.</h1>
           <p>FocusFlow keeps assignments, schedules, notes, and study routines in one focused workspace built for real student momentum.</p>
@@ -986,7 +986,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
     <div class="sidebar" id="mobileSidebar">
       <div class="sidebar-header">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-          <img class="sidebar-logo-img" src="assets/focusflow-logo.svg" alt="FocusFlow" style="height: 32px; width: 32px; object-fit: contain;">
+          <img class="sidebar-logo-img" src="assets/main-logo.svg" alt="FocusFlow" style="height: 32px; width: 32px; object-fit: contain;">
           <div class="sidebar-title brand-app-name" style="margin: 0;">FocusFlow</div>
         </div>
         <div class="sidebar-subtitle brand-subtitle">2025-2026 Digital Agenda</div>
@@ -1023,7 +1023,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 <div class="main-content">
   <div class="app-header">
     <div class="header-left">
-      <img class="header-logo" src="assets/focusflow-logo.svg" alt="FocusFlow">
+      <img class="header-logo" src="assets/main-logo.svg" alt="FocusFlow">
       <div class="header-brand">
         <div class="header-title brand-app-name">FocusFlow</div>
         <div class="header-subtitle">Plan smarter every day</div>
@@ -1055,7 +1055,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <div class="dashboard-container">
           <div class="dashboard-header">
             <div class="dashboard-left">
-              <div class="dashboard-logo"><img id="dashboardLogoImg" src="assets/focusflow-logo.svg" alt="FocusFlow"></div>
+              <div class="dashboard-logo"><img id="dashboardLogoImg" src="assets/main-logo.svg" alt="FocusFlow"></div>
               <div class="dashboard-title-section">
                 <h2>Performance Hub</h2>
                 <h1 class="brand-app-name">FocusFlow</h1>
@@ -1431,14 +1431,10 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <img id="logoPreviewImg" src="" alt="Logo" style="width:80%;height:80%;object-fit:contain;" />
           </div>
           <div style="flex:1;">
-            <div style="font-size:13px;font-weight:600;color:var(--lux-text-main);margin-bottom:4px;">Dashboard Logo</div>
-            <div style="font-size:11px;color:var(--lux-text-sub);">Customize the dashboard logo tile. The top-left FocusFlow app logo stays fixed.</div>
+            <div style="font-size:13px;font-weight:600;color:var(--lux-text-main);margin-bottom:4px;">App Logo</div>
+            <div style="font-size:11px;color:var(--lux-text-sub);">This logo is fixed across desktop and mobile for consistent branding.</div>
           </div>
         </div>
-        <label style="display:flex;align-items:center;justify-content:center;padding:14px;border:2px dashed var(--lux-border);border-radius:8px;cursor:pointer;transition:all 0.2s;background:var(--lux-hover);font-size:12px;font-weight:600;color:var(--lux-text-sub);gap:6px;">
-          <input type="file" id="logoUpload" accept=".png,.jpg,.jpeg,.svg,.gif,.webp" style="display:none;" onchange="handleLogoUpload(event)" />
-          <span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h4l1.4-2h5.2L16 8h4v12H4z"/><circle cx="12" cy="14" r="3.5"/></svg></span>Choose Logo Image
-        </label>
         <!-- App Name -->
         <div>
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--lux-text-sub);margin-bottom:6px;">App Name</div>
@@ -1455,7 +1451,6 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
           <input id="brandTagline" class="pro-input" placeholder="Elite Athlete Dashboard" maxlength="40" oninput="updateBrandTagline(this.value)" />
         </div>
         <button class="ghost-btn" onclick="resetBranding()" style="font-size:11px;">↺ Reset to Default Branding</button>
-        <button class="ghost-btn" onclick="resetDashboardLogo()" style="font-size:11px;">↺ Reset Dashboard Logo</button>
       </div>
     </div>
     <div class="settings-group">
@@ -3164,7 +3159,7 @@ function renderThemeGrid() {
 }
 
 // ==================== BRANDING ====================
-const COMPANY_LOGO = 'assets/focusflow-logo.svg';
+const COMPANY_LOGO = 'assets/main-logo.svg';
 const DEFAULT_DASHBOARD_LOGO = COMPANY_LOGO;
 const DEFAULT_NAME = 'FocusFlow';
 const DEFAULT_SUBTITLE = '2025-2026 Digital Agenda';
@@ -3177,27 +3172,12 @@ function applyDashboardLogo(src = DEFAULT_DASHBOARD_LOGO) {
   if (previewImg) previewImg.src = src;
 }
 
-function handleLogoUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    const result = event.target?.result;
-    if (typeof result !== 'string') return;
-    STORAGE.setItem('dashboard_logo', result);
-    applyDashboardLogo(result);
-  };
-  reader.readAsDataURL(file);
-  e.target.value = '';
-}
 
 function applyLogo() {
   document.querySelectorAll('.sidebar-logo-img').forEach(img => img.src = COMPANY_LOGO);
   document.querySelectorAll('.header-logo, .landing-brand-logo').forEach(img => img.src = COMPANY_LOGO);
 
-  const savedDashboardLogo = STORAGE.getItem('dashboard_logo');
-  applyDashboardLogo(savedDashboardLogo || DEFAULT_DASHBOARD_LOGO);
+  applyDashboardLogo(DEFAULT_DASHBOARD_LOGO);
 }
 
 function updateBrandName(val) {
@@ -3219,7 +3199,6 @@ function updateBrandTagline(val) {
 }
 
 function resetBranding() {
-  STORAGE.removeItem('brand_logo');
   STORAGE.removeItem('brand_name');
   STORAGE.removeItem('brand_subtitle');
   STORAGE.removeItem('brand_tagline');
@@ -3232,10 +3211,6 @@ function resetBranding() {
   document.getElementById('brandTagline').value = '';
 }
 
-function resetDashboardLogo() {
-  STORAGE.removeItem('dashboard_logo');
-  applyDashboardLogo(DEFAULT_DASHBOARD_LOGO);
-}
 
 function loadBranding() {
   applyLogo();
