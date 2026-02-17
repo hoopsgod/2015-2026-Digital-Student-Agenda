@@ -989,7 +989,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <div class="sidebar-header">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
           <img class="sidebar-logo-img" src="assets/main-logo.svg" alt="FocusFlow" style="height: 32px; width: 32px; object-fit: contain;">
-          <div class="sidebar-title brand-app-name" style="margin: 0;">FocusFlow</div>
+          <div class="sidebar-title" style="margin: 0;">FocusFlow</div>
         </div>
         <div class="sidebar-subtitle brand-subtitle">2025-2026 Digital Agenda</div>
       </div>
@@ -1027,7 +1027,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
     <div class="header-left">
       <img class="header-logo" src="assets/main-logo.svg" alt="FocusFlow">
       <div class="header-brand">
-        <div class="header-title brand-app-name">FocusFlow</div>
+        <div class="header-title">FocusFlow</div>
         <div class="header-subtitle">Plan smarter every day</div>
       </div>
     </div>
@@ -1060,7 +1060,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               <div class="dashboard-logo"><img id="dashboardLogoImg" src="assets/main-logo.svg" alt="FocusFlow"></div>
               <div class="dashboard-title-section">
                 <h2>Performance Hub</h2>
-                <h1 class="brand-app-name">FocusFlow</h1>
+                <h1 class="brand-app-name">My Agenda</h1>
                 <p class="brand-tagline">Elite Athlete Dashboard</p>
               </div>
             </div>
@@ -1447,7 +1447,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <!-- Title -->
         <div>
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--lux-text-sub);margin-bottom:6px;">Title</div>
-          <input id="brandName" class="pro-input" placeholder="FocusFlow" maxlength="20" oninput="updateBrandName(this.value)" style="color:var(--titan-accent);font-weight:700;" />
+          <input id="brandName" class="pro-input" placeholder="My Agenda" maxlength="20" oninput="updateBrandName(this.value)" style="color:var(--titan-accent);font-weight:700;" />
         </div>
         <!-- Subtitle -->
         <div>
@@ -3176,7 +3176,7 @@ function renderThemeGrid() {
 const COMPANY_LOGO = 'assets/main-logo.svg';
 const DEFAULT_DASHBOARD_LOGO = COMPANY_LOGO;
 const DASHBOARD_LOGO_STORAGE_KEY = 'dashboard_logo';
-const DEFAULT_NAME = 'FocusFlow';
+const DEFAULT_NAME = 'My Agenda';
 const DEFAULT_SUBTITLE = '2025-2026 Digital Agenda';
 const DEFAULT_TAGLINE = 'Elite Athlete Dashboard';
 
@@ -3222,7 +3222,7 @@ function applyLogo() {
 function updateBrandName(val) {
   const name = val.trim() || DEFAULT_NAME;
   STORAGE.setItem('brand_name', val.trim());
-  document.querySelectorAll('.brand-app-name').forEach(el => el.textContent = name);
+  document.querySelectorAll('.dashboard-title-section .brand-app-name').forEach(el => el.textContent = name);
 }
 
 function updateBrandSubtitle(val) {
@@ -3243,7 +3243,7 @@ function resetBranding() {
   STORAGE.removeItem('brand_subtitle');
   STORAGE.removeItem('brand_tagline');
   applyLogo();
-  document.querySelectorAll('.brand-app-name').forEach(el => el.textContent = DEFAULT_NAME);
+  document.querySelectorAll('.dashboard-title-section .brand-app-name').forEach(el => el.textContent = DEFAULT_NAME);
   document.querySelectorAll('.brand-subtitle').forEach(el => el.textContent = DEFAULT_SUBTITLE);
   document.querySelectorAll('.brand-tagline').forEach(el => el.textContent = DEFAULT_TAGLINE);
   document.getElementById('brandName').value = '';
@@ -3258,7 +3258,7 @@ function loadBranding() {
   const name = STORAGE.getItem('brand_name');
   if (name) {
     document.getElementById('brandName').value = name;
-    document.querySelectorAll('.brand-app-name').forEach(el => el.textContent = name);
+    document.querySelectorAll('.dashboard-title-section .brand-app-name').forEach(el => el.textContent = name);
   }
 
   const subtitle = STORAGE.getItem('brand_subtitle');
