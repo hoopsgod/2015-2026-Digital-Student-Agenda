@@ -940,6 +940,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   box-shadow: 0 18px 38px rgba(15, 23, 42, 0.3);
   transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
 }
+.landing-primary-cta { min-width: 250px; text-align: center; }
 .landing-enter-btn:hover,
 .landing-enter-btn:focus-visible { transform: translateY(-2px); box-shadow: 0 22px 46px rgba(15, 23, 42, 0.36); filter: brightness(1.04); }
 .landing-enter-btn:active { transform: translateY(0); box-shadow: 0 14px 26px rgba(15, 23, 42, 0.28); }
@@ -1119,6 +1120,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 .landing-momentum p,
 .landing-progress p,
 .landing-final-cta p { margin-top: 10px; color: #334155; max-width: 62ch; }
+.landing-section-cta { margin-top: 18px; display: inline-flex; }
 .landing-progress-grid { margin-top: 16px; display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .landing-progress-stat { border-radius: 14px; border: 1px solid #d9e2f1; background: #fff; padding: 14px 12px; }
 .landing-progress-stat strong { display: block; font-size: 1.4rem; letter-spacing: -0.03em; }
@@ -1144,7 +1146,10 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   .landing-hero { border-radius: 20px; padding: 14px; gap: 16px; }
   .landing-copy h1 { max-width: 100%; }
   .landing-actions { margin-top: 16px; align-items: flex-start; }
-  .landing-enter-btn { width: 100%; }
+  .landing-enter-btn,
+  .landing-primary-cta,
+  .landing-section-cta { width: 100%; }
+  .landing-section-cta { justify-content: center; }
   .landing-grid,
   .landing-progress-grid { grid-template-columns: 1fr; }
   .landing-adhd-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1182,7 +1187,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
           <p class="landing-tagline">Empowering students with ADHD and all learners to thrive through structure, clarity and customised planning.</p>
           <div class="landing-actions">
             <div class="landing-enter-wrap">
-              <button class="landing-enter-btn" type="button" onclick="enterApp()">Enter FocusFlex</button>
+              <button class="landing-enter-btn landing-primary-cta" type="button" onclick="enterApp()">Start Free Student Agenda</button>
               <span class="landing-helper-text">Free for students • No account required • Start instantly</span>
             </div>
             <a class="landing-secondary-link" href="#preview" onclick="scrollToPreview(event)">See How It Works <span aria-hidden="true">→</span></a>
@@ -1271,6 +1276,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <section class="landing-momentum" aria-label="Motivation">
         <h2>Train your mind like an athlete. Build winning habits every school day.</h2>
         <p>Stay ahead of deadlines, recover focus quickly, and keep momentum from first period to final rep.</p>
+        <button class="landing-enter-btn landing-primary-cta landing-section-cta" type="button" onclick="enterApp()">Launch the Agenda</button>
       </section>
 
       <section class="landing-progress" aria-label="Progress examples">
@@ -1285,8 +1291,8 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
       <section class="landing-final-cta" aria-label="Final call to action">
         <h2>Ready to take control of your school day?</h2>
-        <p>Open FocusFlex and start instantly.</p>
-        <button class="landing-enter-btn" type="button" onclick="enterApp()">Enter FocusFlex</button>
+        <p>Launch your free student agenda in seconds and stay on top of every class.</p>
+        <button class="landing-enter-btn landing-primary-cta" type="button" onclick="enterApp()">Start Free Student Agenda</button>
       </section>
     </div>
   </main>
