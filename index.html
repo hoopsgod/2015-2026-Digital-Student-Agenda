@@ -1428,11 +1428,18 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <!-- Logo Preview -->
         <div style="display:flex;align-items:center;gap:14px;">
           <div id="logoPreview" style="width:56px;height:56px;border-radius:10px;border:2px solid var(--lux-border);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--lux-hover);flex-shrink:0;">
-            <img id="logoPreviewImg" src="" alt="Logo" style="width:80%;height:80%;object-fit:contain;" />
+            <img id="logoPreviewImg" src="" alt="Dashboard logo" style="width:80%;height:80%;object-fit:contain;" />
           </div>
-          <div style="flex:1;">
-            <div style="font-size:13px;font-weight:600;color:var(--lux-text-main);margin-bottom:4px;">App Logo</div>
-            <div style="font-size:11px;color:var(--lux-text-sub);">This logo is fixed across desktop and mobile for consistent branding.</div>
+          <div style="flex:1;display:grid;gap:8px;">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--lux-text-main);margin-bottom:4px;">Dashboard Main Logo</div>
+              <div style="font-size:11px;color:var(--lux-text-sub);">Only the main dashboard logo can be customized. All other app branding stays locked to FocusFlow.</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <label for="dashboardLogoUpload" class="ghost-btn" style="font-size:11px;cursor:pointer;">Upload Dashboard Logo</label>
+              <input id="dashboardLogoUpload" type="file" accept="image/*" onchange="handleDashboardLogoUpload(this)" style="display:none;" />
+              <button class="ghost-btn" onclick="resetDashboardLogo()" style="font-size:11px;">Reset Dashboard Logo</button>
+            </div>
           </div>
         </div>
         <!-- App Name -->
@@ -3166,6 +3173,7 @@ function renderThemeGrid() {
 // ==================== BRANDING ====================
 const COMPANY_LOGO = 'assets/main-logo.svg';
 const DEFAULT_DASHBOARD_LOGO = COMPANY_LOGO;
+const DASHBOARD_LOGO_STORAGE_KEY = 'dashboard_logo';
 const DEFAULT_NAME = 'FocusFlow';
 const DEFAULT_SUBTITLE = '2025-2026 Digital Agenda';
 const DEFAULT_TAGLINE = 'Elite Athlete Dashboard';
@@ -3177,12 +3185,36 @@ function applyDashboardLogo(src = DEFAULT_DASHBOARD_LOGO) {
   if (previewImg) previewImg.src = src;
 }
 
+function updateDashboardLogo(file) {
+  if (!file || !file.type || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const logo = typeof reader.result === 'string' ? reader.result : DEFAULT_DASHBOARD_LOGO;
+    STORAGE.setItem(DASHBOARD_LOGO_STORAGE_KEY, logo);
+    applyDashboardLogo(logo);
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleDashboardLogoUpload(input) {
+  const file = input?.files?.[0];
+  if (!file) return;
+  updateDashboardLogo(file);
+  input.value = '';
+}
+
+function resetDashboardLogo() {
+  STORAGE.removeItem(DASHBOARD_LOGO_STORAGE_KEY);
+  applyDashboardLogo(DEFAULT_DASHBOARD_LOGO);
+}
+
 
 function applyLogo() {
   document.querySelectorAll('.sidebar-logo-img').forEach(img => img.src = COMPANY_LOGO);
   document.querySelectorAll('.header-logo, .landing-brand-logo').forEach(img => img.src = COMPANY_LOGO);
 
-  applyDashboardLogo(DEFAULT_DASHBOARD_LOGO);
+  const customDashboardLogo = STORAGE.getItem(DASHBOARD_LOGO_STORAGE_KEY);
+  applyDashboardLogo(customDashboardLogo || DEFAULT_DASHBOARD_LOGO);
 }
 
 function updateBrandName(val) {
@@ -3204,6 +3236,7 @@ function updateBrandTagline(val) {
 }
 
 function resetBranding() {
+  resetDashboardLogo();
   STORAGE.removeItem('brand_name');
   STORAGE.removeItem('brand_subtitle');
   STORAGE.removeItem('brand_tagline');
