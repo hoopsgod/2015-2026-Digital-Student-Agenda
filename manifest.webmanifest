@@ -1,7 +1,7 @@
 {
-  "name": "FocusFlow",
-  "short_name": "FocusFlow",
-  "description": "FocusFlow keeps assignments, schedules, notes, and study routines in one focused workspace built for real student momentum.",
+  "name": "FocusFlex",
+  "short_name": "FocusFlex",
+  "description": "FocusFlex keeps assignments, schedules, notes, and study routines in one focused workspace built for real student momentum.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0a1628",
