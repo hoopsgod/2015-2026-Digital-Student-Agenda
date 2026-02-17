@@ -125,10 +125,12 @@ body.dark-mode .sidebar { border-right-color: rgba(255,255,255,0.08); box-shadow
 
 .header-left { display: flex; align-items: center; gap: 14px; z-index: 2; min-width: 0; }
 .header-logo {
-  height: 48px; width: 48px; flex-shrink: 0; object-fit: contain;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
-  border-radius: 14px; padding: 9px; border: 1px solid rgba(255,255,255,0.2);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.28);
+  height: 52px;
+  width: 176px;
+  flex-shrink: 0;
+  object-fit: contain;
+  object-position: left center;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.32));
 }
 .header-brand { display: flex; flex-direction: column; gap: 1px; }
 .header-eyebrow {
@@ -626,7 +628,7 @@ body.dark-mode .mobile-nav button { color: #e2e8f0; }
   .header-left { width: 100%; }
   .header-title { font-size: 18px; letter-spacing: 1.2px; }
   .header-eyebrow, .header-subtitle, .header-status-pill { display: none; }
-  .header-logo { width: 40px; height: 40px; padding: 7px; }
+  .header-logo { width: 140px; height: 44px; }
   .header-actions {
     width: 100%;
     gap: 8px;
@@ -969,7 +971,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 <div class="main-content">
   <div class="app-header">
     <div class="header-left">
-      <img class="header-logo" src="assets/focusflow-mark.svg" alt="FocusFlow">
+      <img class="header-logo" src="assets/focusflow-logo.svg" alt="FocusFlow">
       <div class="header-brand">
         <div class="header-title brand-app-name">FocusFlow</div>
         <div class="header-subtitle">Plan smarter every day</div>
@@ -1001,7 +1003,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <div class="dashboard-container">
           <div class="dashboard-header">
             <div class="dashboard-left">
-              <div class="dashboard-logo"><img src="assets/focusflow-mark.svg" alt="FocusFlow"></div>
+              <div class="dashboard-logo"><img id="dashboardLogoImg" src="assets/focusflow-mark.svg" alt="FocusFlow"></div>
               <div class="dashboard-title-section">
                 <h2>Performance Hub</h2>
                 <h1 class="brand-app-name">FocusFlow</h1>
@@ -1377,8 +1379,8 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <img id="logoPreviewImg" src="" alt="Logo" style="width:80%;height:80%;object-fit:contain;" />
           </div>
           <div style="flex:1;">
-            <div style="font-size:13px;font-weight:600;color:var(--lux-text-main);margin-bottom:4px;">App Logo</div>
-            <div style="font-size:11px;color:var(--lux-text-sub);">Official FocusFlow logo is locked to keep it crisp and distortion-free.</div>
+            <div style="font-size:13px;font-weight:600;color:var(--lux-text-main);margin-bottom:4px;">Dashboard Logo</div>
+            <div style="font-size:11px;color:var(--lux-text-sub);">Customize the dashboard logo tile. The top-left FocusFlow app logo stays fixed.</div>
           </div>
         </div>
         <label style="display:flex;align-items:center;justify-content:center;padding:14px;border:2px dashed var(--lux-border);border-radius:8px;cursor:pointer;transition:all 0.2s;background:var(--lux-hover);font-size:12px;font-weight:600;color:var(--lux-text-sub);gap:6px;">
@@ -1401,6 +1403,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
           <input id="brandTagline" class="pro-input" placeholder="Elite Athlete Dashboard" maxlength="40" oninput="updateBrandTagline(this.value)" />
         </div>
         <button class="ghost-btn" onclick="resetBranding()" style="font-size:11px;">↺ Reset to Default Branding</button>
+        <button class="ghost-btn" onclick="resetDashboardLogo()" style="font-size:11px;">↺ Reset Dashboard Logo</button>
       </div>
     </div>
     <div class="settings-group">
@@ -3111,26 +3114,39 @@ function renderThemeGrid() {
 // ==================== BRANDING ====================
 const COMPANY_LOGO = 'assets/focusflow-mark.svg';
 const COMPANY_WORDMARK_LOGO = 'assets/focusflow-logo.svg';
-const LOCKED_BRAND_LOGO_NOTICE = 'FocusFlow logo is locked to preserve crisp brand quality.';
-const DEFAULT_LOGO = COMPANY_LOGO;
+const DEFAULT_DASHBOARD_LOGO = COMPANY_LOGO;
 const DEFAULT_NAME = 'FocusFlow';
 const DEFAULT_SUBTITLE = '2025-2026 Digital Agenda';
 const DEFAULT_TAGLINE = 'Elite Athlete Dashboard';
 
+function applyDashboardLogo(src = DEFAULT_DASHBOARD_LOGO) {
+  const dashLogo = document.getElementById('dashboardLogoImg');
+  if (dashLogo) dashLogo.src = src;
+  const previewImg = document.getElementById('logoPreviewImg');
+  if (previewImg) previewImg.src = src;
+}
+
 function handleLogoUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
-  alert(LOCKED_BRAND_LOGO_NOTICE);
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const result = event.target?.result;
+    if (typeof result !== 'string') return;
+    STORAGE.setItem('dashboard_logo', result);
+    applyDashboardLogo(result);
+  };
+  reader.readAsDataURL(file);
   e.target.value = '';
 }
 
 function applyLogo() {
-  document.querySelectorAll('.sidebar-logo-img, .header-logo').forEach(img => img.src = COMPANY_LOGO);
-  document.querySelectorAll('.landing-brand-logo').forEach(img => img.src = COMPANY_WORDMARK_LOGO);
-  const dashLogo = document.querySelector('.dashboard-logo img');
-  if (dashLogo) dashLogo.src = COMPANY_LOGO;
-  const previewImg = document.getElementById('logoPreviewImg');
-  if (previewImg) previewImg.src = COMPANY_LOGO;
+  document.querySelectorAll('.sidebar-logo-img').forEach(img => img.src = COMPANY_LOGO);
+  document.querySelectorAll('.header-logo, .landing-brand-logo').forEach(img => img.src = COMPANY_WORDMARK_LOGO);
+
+  const savedDashboardLogo = STORAGE.getItem('dashboard_logo');
+  applyDashboardLogo(savedDashboardLogo || DEFAULT_DASHBOARD_LOGO);
 }
 
 function updateBrandName(val) {
@@ -3163,6 +3179,11 @@ function resetBranding() {
   document.getElementById('brandName').value = '';
   document.getElementById('brandSubtitle').value = '';
   document.getElementById('brandTagline').value = '';
+}
+
+function resetDashboardLogo() {
+  STORAGE.removeItem('dashboard_logo');
+  applyDashboardLogo(DEFAULT_DASHBOARD_LOGO);
 }
 
 function loadBranding() {
