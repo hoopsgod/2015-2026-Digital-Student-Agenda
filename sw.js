@@ -1,10 +1,9 @@
-const CACHE_NAME = 'digital-student-agenda-v2';
+const CACHE_NAME = 'digital-student-agenda-v3';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './icons/icon-192.svg',
-  './icons/icon-512.svg'
+  './assets/main-logo.svg'
 ];
 
 self.addEventListener('install', (event) => {
