@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="FocusFlow logo">
   <defs>
-    <linearGradient id="bg" x1="0" y1="1024" x2="1024" y2="0" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#27CC21"/>
-      <stop offset="1" stop-color="#B2FF11"/>
+    <linearGradient id="focusflowGradient" x1="172" y1="852" x2="852" y2="172" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#25cc20"/>
+      <stop offset="1" stop-color="#b8ff0f"/>
     </linearGradient>
   </defs>
-  <rect x="198" y="198" width="628" height="628" rx="95" fill="url(#bg)"/>
-  <path fill="#fff" d="M347 726l56-324c3-17 18-29 35-29h244l67 53-111 74 18-44H436l-8 45h191l-31 64c-7 10-18 16-31 16H415l-11 63c-2 11-9 20-19 24z"/>
+  <rect x="172" y="172" width="680" height="680" rx="110" fill="url(#focusflowGradient)"/>
+  <path fill="#fff" d="M294 727l52-332c3-18 18-31 36-31h301l66 52-113 75 20-45H437l-8 46h191l-31 64c-7 11-19 17-32 17H416l-10 64c-2 11-9 20-19 24z"/>
 </svg>
