@@ -385,16 +385,19 @@ function addTask() {
   const dueInput = document.getElementById('taskDue');
   const priorityInput = document.getElementById('taskPriority');
   let due = dueInput.value;
-  let priority = priorityInput.value || 'medium';
+  let priority = (priorityInput.value || 'medium').toLowerCase();
+
   if (!title && naturalText) {
     parseNaturalTaskInput();
     title = document.getElementById('taskTitle').value.trim();
     due = dueInput.value;
-    priority = priorityInput.value || 'medium';
+    priority = (priorityInput.value || 'medium').toLowerCase();
   }
+
   if (!title) return alert('Please enter a task title');
   if (!due) return alert('Please select a due date');
   if (!priority) priority = 'medium';
+  if (!['high', 'medium', 'low'].includes(priority)) priority = 'medium';
 
   if (editingTaskId) {
     const t = DB.tasks.find(x => x.id === editingTaskId);
@@ -423,6 +426,7 @@ function addTask() {
     };
     DB.tasks.unshift(task);
   }
+
   DB.save('tasks');
   document.getElementById('taskTitle').value = '';
   document.getElementById('taskSubject').value = '';
@@ -527,17 +531,16 @@ function renderTasks() {
   }
 
   list.innerHTML = tasks.map(t => {
-    const priority = t.priority || 'medium';
+    const priority = ['high', 'medium', 'low'].includes((t.priority || '').toLowerCase()) ? t.priority.toLowerCase() : 'medium';
     const isOverdue = !t.completed && t.due && t.due < today;
     const assignedDateStr = t.assignedDate ? new Date(t.assignedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
     const dueStr = t.due ? new Date(t.due + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
-    const dueMeta = dueStr
-      ? 'Due: ' + dueStr + (isOverdue ? ' (overdue)' : '')
-      : 'No due date';
+    const dueMeta = dueStr ? 'Due: ' + dueStr + (isOverdue ? ' (overdue)' : '') : 'No due date';
     const sc = getSubjectColor(t.subject);
     const borderColor = t.subject ? sc.border : 'var(--lux-border)';
     const subjectBadge = t.subject ? `<span class="subject-badge" style="background:${sc.bg};color:${sc.text};">${t.subject}</span>` : '';
     const completionLabel = t.completed ? 'Mark task as not completed' : 'Mark task as completed';
+
     return `<div class="task-item ${t.completed ? 'completed' : ''}" style="border-left-color:${borderColor};">
       <button class="task-checkbox ${t.completed ? 'checked' : ''}" onclick="toggleTask(${t.id})" aria-label="${completionLabel}" title="${completionLabel}"></button>
       <div class="task-body">
@@ -557,7 +560,6 @@ function renderTasks() {
     </div>`;
   }).join('');
 }
-
 
 function parseNaturalTaskInput() {
   const input = document.getElementById('taskNaturalInput');
