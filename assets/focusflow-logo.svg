@@ -1,39 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="FocusFlow logo">
   <defs>
-    <linearGradient id="topFill" x1="0.08" y1="0" x2="0.92" y2="1">
-      <stop offset="0" stop-color="#59d9ff"/>
-      <stop offset="0.42" stop-color="#1f74f1"/>
-      <stop offset="1" stop-color="#0a22ba"/>
+    <radialGradient id="bgGlow" cx="50%" cy="38%" r="52%">
+      <stop offset="0%" stop-color="#e8ff5d" stop-opacity="0.92"/>
+      <stop offset="100%" stop-color="#e8ff5d" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="leafLime" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#dcff37"/>
+      <stop offset="55%" stop-color="#97e800"/>
+      <stop offset="100%" stop-color="#4aa600"/>
     </linearGradient>
-    <linearGradient id="midFill" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#6eefff"/>
-      <stop offset="0.46" stop-color="#2280f4"/>
-      <stop offset="1" stop-color="#0c2ccc"/>
+    <linearGradient id="leafDeep" x1="0" y1="0.1" x2="1" y2="0.95">
+      <stop offset="0%" stop-color="#38a500"/>
+      <stop offset="65%" stop-color="#1f7b00"/>
+      <stop offset="100%" stop-color="#0d4f00"/>
     </linearGradient>
-    <linearGradient id="botFill" x1="0.04" y1="0" x2="0.86" y2="1">
-      <stop offset="0" stop-color="#1d87ff"/>
-      <stop offset="0.52" stop-color="#103fd7"/>
-      <stop offset="1" stop-color="#0a1d95"/>
-    </linearGradient>
-    <filter id="glow" x="-35%" y="-35%" width="170%" height="170%">
-      <feGaussianBlur stdDeviation="10" result="blur"/>
-      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.34 0 0 0 0 0.92 0 0 0 0 1 0 0 0 0.9 0"/>
-    </filter>
-    <filter id="softShadow" x="-25%" y="-25%" width="150%" height="150%">
-      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#84a6ff" flood-opacity="0.34"/>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#6cad00" flood-opacity="0.36"/>
     </filter>
   </defs>
 
-  <g transform="translate(292 168)" filter="url(#softShadow)">
-    <path d="M92 87c19-28 52-43 97-43h271c66 0 99-14 125-45-13 64-51 101-131 101H203c-53 0-90 17-134 77 8-41 13-68 23-90z" fill="url(#topFill)"/>
-    <path d="M71 143c47-51 89-71 153-71h217c61 0 101-9 145-41-22 87-72 122-169 122H229c-63 0-108 19-163 82 2-38 1-63 5-92z" fill="#0f149f" opacity="0.93"/>
-    <path d="M70 197c20-36 63-59 125-59h257c58 0 91-8 121-31-18 68-58 111-140 111H223c-63 0-106 18-156 76 2-34-2-63 3-97z" fill="url(#midFill)"/>
-    <path d="M44 330c28-120 84-175 171-175h169c43 0 71-10 95-38-11 83-54 145-132 145H230c-49 0-79 26-98 99-27 33-58 36-112 37 5-22 10-43 24-68z" fill="url(#botFill)"/>
+  <rect width="1024" height="1024" fill="url(#bgGlow)"/>
 
-    <path d="M92 87c19-28 52-43 97-43h271c66 0 99-14 125-45" stroke="#79f6ff" stroke-width="4" fill="none" filter="url(#glow)"/>
-    <path d="M70 197c20-36 63-59 125-59h257c58 0 91-8 121-31" stroke="#78f9ff" stroke-width="4" fill="none" filter="url(#glow)"/>
-    <path d="M44 330c28-120 84-175 171-175" stroke="#69edff" stroke-width="4" fill="none" filter="url(#glow)"/>
+  <g transform="translate(250 120)" filter="url(#soft)">
+    <path d="M82 108c48-67 117-100 213-100h157c43 0 84-9 123-31-21 73-72 121-155 142l-165 43c-61 16-105 48-163 114 1-49 6-97 22-168z" fill="url(#leafLime)"/>
+    <path d="M90 177c57-72 124-107 208-107h166c38 0 74-8 109-26-28 72-79 115-158 132l-154 37c-70 17-120 54-186 129 0-62 6-110 15-165z" fill="url(#leafDeep)"/>
+
+    <path d="M64 341c38-96 104-149 201-166l175-33c53-10 95-28 131-58-18 71-58 126-126 162l-158 78c-61 31-102 73-148 166-22 29-61 43-119 45 10-48 16-107 44-194z" fill="url(#leafLime)"/>
+    <path d="M74 395c43-109 116-167 214-184l155-25c48-8 92-25 128-53-22 72-63 128-131 167l-139 72c-67 35-111 84-155 181-30 30-69 46-126 48 14-53 19-113 54-206z" fill="url(#leafDeep)"/>
   </g>
 
-  <text x="512" y="848" text-anchor="middle" font-family="'Poppins', 'Avenir Next', 'IBM Plex Sans', Arial, sans-serif" font-size="124" font-weight="700" fill="#072870">FocusFlow</text>
+  <text x="512" y="860" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-size="118" font-weight="700" fill="#17345b">FocusFlow</text>
 </svg>
