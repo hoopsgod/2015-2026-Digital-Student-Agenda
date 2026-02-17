@@ -927,6 +927,67 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 .landing-card h3 { font-size: 0.95rem; margin-bottom: 6px; }
 .landing-card p { color: #475569; font-size: 0.84rem; line-height: 1.45; }
 
+.landing-adhd {
+  border-radius: 20px;
+  border: 1px solid #dbe4f1;
+  background: #f8fbff;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.06);
+  padding: clamp(20px, 3vw, 34px);
+}
+.landing-adhd h2 {
+  font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+.landing-adhd-grid {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.landing-adhd-card {
+  border-radius: 14px;
+  border: 1px solid #d9e2f1;
+  background: rgba(255,255,255,0.95);
+  padding: 14px;
+}
+.landing-adhd-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eaf2ff;
+  color: #1d4ed8;
+  margin-bottom: 9px;
+}
+.landing-adhd-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.landing-adhd-card h3 { font-size: 0.95rem; margin-bottom: 6px; }
+.landing-adhd-card p { color: #475569; font-size: 0.84rem; line-height: 1.5; }
+.landing-adhd-tagline {
+  margin-top: 16px;
+  text-align: center;
+  color: #334155;
+  font-size: 0.95rem;
+}
+.landing-adhd-note {
+  margin: 12px auto 0;
+  color: #334155;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  max-width: 70ch;
+  text-align: center;
+}
+
 .landing-credibility,
 .landing-trust,
 .landing-momentum,
@@ -965,6 +1026,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 @media (max-width: 1024px) {
   .landing-hero { grid-template-columns: 1fr; }
   .landing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .landing-adhd-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .landing-progress-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
@@ -977,7 +1039,12 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   .landing-enter-btn { width: 100%; }
   .landing-grid,
   .landing-progress-grid { grid-template-columns: 1fr; }
+  .landing-adhd-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .preview-embed-wrap { height: 62vh; min-height: 420px; }
+}
+
+@media (max-width: 520px) {
+  .landing-adhd-grid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1034,6 +1101,49 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <article class="landing-card"><span class="landing-card-icon" aria-hidden="true">📝</span><h3>Notes and study organization</h3><p>Keep notes, review plans, and study sessions organized in one place.</p></article>
         <article class="landing-card"><span class="landing-card-icon" aria-hidden="true">🏅</span><h3>Performance hub for student athletes</h3><p>Balance school and training with routines that hold up all season.</p></article>
         <article class="landing-card"><span class="landing-card-icon" aria-hidden="true">📈</span><h3>Progress tracking & habit momentum</h3><p>Build consistency with streaks and progress you can see week to week.</p></article>
+      </section>
+
+      <section class="landing-adhd" aria-labelledby="landingAdhdTitle">
+        <h2 id="landingAdhdTitle">Built for ADHD – Flexible for Everyone.</h2>
+        <div class="landing-adhd-grid">
+          <article class="landing-adhd-card">
+            <span class="landing-adhd-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M8 3v3m8-3v3M4 10h16"/><rect x="4" y="5" width="16" height="16" rx="2"/><rect x="7" y="13" width="3" height="3"/><rect x="11" y="13" width="3" height="3"/><rect x="15" y="13" width="3" height="3"/></svg>
+            </span>
+            <h3>Colour-coded schedules</h3>
+            <p>Colour coding makes each class block instantly visible, improving time perception and reducing time-blindness through clear visual anchors.</p>
+          </article>
+          <article class="landing-adhd-card">
+            <span class="landing-adhd-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 20h16M7 16V9m5 7V4m5 12v-5"/></svg>
+            </span>
+            <h3>Progress bars and streak trackers</h3>
+            <p>Celebrating effort and small wins keeps motivation steady, helping students see momentum even when tasks are completed step by step.</p>
+          </article>
+          <article class="landing-adhd-card">
+            <span class="landing-adhd-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M15 17H5a2 2 0 0 1-2-2c0-2 2-3 2-6a7 7 0 0 1 14 0c0 3 2 4 2 6a2 2 0 0 1-2 2h-1"/><path d="M9 21a3 3 0 0 0 6 0"/></svg>
+            </span>
+            <h3>Flexible reminders and gentle nudges</h3>
+            <p>FocusFlow uses gentle, customisable prompts that support routines without the stress of rigid timers or harsh deadline alarms.</p>
+          </article>
+          <article class="landing-adhd-card">
+            <span class="landing-adhd-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M20 15.5A8.5 8.5 0 1 1 8.5 4 7 7 0 1 0 20 15.5Z"/><path d="M4 20h6m-6-3h10"/></svg>
+            </span>
+            <h3>Focus mode, dark mode &amp; adjustable fonts</h3>
+            <p>Students can switch to dark mode and tune font sizes for sensory comfort, making long study sessions easier to sustain.</p>
+          </article>
+          <article class="landing-adhd-card">
+            <span class="landing-adhd-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="m9 11 2 2 4-4"/><path d="M5 6h14M5 12h3m8 0h3M5 18h14"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            </span>
+            <h3>Task prioritisation &amp; step-by-step flows</h3>
+            <p>Break larger goals into one actionable step at a time, then reorder tasks by priority so attention stays on what matters most.</p>
+          </article>
+        </div>
+        <p class="landing-adhd-tagline"><strong>Your schedule, your way.</strong> Customise your dashboard around class rotations, extracurriculars, study blocks, and rest periods.</p>
+        <p class="landing-adhd-note">The interface follows research-informed ADHD design guidelines with minimal distractions, strong contrast, and progressive disclosure. It is evidence-based, built by a special-education teacher for ADHD students, and flexible for every learner.</p>
       </section>
 
       <section class="landing-credibility" aria-label="Credibility">
