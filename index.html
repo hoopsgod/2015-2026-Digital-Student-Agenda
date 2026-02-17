@@ -82,10 +82,10 @@ body.font-dyslexic { font-family: 'OpenDyslexic', 'Courier New', monospace; }
 
 #appBg {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(135deg, #0a1628 0%, #0d1f27 50%, #00d9ff 100%);
+  background: linear-gradient(180deg, #eef2f7 0%, #e2e8f0 100%);
   z-index: 0; transition: background 0.4s ease;
 }
-body.dark-mode #appBg { background: linear-gradient(135deg, #0f172a 0%, #1a1a2e 50%, #16213e 100%); }
+body.dark-mode #appBg { background: linear-gradient(180deg, #0b1220 0%, #111827 100%); }
 
 /* SIDEBAR */
 .sidebar {
@@ -130,9 +130,7 @@ body.dark-mode .sidebar { border-right-color: rgba(255,255,255,0.08); box-shadow
 .main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; z-index: 1; overflow: hidden; }
 
 .app-header {
-  background:
-    linear-gradient(120deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.72) 55%, rgba(30, 64, 104, 0.65) 100%),
-    linear-gradient(120deg, #0f172a 0%, #17253a 45%, #1e3352 100%);
+  background: linear-gradient(120deg, #0f172a 0%, #1e293b 100%);
   border: 1px solid rgba(255,255,255,0.1);
   border-left: none;
   border-right: none;
@@ -147,9 +145,70 @@ body.dark-mode .sidebar { border-right-color: rgba(255,255,255,0.08); box-shadow
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
 }
-.app-header::after {
-  content: ''; position: absolute; width: 320px; height: 320px; right: -110px; top: -210px;
-  border-radius: 50%; background: radial-gradient(circle, rgba(0,217,255,0.24), rgba(0,217,255,0));
+.app-header::after { display: none; }
+
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  background: rgba(2, 6, 23, 0.82);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.onboarding-overlay.active { display: flex; }
+.onboarding-card {
+  width: min(680px, 100%);
+  background: var(--lux-card);
+  border: 1px solid var(--lux-border);
+  border-radius: 16px;
+  padding: 22px;
+}
+.onboarding-progress { font-size: 11px; color: var(--lux-text-sub); margin-bottom: 10px; font-weight: 700; }
+.onboarding-step { display: none; }
+.onboarding-step.active { display: block; }
+.onboarding-step h3 { font-size: 20px; margin-bottom: 8px; }
+.onboarding-step p { color: var(--lux-text-sub); line-height: 1.5; margin-bottom: 10px; }
+.onboarding-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
+.feature-tip {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--lux-border);
+  font-size: 12px;
+  color: var(--lux-text-sub);
+  background: var(--lux-hover);
+}
+.sidebar-feature-desc {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.task-stepper { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.task-step-dot {
+  border: 1px solid var(--lux-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: var(--lux-text-sub);
+  background: var(--lux-card);
+}
+.task-step-dot.active { background: #0f172a; color: #fff; }
+.task-step-pane { display: none; }
+.task-step-pane.active { display: grid; gap: 10px; }
+.quick-subject-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.quick-subject-btn { min-height: 36px; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--lux-border); background: var(--lux-card); }
+
+.first-time-tip {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  font-size: 11px;
 }
 
 .header-left { display: flex; align-items: center; gap: 14px; z-index: 2; min-width: 0; }
@@ -653,7 +712,8 @@ body.dark-mode .mobile-nav button { color: #e2e8f0; }
     background: rgba(255, 255, 255, 0.97);
   }
   body.dark-mode .app-container { background: rgba(8, 12, 26, 0.94); }
-  .mobile-nav { display: none; }
+  .mobile-nav { display: flex; }
+  .appShell { padding-bottom: 88px; }
   .app-header {
     padding: 12px 14px; position: sticky; top: 0; z-index: 120; border-top: none;
     background:
@@ -718,6 +778,12 @@ body.dark-mode .mobile-nav button { color: #e2e8f0; }
   }
   .card-header { padding: 14px; align-items: flex-start; gap: 10px; }
   .task-item, .link-item { padding: 14px; }
+  #taskForm [style*="grid-template-columns: 1fr 1fr"],
+  #taskForm [style*="grid-template-columns: 1fr 2fr"],
+  #scheduleForm [style*="grid-template-columns: 1fr 2fr"],
+  #scheduleForm [style*="grid-template-columns: 1fr 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1198,16 +1264,16 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-title">Navigation</div>
-        <button class="sidebar-btn active" data-section="profile" onclick="switchSection('profile')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/></svg></span>Dashboard</button>
-        <button class="sidebar-btn" data-section="agenda" onclick="switchSection('agenda')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Log Homework</button>
-        <button class="sidebar-btn" data-section="schedule" onclick="switchSection('schedule')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Schedule</button>
-        <button class="sidebar-btn" data-section="heatmap" onclick="switchSection('heatmap')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"/><path d="M7 15l3-3 3 2 4-5"/><circle cx="7" cy="15" r="1"/><circle cx="10" cy="12" r="1"/><circle cx="13" cy="14" r="1"/><circle cx="17" cy="9" r="1"/></svg></span>Analytics</button>
-        <button class="sidebar-btn" data-section="notes" onclick="switchSection('notes')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>Notes</button>
-        <button class="sidebar-btn" data-section="links" onclick="switchSection('links')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Links</button>
+        <button class="sidebar-btn active" data-section="profile" title="Dashboard overview and quick actions" aria-label="Open Dashboard" onclick="switchSection('profile')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/></svg></span>Dashboard<span class="sidebar-feature-desc">Start here for today’s priorities</span></button>
+        <button class="sidebar-btn" data-section="agenda" title="Homework logging in simple steps" aria-label="Open Log Homework" onclick="switchSection('agenda')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Log Homework<span class="sidebar-feature-desc">Capture tasks quickly with defaults</span></button>
+        <button class="sidebar-btn" data-section="schedule" title="Day cycle and class periods" aria-label="Open Schedule" onclick="switchSection('schedule')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Schedule<span class="sidebar-feature-desc">Manage Day A/B/C class cycles</span></button>
+        <button class="sidebar-btn" data-section="heatmap" title="Analytics and Focus Studio insights" aria-label="Open Analytics" onclick="switchSection('heatmap')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"/><path d="M7 15l3-3 3 2 4-5"/><circle cx="7" cy="15" r="1"/><circle cx="10" cy="12" r="1"/><circle cx="13" cy="14" r="1"/><circle cx="17" cy="9" r="1"/></svg></span>Analytics<span class="sidebar-feature-desc">Track completion and focus trends</span></button>
+        <button class="sidebar-btn" data-section="notes" title="Notes and linked class context" aria-label="Open Notes" onclick="switchSection('notes')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>Notes<span class="sidebar-feature-desc">Capture study notes and attachments</span></button>
+        <button class="sidebar-btn" data-section="links" title="Frequently used school links" aria-label="Open Quick Links" onclick="switchSection('links')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Links<span class="sidebar-feature-desc">One tap access to school tools</span></button>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-title">Appearance</div>
-        <button class="sidebar-btn" onclick="toggleSettingsPanel()"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1 2.3 2.5.7 2-1.5 2 3.4-1.8 1.7.3 2.6 2.2 1.5-2 3.4-2.4-.9-2.2 1.5-.4 2.5h-4l-.4-2.5-2.2-1.5-2.4.9-2-3.4 2.2-1.5.3-2.6L2.5 7.9l2-3.4 2 1.5 2.5-.7z"/><circle cx="12" cy="12" r="3"/></svg></span>Customize</button>
+        <button class="sidebar-btn" onclick="toggleSettingsPanel()"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1 2.3 2.5.7 2-1.5 2 3.4-1.8 1.7.3 2.6 2.2 1.5-2 3.4-2.4-.9-2.2 1.5-.4 2.5h-4l-.4-2.5-2.2-1.5-2.4.9-2-3.4 2.2-1.5.3-2.6L2.5 7.9l2-3.4 2 1.5 2.5-.7z"/><circle cx="12" cy="12" r="3"/></svg></span>Customize App</button><div id="customizeFirstTip" class="first-time-tip" style="display:none;">Tip: personalize themes, branding, and readability in Customize App.</div>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-about">
@@ -1333,6 +1399,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
       <!-- ========== HOMEWORK / TASKS ========== -->
       <div id="section-agenda" class="card section-wrapper">
+        <div class="feature-tip" role="note">Homework logging is now a 3-step flow to reduce form overload.</div>
         <div class="card-header">
           <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Log Homework</div>
           <button class="ghost-btn" onclick="toggleTaskForm()">+ Add Task</button>
@@ -1342,49 +1409,70 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <div id="taskForm" style="display:none; padding: 20px; border-bottom: 1px solid var(--lux-border); background: var(--lux-hover);">
           <div style="display: grid; gap: 10px;">
             <div style="font-size: 13px; font-weight: 700; color: var(--lux-text-main); margin-bottom: 2px;" id="taskFormTitle">Add Task</div>
-            <div style="display:flex; gap:8px; align-items:end;">
-              <div class="form-field" style="flex:1;">
-                <label class="form-label" for="taskNaturalInput">Quick add from sentence</label>
-                <input id="taskNaturalInput" class="pro-input" placeholder="Try: Math homework due Friday at 5pm" aria-label="Quick add task from natural language" />
+            <div class="task-stepper" aria-label="Homework form progress">
+              <span class="task-step-dot active" data-task-step="1">1. Assignment</span>
+              <span class="task-step-dot" data-task-step="2">2. Class + due date</span>
+              <span class="task-step-dot" data-task-step="3">3. Priority + notes</span>
+            </div>
+            <div class="task-step-pane active" data-task-pane="1">
+              <div style="display:flex; gap:8px; align-items:end;">
+                <div class="form-field" style="flex:1;">
+                  <label class="form-label" for="taskNaturalInput">Quick add from sentence</label>
+                  <input id="taskNaturalInput" class="pro-input" placeholder="Try: Math worksheet due Friday" aria-label="Quick add task from natural language" />
+                </div>
+                <button class="ghost-btn" onclick="parseNaturalTaskInput()" aria-label="Parse quick add sentence">Parse</button>
               </div>
-              <button class="ghost-btn" onclick="parseNaturalTaskInput()" aria-label="Parse quick add sentence">Parse</button>
+              <div class="form-field">
+                <label class="form-label" for="taskTitle">Assignment title</label>
+                <input id="taskTitle" class="pro-input" placeholder="Example: Finish chapter 3 questions" aria-label="Assignment title" />
+              </div>
+              <div class="quick-subject-row" aria-label="Quick subject buttons">
+                <button type="button" class="quick-subject-btn" onclick="setTaskSubject('Math')">Math</button>
+                <button type="button" class="quick-subject-btn" onclick="setTaskSubject('English')">English</button>
+                <button type="button" class="quick-subject-btn" onclick="setTaskSubject('Science')">Science</button>
+                <button type="button" class="quick-subject-btn" onclick="setTaskSubject('History')">History</button>
+              </div>
+              <div style="display:flex; gap: 8px;">
+                <button class="primary-btn" onclick="setTaskStep(2)">Next</button>
+                <button class="ghost-btn" onclick="toggleTaskForm()" aria-label="Cancel adding task">Cancel</button>
+              </div>
             </div>
-            <div class="form-field">
-              <label class="form-label" for="taskTitle">Assignment title</label>
-              <input id="taskTitle" class="pro-input" placeholder="Assignment title..." aria-label="Assignment title" />
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="task-step-pane" data-task-pane="2">
               <div class="form-field">
                 <label class="form-label" for="taskSubject">Subject</label>
                 <select id="taskSubject" class="pro-select pro-input" aria-label="Select subject">
-                  <option value="">Subject...</option>
+                  <option value="">Subject (example: Math)</option>
                   <option>Math</option><option>English</option><option>Science</option>
                   <option>History</option><option>Spanish</option><option>Art</option>
                   <option>PE</option><option>Music</option><option>Tech</option><option>Other</option>
                 </select>
               </div>
               <div class="form-field">
-                <label class="form-label" for="taskPriority">Priority</label>
-                <select id="taskPriority" class="pro-select pro-input" aria-label="Select priority level">
-                  <option value="low">Low Priority</option>
-                  <option value="medium" selected>Medium Priority</option>
-                  <option value="high">High Priority</option>
-                </select>
-              </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <div class="form-field">
                 <label class="form-label" for="taskDue">Due date</label>
                 <input id="taskDue" type="date" class="pro-input" aria-label="Due date" />
               </div>
-              <div class="form-field">
-                <label class="form-label" for="taskNotes">Notes</label>
-                <input id="taskNotes" class="pro-input" placeholder="Notes (optional)" aria-label="Task notes" />
+              <div style="display: flex; gap: 10px;">
+                <button class="ghost-btn" onclick="setTaskStep(1)">Back</button>
+                <button class="primary-btn" onclick="setTaskStep(3)">Next</button>
               </div>
             </div>
-            <div style="display: flex; gap: 10px;">
-              <button class="primary-btn" id="taskFormSaveBtn" onclick="addTask()" aria-label="Save task">Save Task</button>
-              <button class="ghost-btn" onclick="toggleTaskForm()" aria-label="Cancel adding task">Cancel</button>
+            <div class="task-step-pane" data-task-pane="3">
+              <div class="form-field">
+                <label class="form-label" for="taskPriority">Priority</label>
+                <select id="taskPriority" class="pro-select pro-input" aria-label="Select priority level">
+                  <option value="low">Low (can wait)</option>
+                  <option value="medium" selected>Medium (this week)</option>
+                  <option value="high">High (urgent)</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="taskNotes">Notes</label>
+                <input id="taskNotes" class="pro-input" placeholder="Optional details" aria-label="Task notes" />
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="ghost-btn" onclick="setTaskStep(2)">Back</button>
+                <button class="primary-btn" id="taskFormSaveBtn" onclick="addTask()" aria-label="Save task">Save Task</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1413,6 +1501,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
       <!-- ========== SCHEDULE ========== -->
       <div id="section-schedule" class="card section-wrapper">
+        <div class="feature-tip" role="note">Day cycles repeat in order (A→B→C...). Add classes under each day tab. Start with the sample template if needed.</div>
         <div class="card-header">
           <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Schedule</div>
           <button class="ghost-btn" onclick="toggleScheduleForm()">+ Add Period</button>
@@ -1420,6 +1509,11 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
         <div style="padding: 14px 20px; border-bottom: 1px solid var(--lux-border); display: grid; gap: 10px; background: var(--lux-hover);">
           <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--lux-text-sub);">Schedule Setup</div>
+          <div style="font-size:12px;color:var(--lux-text-sub);margin-top:8px;">Day A/B/C means your class order rotates by day. Choose cycle length, then add each period under the active day tab.</div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+            <button class="ghost-btn" type="button" onclick="applyScheduleTemplate()">Load Example Template</button>
+            <button class="ghost-btn" type="button" onclick="toggleScheduleForm()">Add Class Manually</button>
+          </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <select id="scheduleDayStyle" class="pro-select" onchange="updateScheduleSettings()">
               <option value="letter">Letter days (A-E)</option>
@@ -1681,6 +1775,32 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 </div>
 <div id="mobileSidebarBackdrop" class="mobile-sidebar-backdrop"></div>
 <div id="settingsPanelBackdrop" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;"></div>
+<div id="onboardingOverlay" class="onboarding-overlay" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+  <div class="onboarding-card" tabindex="-1" id="onboardingCard">
+    <div class="onboarding-progress" id="onboardingProgress">Step 1 of 4</div>
+    <section class="onboarding-step active" data-onboarding-step="1">
+      <h3 id="onboardingTitle">Welcome to FocusFlow</h3>
+      <p>Your calm, structured agenda for managing classes, assignments, notes, and focus sessions.</p>
+    </section>
+    <section class="onboarding-step" data-onboarding-step="2">
+      <h3>How this helps</h3>
+      <p>Use Dashboard for priorities, Log Homework for quick task capture, and Notes for study prep.</p>
+    </section>
+    <section class="onboarding-step" data-onboarding-step="3">
+      <h3>Schedule setup guidance</h3>
+      <p>Pick your day cycle (A/B/C or 1/2/3), then add periods by day tab. You can load an editable example template anytime.</p>
+    </section>
+    <section class="onboarding-step" data-onboarding-step="4">
+      <h3>Your data and storage</h3>
+      <p>Data is saved on this device using local storage. A cloud sync placeholder is ready for future account sync.</p>
+    </section>
+    <div class="onboarding-actions">
+      <button class="ghost-btn" type="button" id="onboardingBackBtn" onclick="advanceOnboarding(-1)">Back</button>
+      <button class="primary-btn" type="button" id="onboardingNextBtn" onclick="advanceOnboarding(1)">Next</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- CONFIRM DIALOG -->
 <div id="confirmOverlay" class="confirm-overlay" onclick="if(event.target===this)dismissConfirm()">
@@ -1699,13 +1819,13 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
   <!-- MOBILE NAV -->
 
-  <nav class="mobile-nav">
-    <button onclick="goToLanding()"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg></span>Landing</button>
-    <button onclick="switchSection('profile')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/></svg></span>Home</button>
-    <button onclick="switchSection('agenda')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Work</button>
-    <button onclick="switchSection('schedule')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Sched</button>
-    <button onclick="switchSection('notes')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>Notes</button>
-    <button onclick="switchSection('links')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Links</button>
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <button title="Go to landing page" aria-label="Go to landing page" onclick="goToLanding()"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg></span>Landing</button>
+    <button title="Dashboard" aria-label="Open Dashboard" onclick="switchSection('profile')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/></svg></span>Home</button>
+    <button title="Log Homework" aria-label="Open Log Homework" onclick="switchSection('agenda')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Homework</button>
+    <button title="Schedule" aria-label="Open Schedule" onclick="switchSection('schedule')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Schedule</button>
+    <button title="Notes" aria-label="Open Notes" onclick="switchSection('notes')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>Notes</button>
+    <button title="Quick Links" aria-label="Open Quick Links" onclick="switchSection('links')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Links</button>
   </nav>
 
 </div>
@@ -1716,6 +1836,8 @@ const ROUTES = {
 };
 const DEMO_MODE = new URLSearchParams(window.location.search).get('demo') === '1';
 const MOBILE_BREAKPOINT = 768;
+const ONBOARDING_STORAGE_KEY = "focusflow_onboarding_complete_v1";
+const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 
 let landingPreviewMode = 'desktop';
 
@@ -1871,6 +1993,7 @@ const DB = {
   uploads: readJSON('agenda_uploads', []),
   focusSessions: readJSON('agenda_focusSessions', []),
   pomodoroSettings: readJSON('agenda_pomodoroSettings', { focusMinutes: 25, breakMinutes: 5 }),
+  syncMetadata: readJSON('agenda_syncMetadata', { provider: 'local-only', lastSyncedAt: null, cloudSyncEnabled: false }),
   points: parseInt(STORAGE.getItem('agenda_points') || '0', 10) || 0,
   save(key) { if (DEMO_MODE) return; STORAGE.setItem('agenda_' + key, JSON.stringify(this[key])); },
   savePoints() { if (DEMO_MODE) return; STORAGE.setItem('agenda_points', String(this.points)); }
@@ -1980,6 +2103,84 @@ function normalizeLinkIcon(rawIcon) {
   return map[normalized] || normalized || 'link';
 }
 
+
+function setTaskStep(step) {
+  const safeStep = Math.min(Math.max(parseInt(step, 10) || 1, 1), 3);
+  document.querySelectorAll('.task-step-dot').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.taskStep, 10) === safeStep);
+  });
+  document.querySelectorAll('.task-step-pane').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.taskPane, 10) === safeStep);
+  });
+}
+
+function setTaskSubject(subject) {
+  const field = document.getElementById('taskSubject');
+  if (!field) return;
+  field.value = subject;
+  setTaskStep(2);
+}
+
+function applyScheduleTemplate() {
+  if (DB.schedule.length > 0) {
+    showConfirm('Replace Existing Schedule?', 'This will add an editable sample schedule. Continue?', 'Use Template', () => seedScheduleTemplate());
+    return;
+  }
+  seedScheduleTemplate();
+}
+
+function seedScheduleTemplate() {
+  const labels = getScheduleDayLabels();
+  const classes = [
+    { period: '1', className: 'Algebra', start: '08:00', end: '08:45', room: '201', teacher: 'Ms. Lee' },
+    { period: '2', className: 'English', start: '08:50', end: '09:35', room: '114', teacher: 'Mr. Hall' },
+    { period: '3', className: 'Science', start: '09:40', end: '10:25', room: '310', teacher: 'Dr. Singh' }
+  ];
+  DB.schedule = labels.flatMap(day => classes.map((c, i) => ({ ...c, id: Date.now() + Math.floor(Math.random()*1000) + i, day })));
+  DB.save('schedule');
+  renderSchedule();
+}
+
+let onboardingStep = 1;
+function renderOnboardingStep() {
+  const steps = document.querySelectorAll('.onboarding-step');
+  steps.forEach((el, idx) => el.classList.toggle('active', idx + 1 === onboardingStep));
+  const progress = document.getElementById('onboardingProgress');
+  if (progress) progress.textContent = `Step ${onboardingStep} of ${steps.length}`;
+  const nextBtn = document.getElementById('onboardingNextBtn');
+  if (nextBtn) nextBtn.textContent = onboardingStep >= steps.length ? 'Start using FocusFlow' : 'Next';
+  const backBtn = document.getElementById('onboardingBackBtn');
+  if (backBtn) backBtn.disabled = onboardingStep === 1;
+}
+
+function advanceOnboarding(direction) {
+  const total = document.querySelectorAll('.onboarding-step').length;
+  if (direction > 0 && onboardingStep === total) {
+    STORAGE.setItem(ONBOARDING_STORAGE_KEY, 'true');
+    document.getElementById('onboardingOverlay')?.classList.remove('active');
+    return;
+  }
+  onboardingStep = Math.min(Math.max(onboardingStep + direction, 1), total);
+  renderOnboardingStep();
+}
+
+function maybeShowOnboarding() {
+  if (DEMO_MODE) return;
+  if (STORAGE.getItem(ONBOARDING_STORAGE_KEY) === 'true') return;
+  if (normalizedHash() !== ROUTES.APP) return;
+  onboardingStep = 1;
+  renderOnboardingStep();
+  document.getElementById('onboardingOverlay')?.classList.add('active');
+  document.getElementById('onboardingCard')?.focus();
+}
+
+function maybeShowCustomizeTip() {
+  if (STORAGE.getItem(CUSTOMIZE_TIP_STORAGE_KEY) === 'true') return;
+  const tip = document.getElementById('customizeFirstTip');
+  if (!tip) return;
+  tip.style.display = 'block';
+}
+
 // ==================== TASKS ====================
 function toggleTaskForm() {
   const f = document.getElementById('taskForm');
@@ -1990,6 +2191,7 @@ function toggleTaskForm() {
     document.getElementById('taskFormSaveBtn').textContent = 'Save Task';
   } else {
     f.style.display = 'block';
+    setTaskStep(1);
   }
 }
 
@@ -2049,6 +2251,8 @@ function addTask() {
   document.getElementById('taskDue').value = '';
   document.getElementById('taskNotes').value = '';
   document.getElementById('taskNaturalInput').value = '';
+  document.getElementById('taskDue').valueAsDate = new Date(Date.now() + 86400000);
+  setTaskStep(1);
   toggleTaskForm();
   renderTasks();
   updateDashboard();
@@ -2659,7 +2863,7 @@ function renderSchedule() {
   const blocks = DB.schedule.filter(b => b.day === currentDay).sort((a, b) => (a.start || '').localeCompare(b.start || '') || (a.period || '').localeCompare(b.period || ''));
 
   if (blocks.length === 0) {
-    list.innerHTML = '<div class="empty-msg">No classes for ' + dayDisplayLabel(currentDay) + '. Add periods above or upload your schedule.</div>';
+    list.innerHTML = '<div class="empty-msg">No classes for ' + dayDisplayLabel(currentDay) + '. Tap "Load Example Template" for a starter schedule or add your first class above.</div>';
     return;
   }
 
@@ -3311,6 +3515,7 @@ function switchSection(sectionId) {
   isBackNavigation = false;
   closeMobileSidebar();
   if (sectionId === 'heatmap') updateAnalytics();
+  if (sectionId === 'schedule') renderSchedule();
 }
 
 function toggleMobileSidebar() {
@@ -3344,6 +3549,9 @@ function toggleSettingsPanel(forceOpen) {
   const toggle = document.getElementById('settingsToggle');
   if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
   if (open) {
+    STORAGE.setItem(CUSTOMIZE_TIP_STORAGE_KEY, 'true');
+    const tip = document.getElementById('customizeFirstTip');
+    if (tip) tip.style.display = 'none';
     lastFocusedBeforePanel = document.activeElement;
     p.focus();
   } else if (lastFocusedBeforePanel && typeof lastFocusedBeforePanel.focus === 'function') {
@@ -3379,7 +3587,7 @@ function applyColorTheme(name) {
   r.style.setProperty('--titan-primary', t.primary);
   r.style.setProperty('--titan-accent', t.accent);
   r.style.setProperty('--sidebar-gradient', `linear-gradient(180deg, ${t.primary} 0%, ${shadeColor(t.primary, -15)} 100%)`);
-  document.getElementById('appBg').style.background = `linear-gradient(135deg, ${shadeColor(t.primary, 95)} 0%, ${shadeColor(t.primary, 85)} 40%, ${t.accent} 100%)`;
+  document.getElementById('appBg').style.background = `linear-gradient(180deg, ${shadeColor(t.primary, 92)} 0%, ${shadeColor(t.primary, 84)} 100%)`;
   STORAGE.setItem('currentTheme', name); currentTheme = name; renderThemeGrid();
 }
 
@@ -3672,6 +3880,8 @@ function renderApp({ demoMode = false } = {}) {
   updateAnalytics();
   initQuote();
   loadBranding();
+  DB.syncMetadata.lastSyncedAt = new Date().toISOString();
+  DB.save('syncMetadata');
   switchSection('profile');
 }
 
@@ -3685,7 +3895,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDemoModeGuards();
   setupLandingPreview();
   updateRouteView();
-  window.addEventListener('hashchange', updateRouteView);
+  window.addEventListener('hashchange', () => { updateRouteView(); maybeShowOnboarding(); });
 
   // Load preferences
   if (STORAGE.getItem('dyslexia') === 'true') document.body.classList.add('font-dyslexic');
@@ -3770,6 +3980,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   renderApp({ demoMode: DEMO_MODE });
+  maybeShowCustomizeTip();
+  maybeShowOnboarding();
 });
 </script>
 
