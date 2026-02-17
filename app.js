@@ -382,19 +382,27 @@ function editTask(id) {
 function addTask() {
   let title = document.getElementById('taskTitle').value.trim();
   const naturalText = document.getElementById('taskNaturalInput').value.trim();
+  const dueInput = document.getElementById('taskDue');
+  const priorityInput = document.getElementById('taskPriority');
+  let due = dueInput.value;
+  let priority = priorityInput.value || 'medium';
   if (!title && naturalText) {
     parseNaturalTaskInput();
     title = document.getElementById('taskTitle').value.trim();
+    due = dueInput.value;
+    priority = priorityInput.value || 'medium';
   }
   if (!title) return alert('Please enter a task title');
+  if (!due) return alert('Please select a due date');
+  if (!priority) priority = 'medium';
 
   if (editingTaskId) {
     const t = DB.tasks.find(x => x.id === editingTaskId);
     if (t) {
       t.title = title;
       t.subject = document.getElementById('taskSubject').value;
-      t.priority = document.getElementById('taskPriority').value;
-      t.due = document.getElementById('taskDue').value;
+      t.priority = priority;
+      t.due = due;
       t.assignedDate = document.getElementById('taskAssignedDate').value;
       t.notes = document.getElementById('taskNotes').value;
     }
@@ -406,8 +414,8 @@ function addTask() {
       id: Date.now(),
       title,
       subject: document.getElementById('taskSubject').value,
-      priority: document.getElementById('taskPriority').value,
-      due: document.getElementById('taskDue').value,
+      priority,
+      due,
       assignedDate: document.getElementById('taskAssignedDate').value,
       notes: document.getElementById('taskNotes').value,
       completed: false,
@@ -419,11 +427,10 @@ function addTask() {
   document.getElementById('taskTitle').value = '';
   document.getElementById('taskSubject').value = '';
   document.getElementById('taskPriority').value = 'medium';
-  document.getElementById('taskDue').value = '';
+  document.getElementById('taskDue').valueAsDate = new Date(Date.now() + 86400000);
   document.getElementById('taskAssignedDate').value = '';
   document.getElementById('taskNotes').value = '';
   document.getElementById('taskNaturalInput').value = '';
-  document.getElementById('taskDue').valueAsDate = new Date(Date.now() + 86400000);
   document.getElementById('taskAssignedDate').valueAsDate = new Date();
   setTaskStep(1);
   toggleTaskForm();
@@ -520,9 +527,13 @@ function renderTasks() {
   }
 
   list.innerHTML = tasks.map(t => {
+    const priority = t.priority || 'medium';
     const isOverdue = !t.completed && t.due && t.due < today;
     const assignedDateStr = t.assignedDate ? new Date(t.assignedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
     const dueStr = t.due ? new Date(t.due + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+    const dueMeta = dueStr
+      ? 'Due: ' + dueStr + (isOverdue ? ' (overdue)' : '')
+      : 'No due date';
     const sc = getSubjectColor(t.subject);
     const borderColor = t.subject ? sc.border : 'var(--lux-border)';
     const subjectBadge = t.subject ? `<span class="subject-badge" style="background:${sc.bg};color:${sc.text};">${t.subject}</span>` : '';
@@ -530,12 +541,12 @@ function renderTasks() {
     return `<div class="task-item ${t.completed ? 'completed' : ''}" style="border-left-color:${borderColor};">
       <button class="task-checkbox ${t.completed ? 'checked' : ''}" onclick="toggleTask(${t.id})" aria-label="${completionLabel}" title="${completionLabel}"></button>
       <div class="task-body">
-        <div class="task-title"><span class="priority-dot priority-${t.priority}"></span>${t.title}</div>
+        <div class="task-title"><span class="priority-dot priority-${priority}"></span>${t.title}</div>
         <div class="task-meta">
           ${subjectBadge}
           ${assignedDateStr ? '<span><span class="ui-icon" aria-hidden="true">' + icon('calendar') + '</span> Assigned: ' + assignedDateStr + '</span>' : ''}
-          ${dueStr ? '<span' + (isOverdue ? ' style="color:var(--lux-danger);font-weight:700"' : '') + '><span class="ui-icon" aria-hidden="true">' + icon('calendar') + '</span> ' + dueStr + (isOverdue ? ' (overdue)' : '') + '</span>' : ''}
-          <span class="priority-label priority-${t.priority}">${t.priority.charAt(0).toUpperCase() + t.priority.slice(1)} priority</span>
+          <span${isOverdue ? ' style="color:var(--lux-danger);font-weight:700"' : ''}><span class="ui-icon" aria-hidden="true">${icon('calendar')}</span> ${dueMeta}</span>
+          <span class="priority-label priority-${priority}">${priority.charAt(0).toUpperCase() + priority.slice(1)}</span>
           ${t.notes ? '<span><span class="ui-icon" aria-hidden="true">' + icon('note') + '</span> ' + t.notes + '</span>' : ''}
         </div>
       </div>
