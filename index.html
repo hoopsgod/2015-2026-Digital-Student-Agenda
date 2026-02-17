@@ -286,6 +286,7 @@ body.dark-mode .card-title { color: var(--titan-accent); }
 .dashboard-logo { width: 128px; height: 128px; border-radius: 18px; background: linear-gradient(135deg, rgba(0,0,0,0.06), rgba(0,0,0,0.03)); border: 1px solid rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; }
 .dashboard-logo img { width: 82%; height: 82%; object-fit: contain; }
 .dashboard-title-section h1 { font-size: 56px; font-weight: 600; color: var(--lux-text-main); margin: 0 0 8px 0; line-height: 1; letter-spacing: -0.03em; }
+.dashboard-title-section .brand-app-name { color: var(--titan-accent); }
 .dashboard-title-section h2 { font-size: 11px; letter-spacing: 0.08em; font-weight: 500; text-transform: uppercase; color: var(--lux-text-sub); margin: 0 0 10px 0; }
 .dashboard-title-section p { font-size: 13px; color: var(--lux-text-sub); margin: 0; font-weight: 500; }
 .dashboard-info-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -1059,7 +1060,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               <div class="dashboard-logo"><img id="dashboardLogoImg" src="assets/main-logo.svg" alt="FocusFlow"></div>
               <div class="dashboard-title-section">
                 <h2>Performance Hub</h2>
-                <h1 class="brand-app-name">FocusFlow</h1>
+                <h1 class="brand-app-name">My Agenda</h1>
                 <p class="brand-tagline">Elite Athlete Dashboard</p>
               </div>
             </div>
@@ -1446,7 +1447,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <!-- Title -->
         <div>
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--lux-text-sub);margin-bottom:6px;">Title</div>
-          <input id="brandName" class="pro-input" placeholder="FocusFlow" maxlength="20" oninput="updateBrandName(this.value)" style="color:var(--titan-accent);font-weight:700;" />
+          <input id="brandName" class="pro-input" placeholder="My Agenda" maxlength="20" oninput="updateBrandName(this.value)" style="color:var(--titan-accent);font-weight:700;" />
         </div>
         <!-- Subtitle -->
         <div>
@@ -3175,7 +3176,7 @@ function renderThemeGrid() {
 const COMPANY_LOGO = 'assets/main-logo.svg';
 const DEFAULT_DASHBOARD_LOGO = COMPANY_LOGO;
 const DASHBOARD_LOGO_STORAGE_KEY = 'dashboard_logo';
-const DEFAULT_NAME = 'FocusFlow';
+const DEFAULT_NAME = 'My Agenda';
 const DEFAULT_SUBTITLE = '2025-2026 Digital Agenda';
 const DEFAULT_TAGLINE = 'Elite Athlete Dashboard';
 
@@ -3221,7 +3222,7 @@ function applyLogo() {
 function updateBrandName(val) {
   const name = val.trim() || DEFAULT_NAME;
   STORAGE.setItem('brand_name', val.trim());
-  document.querySelectorAll('.brand-app-name').forEach(el => el.textContent = name);
+  document.querySelectorAll('.dashboard-title-section .brand-app-name').forEach(el => el.textContent = name);
 }
 
 function updateBrandSubtitle(val) {
@@ -3242,7 +3243,7 @@ function resetBranding() {
   STORAGE.removeItem('brand_subtitle');
   STORAGE.removeItem('brand_tagline');
   applyLogo();
-  document.querySelectorAll('.brand-app-name').forEach(el => el.textContent = DEFAULT_NAME);
+  document.querySelectorAll('.dashboard-title-section .brand-app-name').forEach(el => el.textContent = DEFAULT_NAME);
   document.querySelectorAll('.brand-subtitle').forEach(el => el.textContent = DEFAULT_SUBTITLE);
   document.querySelectorAll('.brand-tagline').forEach(el => el.textContent = DEFAULT_TAGLINE);
   document.getElementById('brandName').value = '';
@@ -3257,7 +3258,7 @@ function loadBranding() {
   const name = STORAGE.getItem('brand_name');
   if (name) {
     document.getElementById('brandName').value = name;
-    document.querySelectorAll('.brand-app-name').forEach(el => el.textContent = name);
+    document.querySelectorAll('.dashboard-title-section .brand-app-name').forEach(el => el.textContent = name);
   }
 
   const subtitle = STORAGE.getItem('brand_subtitle');
