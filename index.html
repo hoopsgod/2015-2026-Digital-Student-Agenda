@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#0a1628">
   <meta name="description" content="FocusFlow keeps assignments, schedules, notes, and study routines in one focused workspace built for real student momentum, especially for students with ADHD.">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="assets/focusflow-logo.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/focusflow-mark.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <title>FocusFlow</title>
@@ -666,7 +666,6 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 .landing-copy { position: relative; z-index: 1; }
 .landing-brand-lockup { display: inline-flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 10px 14px; border-radius: 14px; border: 1px solid rgba(30, 64, 175, 0.18); background: rgba(255,255,255,0.9); box-shadow: 0 14px 30px rgba(30, 64, 175, 0.14); }
 .landing-brand-logo { width: 58px; height: 58px; object-fit: contain; filter: drop-shadow(0 10px 22px rgba(15, 23, 42, 0.24)); }
-.landing-brand-text { font-size: 1.05rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 800; color: #0f2a6f; }
 .landing-copy h1 {
   font-family: 'IBM Plex Sans', sans-serif;
   font-size: clamp(2rem, 4.6vw, 4rem);
@@ -798,7 +797,6 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <div class="landing-copy">
           <div class="landing-brand-lockup">
             <img class="landing-brand-logo" src="assets/focusflow-logo.svg" alt="FocusFlow logo">
-            <span class="landing-brand-text">FocusFlow</span>
           </div>
           <h1>FocusFlow keeps you ahead of every class, assignment, and deadline.</h1>
           <p>FocusFlow keeps assignments, schedules, notes, and study routines in one focused workspace built for real student momentum.</p>
@@ -871,7 +869,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
     <div class="sidebar" id="mobileSidebar">
       <div class="sidebar-header">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-          <img class="sidebar-logo-img" src="assets/focusflow-logo.svg" alt="FocusFlow" style="height: 32px; width: 32px; object-fit: contain;">
+          <img class="sidebar-logo-img" src="assets/focusflow-mark.svg" alt="FocusFlow" style="height: 32px; width: 32px; object-fit: contain;">
           <div class="sidebar-title brand-app-name" style="margin: 0;">FocusFlow</div>
         </div>
         <div class="sidebar-subtitle brand-subtitle">2025-2026 Digital Agenda</div>
@@ -908,7 +906,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 <div class="main-content">
   <div class="app-header">
     <div class="header-left">
-      <img class="header-logo" src="assets/focusflow-logo.svg" alt="FocusFlow">
+      <img class="header-logo" src="assets/focusflow-mark.svg" alt="FocusFlow">
       <div class="header-brand">
         <div class="header-eyebrow">FocusFlow</div>
         <div class="header-title brand-app-name">FocusFlow</div>
@@ -941,7 +939,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <div class="dashboard-container">
           <div class="dashboard-header">
             <div class="dashboard-left">
-              <div class="dashboard-logo"><img src="assets/focusflow-logo.svg" alt="FocusFlow"></div>
+              <div class="dashboard-logo"><img src="assets/focusflow-mark.svg" alt="FocusFlow"></div>
               <div class="dashboard-title-section">
                 <h2>Performance Hub</h2>
                 <h1 class="brand-app-name">FocusFlow</h1>
@@ -3049,7 +3047,8 @@ function renderThemeGrid() {
 }
 
 // ==================== BRANDING ====================
-const COMPANY_LOGO = 'assets/focusflow-logo.svg';
+const COMPANY_LOGO = 'assets/focusflow-mark.svg';
+const COMPANY_WORDMARK_LOGO = 'assets/focusflow-logo.svg';
 const LOCKED_BRAND_LOGO_NOTICE = 'FocusFlow logo is locked to preserve crisp brand quality.';
 const DEFAULT_LOGO = COMPANY_LOGO;
 const DEFAULT_NAME = 'FocusFlow';
@@ -3064,7 +3063,8 @@ function handleLogoUpload(e) {
 }
 
 function applyLogo() {
-  document.querySelectorAll('.sidebar-logo-img, .header-logo, .landing-brand-logo').forEach(img => img.src = COMPANY_LOGO);
+  document.querySelectorAll('.sidebar-logo-img, .header-logo').forEach(img => img.src = COMPANY_LOGO);
+  document.querySelectorAll('.landing-brand-logo').forEach(img => img.src = COMPANY_WORDMARK_LOGO);
   const dashLogo = document.querySelector('.dashboard-logo img');
   if (dashLogo) dashLogo.src = COMPANY_LOGO;
   const previewImg = document.getElementById('logoPreviewImg');
