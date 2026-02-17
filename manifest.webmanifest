@@ -1,24 +1,17 @@
 {
   "name": "FocusFlow",
   "short_name": "FocusFlow",
-  "description": "FocusFlow keeps assignments, schedules, notes, and study routines in one focused workspace, especially for students with ADHD.",
-  "start_url": "./index.html",
-  "scope": "./",
+  "description": "FocusFlow keeps assignments, schedules, notes, and study routines in one focused workspace built for real student momentum.",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#0a1628",
   "theme_color": "#0a1628",
   "icons": [
     {
-      "src": "icons/icon-192.svg",
-      "sizes": "192x192",
+      "src": "assets/focusflow-logo.svg",
+      "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-512.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
