@@ -1487,6 +1487,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   <!-- MOBILE NAV -->
 
   <nav class="mobile-nav">
+    <button onclick="goToLanding()"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg></span>Landing</button>
     <button onclick="switchSection('profile')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/></svg></span>Home</button>
     <button onclick="switchSection('agenda')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Work</button>
     <button onclick="switchSection('schedule')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Sched</button>
@@ -1518,6 +1519,10 @@ function enterApp() {
     sessionStorage.setItem('focusflow-mobile-entered-app', '1');
   } catch (_) {}
   window.location.hash = ROUTES.APP;
+}
+
+function goToLanding() {
+  window.location.hash = ROUTES.LANDING;
 }
 
 function shouldForceMobileLanding() {
