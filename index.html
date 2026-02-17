@@ -867,54 +867,51 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   border: 1px solid #bfdbfe; background: #eff6ff; color: #1d4ed8; border-radius: 999px;
   font-size: 0.72rem; font-weight: 800; padding: 6px 10px;
 }
-.preview-image-wrap {
-  position: relative;
+.preview-mode-controls { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.preview-mode-toggle {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
 }
-.preview-image {
+.preview-mode-toggle[aria-pressed="true"] {
+  border-color: #1d4ed8;
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+.preview-embed-wrap {
+  position: relative;
   width: 100%;
-  height: min(56vh, 600px);
+  height: min(58vh, 640px);
   border: 1px solid #d7deeb;
   border-radius: 16px;
+  overflow: hidden;
   background: #fff;
+  transition: width 0.2s ease;
+}
+.preview-embed-wrap.preview-mode-mobile {
+  width: min(360px, 80vw);
+  margin: 0 auto;
+  border-radius: 30px;
+  border: 10px solid #0f172a;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.24);
+}
+.preview-embed {
+  width: 100%;
+  height: 100%;
+  border: 0;
   display: block;
-  object-fit: cover;
-  transition: opacity 0.16s ease;
-}
-.preview-controls {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.preview-nav-btn {
-  border: 1px solid #c9d7ec;
-  background: #f8fbff;
-  color: #0f172a;
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-weight: 700;
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-.preview-nav-btn:hover,
-.preview-nav-btn:focus-visible { background: #eef4ff; }
-.preview-dots {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.preview-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 1px solid #94a3b8;
   background: #fff;
-  cursor: pointer;
 }
-.preview-dot[aria-current="true"] {
-  background: #0f172a;
-  border-color: #0f172a;
+.preview-help-text {
+  margin-top: 10px;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 .landing-grid { display: grid; gap: 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .landing-card {
@@ -980,7 +977,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   .landing-enter-btn { width: 100%; }
   .landing-grid,
   .landing-progress-grid { grid-template-columns: 1fr; }
-  .preview-image { height: 54vh; min-height: 340px; }
+  .preview-embed-wrap { height: 62vh; min-height: 420px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1019,16 +1016,16 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <div id="preview" class="preview-frame-wrap">
           <div class="preview-frame-head">
             <span class="preview-frame-title">Preview the experience</span>
-            <span class="preview-frame-pill">Static Screenshots</span>
+            <div class="preview-mode-controls" role="group" aria-label="Choose landing preview mode">
+              <button id="desktopPreviewModeBtn" class="preview-mode-toggle" type="button" aria-pressed="true">Desktop</button>
+              <button id="mobilePreviewModeBtn" class="preview-mode-toggle" type="button" aria-pressed="false">Mobile</button>
+              <span id="previewModePill" class="preview-frame-pill">Desktop Preview</span>
+            </div>
           </div>
-          <div class="preview-image-wrap">
-            <img id="previewImage" class="preview-image" alt="FocusFlow preview screenshot" loading="lazy" src="assets/preview-1.svg">
+          <div id="previewEmbedWrap" class="preview-embed-wrap">
+            <iframe id="previewEmbed" class="preview-embed" title="Interactive FocusFlow app preview" loading="lazy" referrerpolicy="no-referrer" src="about:blank"></iframe>
           </div>
-          <div class="preview-controls" aria-label="Preview screenshot controls">
-            <button id="previewPrevBtn" class="preview-nav-btn" type="button" aria-label="Show previous screenshot">Prev</button>
-            <div id="previewDots" class="preview-dots" role="tablist" aria-label="Choose preview screenshot"></div>
-            <button id="previewNextBtn" class="preview-nav-btn" type="button" aria-label="Show next screenshot">Next</button>
-          </div>
+          <p class="preview-help-text">Interactive preview: open menus, switch sections, and test core flows safely in demo mode.</p>
         </div>
       </section>
 
@@ -1610,54 +1607,33 @@ const ROUTES = {
 const DEMO_MODE = new URLSearchParams(window.location.search).get('demo') === '1';
 const MOBILE_BREAKPOINT = 768;
 
-const LANDING_PREVIEW_SHOTS = [
-  { src: 'assets/preview-1.svg', alt: 'Dashboard screenshot preview' },
-  { src: 'assets/preview-2.svg', alt: 'Weekly agenda screenshot preview' },
-  { src: 'assets/preview-3.svg', alt: 'Notes and focus tools screenshot preview' }
-];
-let landingPreviewIndex = 0;
+let landingPreviewMode = 'desktop';
 
-function renderLandingPreview() {
-  const previewImage = document.getElementById('previewImage');
-  const dotWrap = document.getElementById('previewDots');
-  if (!previewImage || !dotWrap) return;
+function setLandingPreviewMode(mode) {
+  if (mode !== 'desktop' && mode !== 'mobile') return;
+  landingPreviewMode = mode;
 
-  const shot = LANDING_PREVIEW_SHOTS[landingPreviewIndex];
-  previewImage.src = shot.src;
-  previewImage.alt = shot.alt;
+  const wrap = document.getElementById('previewEmbedWrap');
+  const pill = document.getElementById('previewModePill');
+  const desktopBtn = document.getElementById('desktopPreviewModeBtn');
+  const mobileBtn = document.getElementById('mobilePreviewModeBtn');
 
-  dotWrap.innerHTML = '';
-  LANDING_PREVIEW_SHOTS.forEach((item, index) => {
-    const dot = document.createElement('button');
-    dot.type = 'button';
-    dot.className = 'preview-dot';
-    dot.setAttribute('role', 'tab');
-    dot.setAttribute('aria-label', `Show screenshot ${index + 1}`);
-    dot.setAttribute('aria-current', String(index === landingPreviewIndex));
-    dot.addEventListener('click', () => {
-      landingPreviewIndex = index;
-      renderLandingPreview();
-    });
-    dotWrap.appendChild(dot);
-  });
+  if (wrap) wrap.classList.toggle('preview-mode-mobile', mode === 'mobile');
+  if (pill) pill.textContent = mode === 'mobile' ? 'Mobile Preview' : 'Desktop Preview';
+  if (desktopBtn) desktopBtn.setAttribute('aria-pressed', String(mode === 'desktop'));
+  if (mobileBtn) mobileBtn.setAttribute('aria-pressed', String(mode === 'mobile'));
 }
 
 function setupLandingPreview() {
-  const prevBtn = document.getElementById('previewPrevBtn');
-  const nextBtn = document.getElementById('previewNextBtn');
-  if (!prevBtn || !nextBtn) return;
+  const desktopBtn = document.getElementById('desktopPreviewModeBtn');
+  const mobileBtn = document.getElementById('mobilePreviewModeBtn');
+  const previewEmbed = document.getElementById('previewEmbed');
+  if (!desktopBtn || !mobileBtn || !previewEmbed) return;
 
-  prevBtn.addEventListener('click', () => {
-    landingPreviewIndex = (landingPreviewIndex - 1 + LANDING_PREVIEW_SHOTS.length) % LANDING_PREVIEW_SHOTS.length;
-    renderLandingPreview();
-  });
-
-  nextBtn.addEventListener('click', () => {
-    landingPreviewIndex = (landingPreviewIndex + 1) % LANDING_PREVIEW_SHOTS.length;
-    renderLandingPreview();
-  });
-
-  renderLandingPreview();
+  previewEmbed.src = './index.html?demo=1#/app';
+  desktopBtn.addEventListener('click', () => setLandingPreviewMode('desktop'));
+  mobileBtn.addEventListener('click', () => setLandingPreviewMode('mobile'));
+  setLandingPreviewMode('desktop');
 }
 
 function normalizedHash() {
