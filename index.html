@@ -535,7 +535,15 @@ body.dark-mode .pro-select { background-color: #1e293b; }
   border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.2px;
 }
 
-.priority-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+.priority-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
 .priority-high { background: #dc2626; }
 .priority-medium { background: #eab308; }
 .priority-low { background: #16a34a; }
@@ -547,9 +555,9 @@ body.dark-mode .pro-select { background-color: #1e293b; }
   padding: 2px 8px;
   border-radius: 999px;
 }
-.task-meta .priority-high { color: #991b1b; background: #fee2e2; }
-.task-meta .priority-medium { color: #854d0e; background: #fef9c3; }
-.task-meta .priority-low { color: #166534; background: #dcfce7; }
+.task-meta .priority-high { color: #ffffff; background: #dc2626; }
+.task-meta .priority-medium { color: #1f2937; background: #eab308; }
+.task-meta .priority-low { color: #ffffff; background: #16a34a; }
 
 .priority-options {
   display: flex;
@@ -1497,7 +1505,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               </div>
               <div class="form-field">
                 <label class="form-label" for="taskDue">Due date</label>
-                <input id="taskDue" type="date" class="pro-input" aria-label="Due date" />
+                <input id="taskDue" type="date" class="pro-input" aria-label="Due date" required />
               </div>
               <div class="form-field">
                 <label class="form-label" for="taskAssignedDate">Assignment date</label>
@@ -1511,7 +1519,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <div class="task-step-pane" data-task-pane="3">
               <div class="form-field">
                 <label class="form-label" for="taskPriority">Priority</label>
-                <select id="taskPriority" class="pro-select pro-input" aria-label="Select priority level">
+                <select id="taskPriority" class="pro-select pro-input" aria-label="Select priority level" required>
                   <option value="high">🔴 High priority</option>
                   <option value="medium" selected>🟡 Medium priority</option>
                   <option value="low">🟢 Low priority</option>
