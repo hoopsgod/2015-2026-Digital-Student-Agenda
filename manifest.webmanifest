@@ -8,7 +8,7 @@
   "theme_color": "#0a1628",
   "icons": [
     {
-      "src": "assets/focusflow-logo.svg",
+      "src": "assets/focusflow-mark.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
