@@ -316,7 +316,7 @@ function renderOnboardingStep() {
   const progress = document.getElementById('onboardingProgress');
   if (progress) progress.textContent = `Step ${onboardingStep} of ${steps.length}`;
   const nextBtn = document.getElementById('onboardingNextBtn');
-  if (nextBtn) nextBtn.textContent = onboardingStep >= steps.length ? 'Start using FocusFlow' : 'Next';
+  if (nextBtn) nextBtn.textContent = onboardingStep >= steps.length ? 'Start using FocusFlex' : 'Next';
   const backBtn = document.getElementById('onboardingBackBtn');
   if (backBtn) backBtn.disabled = onboardingStep === 1;
 }
@@ -719,7 +719,7 @@ function showPomodoroCompletionPopup(completedMode) {
     : 'Break complete. Time to focus again.';
 
   if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification('FocusFlow', { body: message });
+    new Notification('FocusFlex', { body: message });
   }
 
   setTimeout(() => {

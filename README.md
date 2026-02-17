@@ -1,4 +1,4 @@
-# FocusFlow
+# FocusFlex
 
 A single-page web application designed to help students manage tasks, schedules, notes, and routines — especially students with ADHD who benefit from stronger daily structure. Built as a lightweight static web app (`index.html` + `app.js`) with no runtime dependencies (other than Google Fonts).
 
