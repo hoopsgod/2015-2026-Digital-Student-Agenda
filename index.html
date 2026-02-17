@@ -802,6 +802,12 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 }
 .landing-copy p { margin-top: 14px; font-size: clamp(0.98rem, 2vw, 1.16rem); color: #334155; max-width: 50ch; }
 .landing-copy p + p { margin-top: 10px; }
+.landing-tagline {
+  font-size: clamp(0.88rem, 1.8vw, 0.98rem);
+  font-weight: 500;
+  color: #475569;
+  max-width: 50ch;
+}
 .landing-actions { display: flex; gap: 14px; margin-top: 22px; align-items: center; flex-wrap: wrap; }
 .landing-enter-wrap { display: grid; gap: 6px; }
 .landing-enter-btn {
@@ -924,9 +930,9 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
           <div class="landing-brand-lockup">
             <img class="landing-brand-logo" src="assets/main-logo.svg" alt="FocusFlow logo">
           </div>
-          <h1>FocusFlow keeps you ahead of every class, assignment, and deadline.</h1>
-          <p>FocusFlow keeps assignments, schedules, notes, and study routines in one focused workspace built for real student momentum.</p>
-          <p>Designed by a special education teacher, FocusFlow is made for students with ADHD and anyone who needs stronger daily organization and follow-through.</p>
+          <h1>A digital agenda built by a special-education teacher for ADHD students—and adaptable to every learner.</h1>
+          <p>Keep every class, assignment and activity organised with personalised schedules and reminders.</p>
+          <p class="landing-tagline">Empowering students with ADHD and all learners to thrive through structure, clarity and customised planning.</p>
           <div class="landing-actions">
             <div class="landing-enter-wrap">
               <button class="landing-enter-btn" type="button" onclick="enterApp()">Enter FocusFlow</button>
