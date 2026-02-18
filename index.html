@@ -560,25 +560,54 @@ body.dark-mode .pro-select { background-color: #1e293b; }
 .task-meta .priority-low { color: #ffffff; background: #16a34a; }
 
 .priority-options {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-top: 8px;
 }
 
 .priority-option-chip {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  border-radius: 999px;
-  padding: 4px 10px;
-  display: inline-flex;
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.priority-option-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+}
+
+.priority-option-chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.priority-option-chip.selected {
+  border-color: rgba(15, 23, 42, 0.35);
+}
+
+body.dark-mode .priority-option-chip.selected {
+  border-color: rgba(248, 250, 252, 0.55);
 }
 
 .priority-option-chip.high { color: #991b1b; background: #fee2e2; }
 .priority-option-chip.medium { color: #854d0e; background: #fef9c3; }
 .priority-option-chip.low { color: #166534; background: #dcfce7; }
+
+@media (max-width: 768px) {
+  .priority-options {
+    grid-template-columns: 1fr;
+  }
+}
 
 .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--lux-border); }
 .filter-chip {
@@ -1467,7 +1496,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <div style="font-size: 13px; font-weight: 700; color: var(--lux-text-main); margin-bottom: 2px;" id="taskFormTitle">Add Task</div>
             <div class="task-stepper" aria-label="Homework form progress">
               <span class="task-step-dot active" data-task-step="1">1. Assignment</span>
-              <span class="task-step-dot" data-task-step="2">2. Class + dates</span>
+              <span class="task-step-dot" data-task-step="2">2. Class + due dates</span>
               <span class="task-step-dot" data-task-step="3">3. Priority + notes</span>
             </div>
             <div class="task-step-pane active" data-task-pane="1">
@@ -1504,8 +1533,12 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
                 </select>
               </div>
               <div class="form-field">
-                <label class="form-label" for="taskDue">Due date</label>
-                <input id="taskDue" type="date" class="pro-input" aria-label="Due date" required />
+                <label class="form-label" for="homeworkDue">Homework due date</label>
+                <input id="homeworkDue" type="date" class="pro-input" aria-label="Homework due date" required />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="taskDue">Task due date</label>
+                <input id="taskDue" type="date" class="pro-input" aria-label="Task due date" required />
               </div>
               <div class="form-field">
                 <label class="form-label" for="taskAssignedDate">Assignment date</label>
@@ -1519,15 +1552,24 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <div class="task-step-pane" data-task-pane="3">
               <div class="form-field">
                 <label class="form-label" for="taskPriority">Priority</label>
-                <select id="taskPriority" class="pro-select pro-input" aria-label="Select priority level" required>
+                <select id="taskPriority" class="pro-select pro-input" aria-label="Select priority level" required style="display:none;">
                   <option value="high">High</option>
                   <option value="medium" selected>Medium</option>
                   <option value="low">Low</option>
                 </select>
-                <div class="priority-options" aria-hidden="true">
-                  <span class="priority-option-chip high"><span class="priority-dot priority-high"></span>High</span>
-                  <span class="priority-option-chip medium"><span class="priority-dot priority-medium"></span>Medium</span>
-                  <span class="priority-option-chip low"><span class="priority-dot priority-low"></span>Low</span>
+                <div class="priority-options" role="radiogroup" aria-label="Select priority level">
+                  <label class="priority-option-chip high" data-priority="high" role="radio" aria-checked="false" tabindex="0">
+                    <input type="radio" name="taskPriorityChoice" value="high" />
+                    <span class="priority-dot priority-high"></span>High
+                  </label>
+                  <label class="priority-option-chip medium selected" data-priority="medium" role="radio" aria-checked="true" tabindex="0">
+                    <input type="radio" name="taskPriorityChoice" value="medium" checked />
+                    <span class="priority-dot priority-medium"></span>Medium
+                  </label>
+                  <label class="priority-option-chip low" data-priority="low" role="radio" aria-checked="false" tabindex="0">
+                    <input type="radio" name="taskPriorityChoice" value="low" />
+                    <span class="priority-dot priority-low"></span>Low
+                  </label>
                 </div>
               </div>
               <div class="form-field">
