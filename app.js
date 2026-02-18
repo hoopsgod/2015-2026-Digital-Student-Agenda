@@ -157,6 +157,7 @@ const DB = {
   schedule: readJSON('agenda_schedule', []),
   scheduleSettings: readJSON('agenda_scheduleSettings', { dayStyle: 'letter', dayCount: 2 }),
   notes: readJSON('agenda_notes', []),
+  appointments: readJSON('agenda_appointments', []),
   links: readJSON('agenda_links', []),
   uploads: readJSON('agenda_uploads', []),
   focusSessions: readJSON('agenda_focusSessions', []),
@@ -255,6 +256,7 @@ const ICON_SVG = {
   map: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2z"/><path d="M9 4v14M15 6v14"/></svg>',
   laptop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"/><path d="M3 18h18"/></svg>',
   gamepad: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10h10a4 4 0 013.7 5.5l-1 2.3a2.5 2.5 0 01-3.4 1.2L13 17H11l-3.3 2a2.5 2.5 0 01-3.4-1.2l-1-2.3A4 4 0 017 10z"/><path d="M8 13h3M9.5 11.5v3"/><circle cx="15.5" cy="12.5" r="1"/><circle cx="17.5" cy="14.5" r="1"/></svg>',
+  bell: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a4 4 0 00-4 4v2.5c0 .9-.3 1.8-.9 2.5L5.5 15h13l-1.6-2c-.6-.7-.9-1.6-.9-2.5V8a4 4 0 00-4-4z"/><path d="M10 18a2 2 0 004 0"/></svg>',
   close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
 };
 
@@ -1635,6 +1637,7 @@ function updateDashboard() {
   document.getElementById('dashCompletedTasks').textContent = done;
   updateFocusStats();
   renderDueThisWeek();
+  renderTodayAppointments();
 }
 
 function renderDueThisWeek() {
@@ -1691,6 +1694,121 @@ function renderDueThisWeek() {
   }).join('');
 }
 
+function formatAppointmentDate(dateStr) {
+  if (!dateStr) return 'No date';
+  const dt = new Date(dateStr + 'T00:00:00');
+  if (Number.isNaN(dt.getTime())) return dateStr;
+  return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function formatAppointmentDateTime(appt) {
+  const dateLabel = formatAppointmentDate(appt.date);
+  if (!appt.time) return dateLabel + ' · Time TBD';
+  return `${dateLabel} · ${formatTime(appt.time)}`;
+}
+
+function toggleAppointmentForm() {
+  const form = document.getElementById('appointmentForm');
+  if (!form) return;
+  form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+}
+
+function clearAppointmentForm() {
+  const fields = ['appointmentTitle', 'appointmentDate', 'appointmentTime', 'appointmentLocation', 'appointmentNotes'];
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+function addAppointment() {
+  const title = (document.getElementById('appointmentTitle')?.value || '').trim();
+  const date = document.getElementById('appointmentDate')?.value || '';
+  const time = document.getElementById('appointmentTime')?.value || '';
+  const location = (document.getElementById('appointmentLocation')?.value || '').trim();
+  const notes = (document.getElementById('appointmentNotes')?.value || '').trim();
+
+  if (!title || !date) return;
+
+  DB.appointments.unshift({
+    id: Date.now(),
+    title,
+    date,
+    time,
+    location,
+    notes,
+    createdAt: new Date().toISOString()
+  });
+  DB.save('appointments');
+  clearAppointmentForm();
+  toggleAppointmentForm();
+  renderAppointments();
+  renderTodayAppointments();
+}
+
+function deleteAppointment(id) {
+  const appt = DB.appointments.find(a => a.id === id);
+  if (!appt) return;
+  showConfirm('Delete Appointment?', `Remove "${appt.title}" from your planner?`, 'Delete', () => {
+    DB.appointments = DB.appointments.filter(a => a.id !== id);
+    DB.save('appointments');
+    renderAppointments();
+    renderTodayAppointments();
+  }, '🗓️');
+}
+
+function renderAppointments() {
+  const list = document.getElementById('appointmentsList');
+  if (!list) return;
+  const today = new Date().toISOString().split('T')[0];
+
+  const upcoming = DB.appointments
+    .filter(a => a.date >= today)
+    .sort((a, b) => (a.date + (a.time || '23:59')).localeCompare(b.date + (b.time || '23:59')));
+
+  if (!upcoming.length) {
+    list.innerHTML = '<div class="empty-msg">No upcoming appointments yet. Add your first appointment card above.</div>';
+    return;
+  }
+
+  list.innerHTML = upcoming.map(a => `
+    <article class="appointment-card">
+      <div class="appointment-main">
+        <div class="appointment-title">${a.title}</div>
+        <div class="appointment-meta"><span class="ui-icon" aria-hidden="true">${icon('calendar')}</span>${formatAppointmentDateTime(a)}</div>
+        ${a.location ? `<div class="appointment-meta"><span class="ui-icon" aria-hidden="true">${icon('map')}</span>${a.location}</div>` : ''}
+        ${a.notes ? `<div class="appointment-notes">${a.notes}</div>` : ''}
+      </div>
+      <button class="danger-btn" onclick="deleteAppointment(${a.id})" aria-label="Delete appointment ${a.title}"><span class="ui-icon" aria-hidden="true">${icon('close')}</span><span>Delete</span></button>
+    </article>
+  `).join('');
+}
+
+function renderTodayAppointments() {
+  const container = document.getElementById('todayAppointments');
+  if (!container) return;
+  const today = new Date().toISOString().split('T')[0];
+
+  const todaysItems = DB.appointments
+    .filter(a => a.date === today)
+    .sort((a, b) => (a.time || '23:59').localeCompare(b.time || '23:59'));
+
+  if (!todaysItems.length) {
+    container.innerHTML = '<div class="dashboard-callout-empty">No appointments today. Enjoy the open time.</div>';
+    return;
+  }
+
+  container.innerHTML = todaysItems.map(a => `
+    <div class="dashboard-appointment-item">
+      <div class="dashboard-appointment-time">${a.time ? formatTime(a.time) : 'Time TBD'}</div>
+      <div class="dashboard-appointment-details">
+        <div class="dashboard-appointment-title">${a.title}</div>
+        ${a.location ? `<div class="dashboard-appointment-location">${a.location}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
 // ==================== NAVIGATION ====================
 const sectionMeta = {
   profile: { label: 'Dashboard' },
@@ -1698,6 +1816,7 @@ const sectionMeta = {
   schedule: { label: 'Schedule' },
   heatmap: { label: 'Analytics' },
   notes: { label: 'Notes' },
+  appointments: { label: 'Appointments' },
   links: { label: 'Quick Links' }
 };
 let sectionHistory = ['profile'];
@@ -1752,6 +1871,7 @@ function switchSection(sectionId) {
   closeMobileSidebar();
   if (sectionId === 'heatmap') updateAnalytics();
   if (sectionId === 'schedule') renderSchedule();
+  if (sectionId === 'appointments') renderAppointments();
 }
 
 function toggleMobileSidebar() {
@@ -2111,6 +2231,7 @@ function renderApp({ demoMode = false } = {}) {
   renderSchedule();
   renderUploads();
   renderNotes();
+  renderAppointments();
   renderLinks();
   updateDashboard();
   updateAnalytics();
