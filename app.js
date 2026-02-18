@@ -289,6 +289,44 @@ function setTaskSubject(subject) {
   setTaskStep(2);
 }
 
+function selectTaskPriority(priority) {
+  const safePriority = ['high', 'medium', 'low'].includes(priority) ? priority : 'medium';
+  const select = document.getElementById('taskPriority');
+  if (select) select.value = safePriority;
+  document.querySelectorAll('.priority-option-chip').forEach(chip => {
+    const selected = chip.dataset.priority === safePriority;
+    chip.classList.toggle('selected', selected);
+    chip.setAttribute('aria-checked', selected ? 'true' : 'false');
+    const radio = chip.querySelector('input[type="radio"]');
+    if (radio) radio.checked = selected;
+  });
+}
+
+function syncTaskDueDates(sourceId) {
+  const homeworkDue = document.getElementById('homeworkDue');
+  const taskDue = document.getElementById('taskDue');
+  if (!homeworkDue || !taskDue) return;
+  if (sourceId === 'homeworkDue' && homeworkDue.value && !taskDue.value) taskDue.value = homeworkDue.value;
+  if (sourceId === 'taskDue' && taskDue.value && !homeworkDue.value) homeworkDue.value = taskDue.value;
+}
+
+function initializeTaskFormControls() {
+  document.querySelectorAll('.priority-option-chip').forEach(chip => {
+    chip.addEventListener('click', () => selectTaskPriority(chip.dataset.priority || 'medium'));
+    chip.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        selectTaskPriority(chip.dataset.priority || 'medium');
+      }
+    });
+  });
+
+  const homeworkDue = document.getElementById('homeworkDue');
+  const taskDue = document.getElementById('taskDue');
+  if (homeworkDue) homeworkDue.addEventListener('change', () => syncTaskDueDates('homeworkDue'));
+  if (taskDue) taskDue.addEventListener('change', () => syncTaskDueDates('taskDue'));
+}
+
 function applyScheduleTemplate() {
   if (DB.schedule.length > 0) {
     showConfirm('Replace Existing Schedule?', 'This will add an editable sample schedule. Continue?', 'Use Template', () => seedScheduleTemplate());
@@ -360,6 +398,8 @@ function toggleTaskForm() {
   } else {
     f.style.display = 'block';
     setTaskStep(1);
+    selectTaskPriority(document.getElementById('taskPriority')?.value || 'medium');
+    syncTaskDueDates('taskDue');
   }
 }
 
@@ -371,11 +411,13 @@ function editTask(id) {
   document.getElementById('taskSubject').value = t.subject || '';
   document.getElementById('taskPriority').value = t.priority || 'medium';
   document.getElementById('taskDue').value = t.due || '';
+  document.getElementById('homeworkDue').value = t.due || '';
   document.getElementById('taskAssignedDate').value = t.assignedDate || '';
   document.getElementById('taskNotes').value = t.notes || '';
   document.getElementById('taskFormTitle').textContent = 'Edit Task';
   document.getElementById('taskFormSaveBtn').textContent = 'Update Task';
   document.getElementById('taskForm').style.display = 'block';
+  selectTaskPriority((t.priority || 'medium').toLowerCase());
   document.getElementById('taskTitle').focus();
 }
 
@@ -383,14 +425,15 @@ function addTask() {
   let title = document.getElementById('taskTitle').value.trim();
   const naturalText = document.getElementById('taskNaturalInput').value.trim();
   const dueInput = document.getElementById('taskDue');
+  const homeworkDueInput = document.getElementById('homeworkDue');
   const priorityInput = document.getElementById('taskPriority');
-  let due = dueInput.value;
+  let due = dueInput.value || homeworkDueInput.value;
   let priority = (priorityInput.value || 'medium').toLowerCase();
 
   if (!title && naturalText) {
     parseNaturalTaskInput();
     title = document.getElementById('taskTitle').value.trim();
-    due = dueInput.value;
+    due = dueInput.value || homeworkDueInput.value;
     priority = (priorityInput.value || 'medium').toLowerCase();
   }
 
@@ -431,7 +474,9 @@ function addTask() {
   document.getElementById('taskTitle').value = '';
   document.getElementById('taskSubject').value = '';
   document.getElementById('taskPriority').value = 'medium';
+  selectTaskPriority('medium');
   document.getElementById('taskDue').valueAsDate = new Date(Date.now() + 86400000);
+  document.getElementById('homeworkDue').valueAsDate = new Date(Date.now() + 86400000);
   document.getElementById('taskAssignedDate').value = '';
   document.getElementById('taskNotes').value = '';
   document.getElementById('taskNaturalInput').value = '';
@@ -571,6 +616,7 @@ function parseNaturalTaskInput() {
   document.getElementById('taskSubject').value = parsed.subject;
   document.getElementById('taskPriority').value = parsed.priority;
   document.getElementById('taskDue').value = parsed.due;
+  document.getElementById('homeworkDue').value = parsed.due;
   document.getElementById('taskAssignedDate').valueAsDate = new Date();
   document.getElementById('taskNotes').value = parsed.notes;
 }
@@ -2137,7 +2183,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Set default date for task form
   document.getElementById('taskDue').valueAsDate = new Date(Date.now() + 86400000);
+  document.getElementById('homeworkDue').valueAsDate = new Date(Date.now() + 86400000);
   document.getElementById('taskAssignedDate').valueAsDate = new Date();
+  initializeTaskFormControls();
+  selectTaskPriority('medium');
 
   const focusInput = document.getElementById('focusMinutes');
   const breakInput = document.getElementById('breakMinutes');
