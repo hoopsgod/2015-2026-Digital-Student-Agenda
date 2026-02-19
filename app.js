@@ -58,8 +58,8 @@ function escapeHtml(s) {
 
 function apptAddFromForm(formEl) {
   const title = (formEl.querySelector('[name="title"]')?.value || "").trim();
-  const date = (formEl.querySelector('[name="date"]')?.value || "").trim();
-  const time = (formEl.querySelector('[name="time"]')?.value || "").trim();
+  const date = apptNormalizeDateInput((formEl.querySelector('[name="date"]')?.value || "").trim());
+  const time = apptNormalizeTimeInput((formEl.querySelector('[name="time"]')?.value || "").trim());
   const location = (formEl.querySelector('[name="location"]')?.value || "").trim();
   const notes = (formEl.querySelector('[name="notes"]')?.value || "").trim();
 
@@ -86,6 +86,43 @@ function apptAddFromForm(formEl) {
 
   apptRender();
   return false;
+}
+
+function apptNormalizeDateInput(raw) {
+  if (!raw) return "";
+  const value = String(raw).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const parsed = new Date(value);
+  if (!Number.isFinite(parsed.getTime())) return "";
+  const y = parsed.getFullYear();
+  const m = String(parsed.getMonth() + 1).padStart(2, "0");
+  const d = String(parsed.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function apptNormalizeTimeInput(raw) {
+  if (!raw) return "";
+  const value = String(raw).trim();
+  const hhmm = value.match(/^(\d{1,2}):(\d{2})$/);
+  if (hhmm) {
+    const h = Number(hhmm[1]);
+    const m = Number(hhmm[2]);
+    if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    }
+  }
+  const ampm = value.match(/^(\d{1,2})(?::(\d{2}))?\s*([aApP][mM])$/);
+  if (ampm) {
+    let h = Number(ampm[1]);
+    const m = Number(ampm[2] || "0");
+    const period = ampm[3].toLowerCase();
+    if (h >= 1 && h <= 12 && m >= 0 && m <= 59) {
+      if (period === "pm" && h < 12) h += 12;
+      if (period === "am" && h === 12) h = 0;
+      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    }
+  }
+  return "";
 }
 
 function apptDelete(id) {
@@ -167,11 +204,11 @@ function apptRender() {
         <div class="apw-grid">
           <div class="apw-row">
             <label class="apw-label">Date *</label>
-            <input class="apw-input" name="date" type="date" required />
+            <input class="apw-input" name="date" type="date" required placeholder="YYYY-MM-DD" pattern="\\d{4}-\\d{2}-\\d{2}" />
           </div>
           <div class="apw-row">
             <label class="apw-label">Time *</label>
-            <input class="apw-input" name="time" type="time" required />
+            <input class="apw-input" name="time" type="time" required placeholder="HH:MM or 9:30 PM" />
           </div>
         </div>
 
