@@ -24,13 +24,6 @@ Open `index.html` in any modern web browser. All data is stored in the browser's
 - **Cloud sync safeguards (if enabled in future):** Any cloud synchronization should use secure OAuth-based authentication and encryption both in transit and at rest to protect user data.
 
 
-## Cache-Busting Test Note (Appointments)
-
-For appointment-button verification builds, append a query-string version to avoid stale caches:
-
-- `index.html?v=2026-02-19T18:42#/app`
-
-Also confirm the Appointments header shows `APPT BTN BUILD: 2026-02-19T18:42` before testing interactions.
 
 ## Validation
 

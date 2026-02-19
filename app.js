@@ -7,8 +7,6 @@ const MOBILE_BREAKPOINT = 768;
 const ONBOARDING_STORAGE_KEY = "focusflow_onboarding_complete_v1";
 const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 
-const APPT_STORAGE_KEY = "ff_appointments_v1";
-
 // ---- Safari polyfills ----
 if (!Element.prototype.closest) {
   Element.prototype.closest = function (s) {
@@ -68,8 +66,14 @@ function normalizedHash() {
   return hash;
 }
 
+function sanitizedRouteHash() {
+  const hash = normalizedHash();
+  if (hash === ROUTES.LANDING || hash === ROUTES.APP) return hash;
+  return ROUTES.APP;
+}
+
 function isLandingRoute() {
-  return normalizedHash() !== ROUTES.APP;
+  return sanitizedRouteHash() !== ROUTES.APP;
 }
 
 function enterApp() {
@@ -183,7 +187,6 @@ const DB = {
   schedule: readJSON('agenda_schedule', []),
   scheduleSettings: readJSON('agenda_scheduleSettings', { dayStyle: 'letter', dayCount: 2 }),
   notes: readJSON('agenda_notes', []),
-  appointments: readJSON('agenda_appointments', []),
   links: readJSON('agenda_links', []),
   uploads: readJSON('agenda_uploads', []),
   focusSessions: readJSON('agenda_focusSessions', []),
@@ -1663,7 +1666,6 @@ function updateDashboard() {
   document.getElementById('dashCompletedTasks').textContent = done;
   updateFocusStats();
   renderDueThisWeek();
-  renderTodayAppointments();
 }
 
 function renderDueThisWeek() {
@@ -1720,201 +1722,6 @@ function renderDueThisWeek() {
   }).join('');
 }
 
-function formatAppointmentDate(dateStr) {
-  if (!dateStr) return 'No date';
-  const dt = new Date(dateStr + 'T00:00:00');
-  if (Number.isNaN(dt.getTime())) return dateStr;
-  return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-}
-
-function localISODate(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function normalizeAppointmentDateTime(date, time) {
-  if (!date) return null;
-  const normalizedTime = time || '23:59';
-  const dt = new Date(`${date}T${normalizedTime}`);
-  return Number.isNaN(dt.getTime()) ? null : dt;
-}
-
-function formatAppointmentDateTime(appt) {
-  const dateLabel = formatAppointmentDate(appt.date);
-  if (!appt.time) return dateLabel + ' · Time TBD';
-  return `${dateLabel} · ${formatTime(appt.time)}`;
-}
-
-function loadAppointments() {
-  try {
-    const raw = localStorage.getItem(APPT_STORAGE_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr : [];
-  } catch (e) {
-    console.warn("Failed to load appointments", e);
-    return [];
-  }
-}
-
-function saveAppointments(appts) {
-  try {
-    localStorage.setItem(APPT_STORAGE_KEY, JSON.stringify(appts));
-  } catch (e) {
-    console.warn("Failed to save appointments", e);
-  }
-}
-
-function apptDateTimeValue(a) {
-  // a.date = YYYY-MM-DD, a.time = HH:MM
-  const iso = `${a.date}T${a.time}:00`;
-  const t = Date.parse(iso);
-  return Number.isFinite(t) ? t : 0;
-}
-
-function addAppointmentFromForm(formEl) {
-  const title = (formEl.querySelector('[name="title"]')?.value || "").trim();
-  const date  = (formEl.querySelector('[name="date"]')?.value || "").trim();
-  const time  = (formEl.querySelector('[name="time"]')?.value || "").trim();
-  const location = (formEl.querySelector('[name="location"]')?.value || "").trim();
-
-  if (!title || !date || !time) {
-    alert("Please enter Title, Date, and Time.");
-    return false;
-  }
-
-  const appts = loadAppointments();
-  appts.push({
-    id: "a_" + Math.random().toString(36).slice(2) + "_" + Date.now(),
-    title,
-    date,
-    time,
-    location,
-    createdAt: Date.now()
-  });
-
-  appts.sort((x, y) => apptDateTimeValue(x) - apptDateTimeValue(y));
-  saveAppointments(appts);
-
-  // Reset form (Safari-safe)
-  try { formEl.reset(); } catch (_) {}
-
-  // Re-render appointments UI
-  renderAppointmentsSection();
-  renderTodayAppointments();
-  return false;
-}
-
-function deleteAppointmentById(id) {
-  const appts = loadAppointments().filter(a => a.id !== id);
-  saveAppointments(appts);
-  renderAppointmentsSection();
-  renderTodayAppointments();
-}
-
-function escapeHtml(s) {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function renderAppointmentsSection() {
-  const container = document.getElementById('section-appointments');
-
-  if (!container) return;
-
-  const appts = loadAppointments();
-  appts.sort((x, y) => apptDateTimeValue(x) - apptDateTimeValue(y));
-
-  const itemsHtml = appts.length
-    ? appts.map(a => {
-        const when = `${escapeHtml(a.date)} ${escapeHtml(a.time)}`;
-        const loc = a.location ? `<div class="appt-loc">${escapeHtml(a.location)}</div>` : "";
-        return `
-          <div class="appt-item">
-            <div class="appt-main">
-              <div class="appt-title">${escapeHtml(a.title)}</div>
-              <div class="appt-when">${when}</div>
-              ${loc}
-            </div>
-            <button type="button" class="appt-del" onclick="deleteAppointmentById('${escapeHtml(a.id)}')">Delete</button>
-          </div>
-        `;
-      }).join("")
-    : `<div class="appt-empty">No appointments yet.</div>`;
-
-  container.innerHTML = `
-    <div class="appt-wrap">
-      <div class="appt-head">Appointments</div>
-
-      <form class="appt-form" onsubmit="return addAppointmentFromForm(this);">
-        <div class="appt-row">
-          <label class="appt-label">Title</label>
-          <input name="title" class="appt-input" type="text" placeholder="e.g., Dentist" required />
-        </div>
-
-        <div class="appt-grid">
-          <div class="appt-row">
-            <label class="appt-label">Date</label>
-            <input name="date" class="appt-input" type="date" required />
-          </div>
-
-          <div class="appt-row">
-            <label class="appt-label">Time</label>
-            <input name="time" class="appt-input" type="time" required />
-          </div>
-        </div>
-
-        <div class="appt-row">
-          <label class="appt-label">Location (optional)</label>
-          <input name="location" class="appt-input" type="text" placeholder="e.g., Main St Office" />
-        </div>
-
-        <button class="appt-submit" type="submit">Add Appointment</button>
-      </form>
-
-      <div class="appt-list">
-        ${itemsHtml}
-      </div>
-    </div>
-  `;
-}
-
-function renderTodayAppointments() {
-  const container = document.getElementById('todayAppointments');
-  if (!container) return;
-  const now = new Date();
-
-  const upcomingItems = loadAppointments()
-    .map(a => ({ ...a, startsAt: normalizeAppointmentDateTime(a.date, a.time) }))
-    .filter(a => a.startsAt && a.startsAt.getTime() >= now.getTime())
-    .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
-    .slice(0, 5);
-
-  if (!upcomingItems.length) {
-    container.innerHTML = '<div class="dashboard-callout-empty">No upcoming appointments. Enjoy the open time.</div>';
-    return;
-  }
-
-  container.innerHTML = upcomingItems.map(a => `
-    <div class="dashboard-appointment-item">
-      <div class="dashboard-appointment-time">${a.time ? formatTime(a.time) : 'Time TBD'}<br><span style="font-size:11px;color:var(--lux-text-sub);font-weight:500;">${formatAppointmentDate(a.date)}</span></div>
-      <div class="dashboard-appointment-details">
-        <div class="dashboard-appointment-title">${a.title}</div>
-        ${a.location ? `<div class="dashboard-appointment-location">${a.location}</div>` : ''}
-      </div>
-    </div>
-  `).join('');
-}
-
-window.renderAppointmentsSection = renderAppointmentsSection;
-window.addAppointmentFromForm = addAppointmentFromForm;
-window.deleteAppointmentById = deleteAppointmentById;
-
 // ==================== NAVIGATION ====================
 const sectionMeta = {
   profile: { label: 'Dashboard' },
@@ -1922,7 +1729,6 @@ const sectionMeta = {
   schedule: { label: 'Schedule' },
   heatmap: { label: 'Analytics' },
   notes: { label: 'Notes' },
-  appointments: { label: 'Appointments' },
   links: { label: 'Quick Links' }
 };
 let sectionHistory = ['profile'];
@@ -1977,7 +1783,6 @@ function switchSection(sectionId) {
   closeMobileSidebar();
   if (sectionId === 'heatmap') updateAnalytics();
   if (sectionId === 'schedule') renderSchedule();
-  if (sectionId === 'appointments') renderAppointmentsSection();
 
 }
 
@@ -2338,7 +2143,6 @@ function renderApp({ demoMode = false } = {}) {
   renderSchedule();
   renderUploads();
   renderNotes();
-  renderAppointmentsSection();
   renderLinks();
   updateDashboard();
   updateAnalytics();
@@ -2354,6 +2158,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!window.location.hash || window.location.hash === '#') {
     window.location.hash = ROUTES.LANDING;
+  } else if (sanitizedRouteHash() !== normalizedHash()) {
+    window.location.hash = ROUTES.APP;
   } else if (shouldForceMobileLanding()) {
     window.location.hash = ROUTES.LANDING;
   }
@@ -2368,7 +2174,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyColorTheme(STORAGE.getItem('currentTheme') || 'deep-ocean');
   document.getElementById('hamburgerBtn')?.setAttribute('aria-expanded', 'false');
   setupPWAInstall();
-  // Service worker intentionally disabled to avoid stale cached builds during appointment-button diagnostics.
+  // Service worker intentionally disabled to avoid stale cached builds.
   monitorWebVitals();
 
   // Event listeners
@@ -2450,10 +2256,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderApp({ demoMode: DEMO_MODE });
 
-  const appointmentsSection = document.getElementById('section-appointments');
-  if (appointmentsSection?.classList.contains('active')) {
-    renderAppointmentsSection();
-  }
 
   maybeShowCustomizeTip();
   maybeShowOnboarding();
