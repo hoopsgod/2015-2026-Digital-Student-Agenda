@@ -2236,6 +2236,25 @@ function registerServiceWorker() {
   });
 }
 
+async function cleanupLegacyServiceWorkers() {
+  if (!('serviceWorker' in navigator) || !('caches' in window)) return;
+
+  try {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map((registration) => registration.unregister()));
+  } catch (error) {
+    console.warn('Legacy service worker cleanup failed:', error);
+  }
+
+  try {
+    const keys = await caches.keys();
+    const agendaKeys = keys.filter((key) => key.startsWith('digital-student-agenda-'));
+    await Promise.all(agendaKeys.map((key) => caches.delete(key)));
+  } catch (error) {
+    console.warn('Legacy cache cleanup failed:', error);
+  }
+}
+
 function monitorWebVitals() {
   if (!('PerformanceObserver' in window)) return;
 
@@ -2309,11 +2328,13 @@ function renderApp({ demoMode = false } = {}) {
   DB.syncMetadata.lastSyncedAt = new Date().toISOString();
   DB.save('syncMetadata');
   switchSection('profile');
-  if (document.getElementById('section-appointments')?.classList.contains('active')) apptRender();
+  apptRender();
 }
 
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
+
+  cleanupLegacyServiceWorkers();
 
   if (!window.location.hash || window.location.hash === '#') {
     window.location.hash = ROUTES.LANDING;
