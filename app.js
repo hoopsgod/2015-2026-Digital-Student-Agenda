@@ -7,7 +7,7 @@ const MOBILE_BREAKPOINT = 768;
 const ONBOARDING_STORAGE_KEY = "focusflow_onboarding_complete_v1";
 const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 
-const APPOINTMENT_BUTTON_BUILD_STAMP = "2026-02-19T21:05";
+const APPOINTMENT_BUTTON_BUILD_STAMP = "2026-02-20T00:35";
 const APPOINTMENTS_STORAGE_KEY = "focusflex_appointments_v1";
 
 let appointmentPressDiagnostics = {
@@ -1832,7 +1832,9 @@ function ensureAppointmentModal() {
 function openAppointmentModal() {
   const modal = ensureAppointmentModal();
   modal.style.display = 'flex';
-  modal.querySelector('#appointmentModalTitleInput')?.focus();
+  window.requestAnimationFrame(() => {
+    modal.querySelector('#appointmentModalTitleInput')?.focus();
+  });
 }
 
 function openAddAppointmentModal() {
@@ -1874,9 +1876,28 @@ function saveAppointmentsToStorage() {
   STORAGE.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(DB.appointments));
 }
 
+function normalizeAppointmentDateValue(rawDate) {
+  const value = (rawDate || '').trim();
+  if (!value) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+
+  const slashMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slashMatch) {
+    const [, month, day, year] = slashMatch;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return '';
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function addAppointment() {
   const title = (document.getElementById('appointmentModalTitleInput')?.value || '').trim();
-  const date = document.getElementById('appointmentModalDateInput')?.value || '';
+  const date = normalizeAppointmentDateValue(document.getElementById('appointmentModalDateInput')?.value || '');
   const time = document.getElementById('appointmentModalTimeInput')?.value || '';
   const location = (document.getElementById('appointmentModalLocationInput')?.value || '').trim();
   const notes = (document.getElementById('appointmentModalNotesInput')?.value || '').trim();
@@ -1976,27 +1997,56 @@ function installAppointmentAddHandler() {
   if (window._appointmentHandlerInstalled) return;
   window._appointmentHandlerInstalled = true;
 
+  function getAppointmentButtonFromEventTarget(target) {
+    if (!target) return null;
+    const targetEl = target.nodeType === 1 ? target : target.parentElement;
+    if (!targetEl || typeof targetEl.closest !== 'function') return null;
+    return targetEl.closest('#addAppointmentBtn, [data-action="open-add-appointment"]');
+  }
+
+  function openAppointmentModalSafely(eventName, target) {
+    appointmentPressDiagnostics.presses += 1;
+    appointmentPressDiagnostics.lastEvent = `${eventName} @ ${formatDiagnosticsTimestamp()}`;
+    appointmentPressDiagnostics.eventTarget = describeElement(target && target.nodeType === 1 ? target : target?.parentElement);
+    appointmentPressDiagnostics.elementFromPoint = describeElement(document.elementFromPoint(window.innerWidth / 2, 180));
+    renderAppointmentDiagnostics();
+
+    openAddAppointmentModal();
+    window.setTimeout(() => {
+      const modalOpen = document.getElementById('appointmentModal')?.style.display === 'flex';
+      if (!modalOpen) openAddAppointmentModal();
+    }, 0);
+  }
+
   function handler(e) {
-    const btn = e.target.closest
-      ? e.target.closest('#addAppointmentBtn, [data-action="open-add-appointment"]')
-      : null;
+    const btn = getAppointmentButtonFromEventTarget(e.target);
 
     if (!btn) return;
 
     if (e.cancelable) e.preventDefault();
     e.stopPropagation();
 
-    if (typeof openAddAppointmentModal === "function") {
-      openAddAppointmentModal();
-    } else {
-      console.warn("openAddAppointmentModal not found");
-    }
+    if (typeof openAddAppointmentModal !== 'function') return;
+    openAppointmentModalSafely(e.type, e.target);
   }
 
   // Use capture phase for Safari reliability
   document.addEventListener("click", handler, true);
   document.addEventListener("pointerup", handler, true);
   document.addEventListener("touchend", handler, { capture: true, passive: false });
+
+  const addBtn = document.getElementById('addAppointmentBtn');
+  if (addBtn) {
+    addBtn.onclick = () => openAppointmentModalSafely('onclick', addBtn);
+    addBtn.addEventListener('mouseup', (e) => {
+      if (e.button !== 0) return;
+      openAppointmentModalSafely('mouseup', e.target);
+    });
+    addBtn.addEventListener('keyup', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      openAppointmentModalSafely(`keyup:${e.key}`, e.target);
+    });
+  }
 }
 
 // ==================== NAVIGATION ====================
