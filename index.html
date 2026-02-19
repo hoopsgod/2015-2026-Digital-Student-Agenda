@@ -926,6 +926,30 @@ body.dark-mode .mobile-nav button { color: #e2e8f0; }
 .section-tab.active { color: var(--lux-text-main); border-bottom-color: var(--titan-primary); }
 body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
+
+.appt-wrap { display: grid; gap: 12px; }
+.appt-head { display: grid; gap: 4px; }
+.appt-h1 { font-weight: 800; font-size: 16px; }
+.appt-sub { font-size: 12px; opacity: 0.85; }
+
+.appt-form { display: grid; gap: 10px; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); }
+.appt-row { display: grid; gap: 6px; }
+.appt-label { font-size: 12px; opacity: 0.9; }
+.appt-input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); background: rgba(0,0,0,0.16); color: inherit; }
+.appt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 420px) { .appt-grid { grid-template-columns: 1fr; } }
+
+.appt-submit { padding: 12px; border-radius: 12px; border: 0; font-weight: 800; cursor: pointer; }
+.appt-list { display: grid; gap: 10px; }
+.appt-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); }
+.appt-left { display: grid; gap: 6px; }
+.appt-title { font-weight: 800; }
+.appt-when { font-size: 12px; opacity: 0.9; }
+.appt-meta { font-size: 12px; opacity: 0.85; }
+.appt-del { padding: 10px 12px; border-radius: 10px; border: 0; cursor: pointer; }
+.appt-empty { font-size: 13px; opacity: 0.8; }
+
+
 .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--lux-border); }
 .stat-box { text-align: center; padding: 12px; border-radius: 8px; background: var(--lux-hover); border: 1px solid var(--lux-border); }
 .stat-num { font-size: 24px; font-weight: 900; color: var(--lux-text-main); }
@@ -1389,6 +1413,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <button class="sidebar-btn active" data-section="profile" title="Dashboard overview and quick actions" aria-label="Open Dashboard" onclick="switchSection('profile')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/></svg></span>Dashboard<span class="sidebar-feature-desc">Start here for today’s priorities</span></button>
         <button class="sidebar-btn" data-section="agenda" title="Homework logging in simple steps" aria-label="Open Log Homework" onclick="switchSection('agenda')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Log Homework<span class="sidebar-feature-desc">Capture tasks quickly with defaults</span></button>
         <button class="sidebar-btn" data-section="schedule" title="Day cycle and class periods" aria-label="Open Schedule" onclick="switchSection('schedule')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Schedule<span class="sidebar-feature-desc">Manage Day A/B/C class cycles</span></button>
+        <button class="sidebar-btn" data-section="appointments" title="Appointments and events" aria-label="Open Appointments" onclick="switchSection('appointments')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/><path d="M8 14h3M8 17h5"/></svg></span>Appointments<span class="sidebar-feature-desc">Track upcoming events and visits</span></button>
         <button class="sidebar-btn" data-section="heatmap" title="Analytics and Focus Studio insights" aria-label="Open Analytics" onclick="switchSection('heatmap')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"/><path d="M7 15l3-3 3 2 4-5"/><circle cx="7" cy="15" r="1"/><circle cx="10" cy="12" r="1"/><circle cx="13" cy="14" r="1"/><circle cx="17" cy="9" r="1"/></svg></span>Analytics<span class="sidebar-feature-desc">Track completion and focus trends</span></button>
         <button class="sidebar-btn" data-section="notes" title="Notes and linked class context" aria-label="Open Notes" onclick="switchSection('notes')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>Notes<span class="sidebar-feature-desc">Capture study notes and attachments</span></button>
         <button class="sidebar-btn" data-section="links" title="Frequently used school links" aria-label="Open Quick Links" onclick="switchSection('links')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Links<span class="sidebar-feature-desc">One tap access to school tools</span></button>
@@ -1769,6 +1794,10 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- ========== APPOINTMENTS ========== -->
+      <div id="section-appointments" class="card section-wrapper">
       </div>
 
       <!-- ========== NOTES ========== -->

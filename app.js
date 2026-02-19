@@ -7,6 +7,163 @@ const MOBILE_BREAKPOINT = 768;
 const ONBOARDING_STORAGE_KEY = "focusflow_onboarding_complete_v1";
 const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 
+const APPT_KEY = "focusflow_appointments_v2";
+
+function apptLoad() {
+  try {
+    const raw = localStorage.getItem(APPT_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) {
+    console.warn("apptLoad failed", e);
+    return [];
+  }
+}
+
+function apptSave(list) {
+  try {
+    localStorage.setItem(APPT_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.warn("apptSave failed", e);
+  }
+}
+
+function apptSortValue(a) {
+  const t = Date.parse(`${a.date}T${a.time}:00`);
+  return Number.isFinite(t) ? t : 0;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function apptAddFromForm(formEl) {
+  const title = (formEl.querySelector('[name="title"]')?.value || "").trim();
+  const date = (formEl.querySelector('[name="date"]')?.value || "").trim();
+  const time = (formEl.querySelector('[name="time"]')?.value || "").trim();
+  const location = (formEl.querySelector('[name="location"]')?.value || "").trim();
+  const notes = (formEl.querySelector('[name="notes"]')?.value || "").trim();
+
+  if (!title || !date || !time) {
+    alert("Please enter Title, Date, and Time.");
+    return false;
+  }
+
+  const list = apptLoad();
+  list.push({
+    id: "appt_" + Math.random().toString(36).slice(2) + "_" + Date.now(),
+    title,
+    date,
+    time,
+    location,
+    notes,
+    createdAt: Date.now()
+  });
+
+  list.sort((a, b) => apptSortValue(a) - apptSortValue(b));
+  apptSave(list);
+
+  try { formEl.reset(); } catch (_) {}
+
+  apptRender();
+  return false;
+}
+
+function apptDelete(id) {
+  const list = apptLoad().filter(x => x.id !== id);
+  apptSave(list);
+  apptRender();
+}
+
+function apptGetContainer() {
+  return (
+    document.getElementById("section-appointments") ||
+    document.getElementById("appointmentsSection") ||
+    document.querySelector('[data-section="appointments"]') ||
+    document.getElementById("appointments") ||
+    null
+  );
+}
+
+function apptRender() {
+  const container = apptGetContainer();
+  if (!container) return;
+
+  const list = apptLoad();
+  list.sort((a, b) => apptSortValue(a) - apptSortValue(b));
+
+  const items = list.length
+    ? list.map(a => {
+        const dt = `${escapeHtml(a.date)} ${escapeHtml(a.time)}`;
+        const loc = a.location ? `<div class="appt-meta"><strong>Location:</strong> ${escapeHtml(a.location)}</div>` : "";
+        const notes = a.notes ? `<div class="appt-meta"><strong>Notes:</strong> ${escapeHtml(a.notes)}</div>` : "";
+        return `
+          <div class="appt-item">
+            <div class="appt-left">
+              <div class="appt-title">${escapeHtml(a.title)}</div>
+              <div class="appt-when">${dt}</div>
+              ${loc}
+              ${notes}
+            </div>
+            <button type="button" class="appt-del" onclick="window.apptDelete('${escapeHtml(a.id)}')">Delete</button>
+          </div>
+        `;
+      }).join("")
+    : `<div class="appt-empty">No appointments yet.</div>`;
+
+  container.innerHTML = `
+    <div class="appt-wrap">
+      <div class="appt-head">
+        <div class="appt-h1">Appointments</div>
+        <div class="appt-sub">Add upcoming events with date, time, and location.</div>
+      </div>
+
+      <form class="appt-form" onsubmit="return window.apptAddFromForm(this);">
+        <div class="appt-row">
+          <label class="appt-label">Title *</label>
+          <input class="appt-input" name="title" type="text" placeholder="e.g., Dentist appointment" required />
+        </div>
+
+        <div class="appt-grid">
+          <div class="appt-row">
+            <label class="appt-label">Date *</label>
+            <input class="appt-input" name="date" type="date" required />
+          </div>
+          <div class="appt-row">
+            <label class="appt-label">Time *</label>
+            <input class="appt-input" name="time" type="time" required />
+          </div>
+        </div>
+
+        <div class="appt-row">
+          <label class="appt-label">Location</label>
+          <input class="appt-input" name="location" type="text" placeholder="e.g., Main Office" />
+        </div>
+
+        <div class="appt-row">
+          <label class="appt-label">Notes</label>
+          <input class="appt-input" name="notes" type="text" placeholder="e.g., Bring paperwork" />
+        </div>
+
+        <button class="appt-submit" type="submit">Add Appointment</button>
+      </form>
+
+      <div class="appt-list">
+        ${items}
+      </div>
+    </div>
+  `;
+}
+
+window.apptAddFromForm = apptAddFromForm;
+window.apptDelete = apptDelete;
+window.apptRender = apptRender;
+
 // ---- Safari polyfills ----
 if (!Element.prototype.closest) {
   Element.prototype.closest = function (s) {
@@ -1783,6 +1940,7 @@ function switchSection(sectionId) {
   closeMobileSidebar();
   if (sectionId === 'heatmap') updateAnalytics();
   if (sectionId === 'schedule') renderSchedule();
+  if (sectionId === 'appointments') apptRender();
 
 }
 
@@ -2151,6 +2309,7 @@ function renderApp({ demoMode = false } = {}) {
   DB.syncMetadata.lastSyncedAt = new Date().toISOString();
   DB.save('syncMetadata');
   switchSection('profile');
+  if (document.getElementById('section-appointments')?.classList.contains('active')) apptRender();
 }
 
 // ==================== INIT ====================
