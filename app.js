@@ -257,6 +257,7 @@ if (DB.links.length === 0) {
 
 // ==================== CONFIRM DIALOG ====================
 let pendingConfirmAction = null;
+let appointmentOpenCount = 0;
 
 function showConfirm(title, msg, btnLabel, action, icon) {
   document.getElementById('confirmTitle').textContent = title;
@@ -1798,12 +1799,10 @@ function formatAppointmentDateTime(appt) {
 }
 
 function setAppointmentFormOpen(isOpen) {
-  const form = document.getElementById('appointmentForm');
-  const trigger = document.getElementById('toggleAppointmentFormBtn');
-  if (!form) return;
-  form.style.display = isOpen ? 'block' : 'none';
-  form.setAttribute('aria-modal', isOpen ? 'true' : 'false');
-  if (trigger) trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  const overlay = document.getElementById('appointmentModalOverlay');
+  if (!overlay) return;
+  overlay.style.display = isOpen ? 'flex' : 'none';
+  document.body.style.overflow = isOpen ? 'hidden' : '';
   if (isOpen) {
     const titleField = document.getElementById('appointmentTitle');
     titleField?.focus();
@@ -1811,31 +1810,43 @@ function setAppointmentFormOpen(isOpen) {
 }
 
 function openAddAppointment() {
+  appointmentOpenCount += 1;
+  const openCounter = document.getElementById('appointmentOpenCounter');
+  if (openCounter) openCounter.textContent = String(appointmentOpenCount);
   setAppointmentFormOpen(true);
 }
 
 function bindAppointmentFormTrigger() {
-  const trigger = document.getElementById('toggleAppointmentFormBtn');
+  const trigger = document.getElementById('addAppointmentBtn');
+  const overlay = document.getElementById('appointmentModalOverlay');
   if (!trigger || trigger.dataset.tapBound === 'true') return;
 
   trigger.addEventListener('click', openAddAppointment);
-  trigger.addEventListener('pointerup', openAddAppointment);
-  trigger.dataset.tapBound = 'true';
-}
+  trigger.addEventListener('keydown', (event) => {
+    if (event.key === ' ' || event.key === 'Enter') {
+      event.preventDefault();
+      openAddAppointment();
+    }
+  });
 
-function openAppointmentForm() {
-  openAddAppointment();
+  if (overlay && overlay.dataset.tapBound !== 'true') {
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) closeAppointmentForm();
+    });
+    overlay.dataset.tapBound = 'true';
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const isOpen = overlay && overlay.style.display !== 'none';
+    if (isOpen) closeAppointmentForm();
+  });
+
+  trigger.dataset.tapBound = 'true';
 }
 
 function closeAppointmentForm() {
   setAppointmentFormOpen(false);
-}
-
-function toggleAppointmentForm() {
-  const form = document.getElementById('appointmentForm');
-  if (!form) return;
-  const isOpen = form.style.display !== 'none' && form.style.display !== '';
-  setAppointmentFormOpen(!isOpen);
 }
 
 function clearAppointmentForm() {
@@ -1858,7 +1869,7 @@ function addAppointment() {
   const now = new Date();
   const appointmentDateTime = normalizeAppointmentDateTime(date, time);
   if (!appointmentDateTime || appointmentDateTime.getTime() < now.getTime()) {
-    showToast('Please choose a future date/time for this appointment.');
+    showAppointmentStatus('Please choose a future date/time for this appointment.', false);
     return;
   }
 
@@ -1876,6 +1887,21 @@ function addAppointment() {
   closeAppointmentForm();
   renderAppointments();
   renderTodayAppointments();
+  showAppointmentStatus('✅ Appointment added', true);
+}
+
+function showAppointmentStatus(messageText, isSuccess) {
+  const message = document.getElementById('appointmentSaveConfirmation');
+  if (!message) return;
+  message.textContent = messageText;
+  message.style.borderColor = isSuccess ? 'rgba(22, 163, 74, 0.35)' : 'rgba(220, 38, 38, 0.35)';
+  message.style.background = isSuccess ? 'rgba(22, 163, 74, 0.12)' : 'rgba(220, 38, 38, 0.12)';
+  message.style.color = isSuccess ? '#166534' : '#991b1b';
+  message.style.display = 'block';
+  clearTimeout(showAppointmentStatus.timeoutId);
+  showAppointmentStatus.timeoutId = setTimeout(() => {
+    message.style.display = 'none';
+  }, 2000);
 }
 
 function deleteAppointment(id) {
