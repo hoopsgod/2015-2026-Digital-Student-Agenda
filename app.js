@@ -7,7 +7,7 @@ const MOBILE_BREAKPOINT = 768;
 const ONBOARDING_STORAGE_KEY = "focusflow_onboarding_complete_v1";
 const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 
-const APPOINTMENT_BUTTON_BUILD_STAMP = "2026-02-19T20:15";
+const APPOINTMENT_BUTTON_BUILD_STAMP = "2026-02-19T21:05";
 const APPOINTMENTS_STORAGE_KEY = "focusflex_appointments_v1";
 
 let appointmentPressDiagnostics = {
@@ -1812,6 +1812,7 @@ function ensureAppointmentModal() {
           <input id="appointmentModalTimeInput" type="time" class="pro-input" aria-label="Appointment time" />
         </div>
       </div>
+      <input id="appointmentModalLocationInput" class="pro-input" placeholder="Location" aria-label="Appointment location" />
       <textarea id="appointmentModalNotesInput" class="pro-input" placeholder="Notes (optional)" aria-label="Appointment notes" rows="3"></textarea>
       <div class="appointments-modal-actions">
         <button type="button" class="ghost-btn" data-action="cancel-appointment-modal">Cancel</button>
@@ -1861,7 +1862,7 @@ function bindAppointmentFormTrigger() {
 }
 
 function clearAppointmentForm() {
-  const fields = ['appointmentModalTitleInput', 'appointmentModalDateInput', 'appointmentModalTimeInput', 'appointmentModalNotesInput'];
+  const fields = ['appointmentModalTitleInput', 'appointmentModalDateInput', 'appointmentModalTimeInput', 'appointmentModalLocationInput', 'appointmentModalNotesInput'];
   fields.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
@@ -1877,6 +1878,7 @@ function addAppointment() {
   const title = (document.getElementById('appointmentModalTitleInput')?.value || '').trim();
   const date = document.getElementById('appointmentModalDateInput')?.value || '';
   const time = document.getElementById('appointmentModalTimeInput')?.value || '';
+  const location = (document.getElementById('appointmentModalLocationInput')?.value || '').trim();
   const notes = (document.getElementById('appointmentModalNotesInput')?.value || '').trim();
 
   if (!title || !date) {
@@ -1889,6 +1891,7 @@ function addAppointment() {
     title,
     date,
     time,
+    location,
     notes,
     createdAt: new Date().toISOString()
   });
@@ -1930,6 +1933,7 @@ function renderAppointments() {
       <div class="appointment-main">
         <div class="appointment-title">${a.title}</div>
         <div class="appointment-meta"><span class="ui-icon" aria-hidden="true">${icon('calendar')}</span>${formatAppointmentDateTime(a)}</div>
+        ${a.location ? `<div class="appointment-location">${a.location}</div>` : ''}
         ${a.notes ? `<div class="appointment-notes">${a.notes}</div>` : ''}
       </div>
       <button class="danger-btn" onclick="deleteAppointment(${a.id})" aria-label="Delete appointment ${a.title}"><span class="ui-icon" aria-hidden="true">${icon('close')}</span><span>Delete</span></button>
@@ -2414,10 +2418,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  btn.addEventListener("click", handleAddAppointment);
+  btn.addEventListener("touchend", handleAddAppointment, { passive: false });
   if (window.PointerEvent) {
     btn.addEventListener("pointerup", handleAddAppointment);
-  } else {
-    btn.addEventListener("click", handleAddAppointment);
   }
 });
 
