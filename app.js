@@ -1791,39 +1791,6 @@ function renderAppointmentDiagnostics() {
   }
 }
 
-let lastAppointmentTapAt = 0;
-
-function captureAppointmentButtonTap(event) {
-  if (!event) return;
-  const trigger = event.target?.closest?.('#addAppointmentBtn') || event.target?.closest?.('[data-action="add-appointment"]');
-  if (!trigger) return;
-
-  const now = Date.now();
-  if (now - lastAppointmentTapAt < 450) return;
-  lastAppointmentTapAt = now;
-
-  if (event.type === 'touchend') {
-    event.preventDefault();
-  }
-
-  const pt = (event.touches && event.touches[0]) || (event.changedTouches && event.changedTouches[0]) || event;
-  const x = Number.isFinite(pt?.clientX) ? pt.clientX : null;
-  const y = Number.isFinite(pt?.clientY) ? pt.clientY : null;
-  const topElement = x !== null && y !== null ? document.elementFromPoint(x, y) : null;
-  const nextPress = appointmentPressDiagnostics.presses + 1;
-  const stamp = formatDiagnosticsTimestamp();
-  appointmentPressDiagnostics = {
-    presses: nextPress,
-    lastEvent: stamp,
-    eventTarget: describeElement(event.target),
-    elementFromPoint: describeElement(topElement)
-  };
-  console.info('[APPOINTMENTS_TAP_OK]', { eventType: event.type, stamp, target: appointmentPressDiagnostics.eventTarget });
-  renderAppointmentDiagnostics();
-  showAppointmentToast(`Add Appointment pressed (#${nextPress})`, true);
-  openAppointmentModal();
-}
-
 function ensureAppointmentModal() {
   let modal = document.getElementById('appointmentModal');
   if (modal) return modal;
@@ -1836,8 +1803,14 @@ function ensureAppointmentModal() {
       <div style="font-size:16px;font-weight:800;color:var(--lux-text-main);" id="appointmentModalTitle">Add Appointment</div>
       <input id="appointmentModalTitleInput" class="pro-input" placeholder="Title" aria-label="Appointment title" required />
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <input id="appointmentModalDateInput" type="date" class="pro-input" aria-label="Appointment date" required />
-        <input id="appointmentModalTimeInput" type="time" class="pro-input" aria-label="Appointment time" />
+        <div style="display:grid;gap:6px;">
+          <label for="appointmentModalDateInput" style="font-size:12px;font-weight:700;color:var(--lux-text-sub);">Date</label>
+          <input id="appointmentModalDateInput" type="date" class="pro-input" aria-label="Appointment date" required />
+        </div>
+        <div style="display:grid;gap:6px;">
+          <label for="appointmentModalTimeInput" style="font-size:12px;font-weight:700;color:var(--lux-text-sub);">Time</label>
+          <input id="appointmentModalTimeInput" type="time" class="pro-input" aria-label="Appointment time" />
+        </div>
       </div>
       <textarea id="appointmentModalNotesInput" class="pro-input" placeholder="Notes (optional)" aria-label="Appointment notes" rows="3"></textarea>
       <div class="appointments-modal-actions">
@@ -1861,6 +1834,10 @@ function openAppointmentModal() {
   modal.querySelector('#appointmentModalTitleInput')?.focus();
 }
 
+function openAddAppointmentModal() {
+  openAppointmentModal();
+}
+
 function closeAppointmentModal() {
   const modal = document.getElementById('appointmentModal');
   if (!modal) return;
@@ -1868,20 +1845,8 @@ function closeAppointmentModal() {
 }
 
 function bindAppointmentFormTrigger() {
-  const addButton = document.getElementById('addAppointmentBtn');
   const diagnosticsToggle = document.getElementById('appointmentsDiagnosticsToggle');
   const diagnosticsPanel = document.getElementById('appointmentsDiagnosticsPanel');
-
-  if (addButton && addButton.dataset.bound !== 'true') {
-    addButton.addEventListener('click', captureAppointmentButtonTap);
-    addButton.addEventListener('touchend', captureAppointmentButtonTap, { passive: false });
-    addButton.dataset.bound = 'true';
-  }
-
-  if (!document.body.dataset.appointmentDocumentDelegateBound) {
-    document.addEventListener('click', captureAppointmentButtonTap, true);
-    document.body.dataset.appointmentDocumentDelegateBound = 'true';
-  }
 
   if (diagnosticsToggle && diagnosticsToggle.dataset.bound !== 'true') {
     diagnosticsToggle.addEventListener('click', () => {
@@ -2432,6 +2397,30 @@ function renderApp({ demoMode = false } = {}) {
   switchSection('profile');
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+  const btn = document.getElementById("addAppointmentBtn");
+  if (!btn) return;
+
+  function handleAddAppointment(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    console.log("Add Appointment button triggered");
+
+    if (typeof openAddAppointmentModal === "function") {
+      openAddAppointmentModal();
+    } else if (typeof createAppointment === "function") {
+      createAppointment();
+    }
+  }
+
+  if (window.PointerEvent) {
+    btn.addEventListener("pointerup", handleAddAppointment);
+  } else {
+    btn.addEventListener("click", handleAddAppointment);
+  }
+});
+
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.location.hash || window.location.hash === '#') {
@@ -2484,6 +2473,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   document.getElementById('globalSearch')?.addEventListener('search', performGlobalSearch);
+
+  const appointmentAddButton = document.getElementById('addAppointmentBtn');
+  if (appointmentAddButton) {
+    appointmentAddButton.style.pointerEvents = 'auto';
+    let currentParent = appointmentAddButton.parentElement;
+    while (currentParent) {
+      if (window.getComputedStyle(currentParent).pointerEvents === 'none') {
+        currentParent.style.pointerEvents = 'auto';
+      }
+      currentParent = currentParent.parentElement;
+    }
+  }
+
 
   // Date & countdown
   const today = new Date();
