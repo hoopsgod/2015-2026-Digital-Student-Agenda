@@ -115,11 +115,12 @@ function apptRender() {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
 
-      const title = (form.title.value || '').trim();
-      const date = (form.date.value || '').trim();
-      const time = (form.time.value || '').trim();
-      const location = (form.location.value || '').trim();
-      const notes = (form.notes.value || '').trim();
+      const values = new FormData(form);
+      const title = String(values.get('title') || '').trim();
+      const date = String(values.get('date') || '').trim();
+      const time = String(values.get('time') || '').trim();
+      const location = String(values.get('location') || '').trim();
+      const notes = String(values.get('notes') || '').trim();
 
       if (!title || !date || !time) {
         alert('Please enter Title, Date, and Time.');
@@ -154,7 +155,7 @@ function apptRender() {
       const appts = apptLoad().filter((a) => a.id !== id);
       apptSave(appts);
       apptRender();
-    }, { capture: true });
+    });
     root.dataset.apptClickBound = '1';
   }
 }
