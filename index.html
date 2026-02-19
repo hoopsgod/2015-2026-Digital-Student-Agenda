@@ -573,14 +573,46 @@ body.dark-mode .pro-select { background-color: #1e293b; }
 .appointment-action-btn:focus-visible { outline: 2px solid var(--titan-primary); outline-offset: 2px; }
 body.dark-mode .appointment-action-btn:focus-visible { outline-color: var(--titan-accent); }
 
-#section-appointments .card-header {
-  position: relative;
-  z-index: 2;
+.appointment-confirmation {
+  margin: 0 20px 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(22, 163, 74, 0.35);
+  background: rgba(22, 163, 74, 0.12);
+  color: #166534;
+  font-size: 13px;
+  font-weight: 700;
 }
-#toggleAppointmentFormBtn {
-  position: relative;
-  z-index: 3;
-  pointer-events: auto;
+
+.appointment-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(2, 6, 23, 0.52);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.appointment-modal {
+  width: min(560px, 100%);
+  max-height: min(92vh, 700px);
+  overflow-y: auto;
+  border-radius: 14px;
+  border: 1px solid var(--lux-border);
+  background: var(--lux-card);
+  box-shadow: 0 24px 46px rgba(2, 6, 23, 0.35);
+  padding: 18px;
+}
+
+@media (max-width: 768px) {
+  .appointment-modal-overlay { align-items: flex-end; }
+  .appointment-modal {
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    max-height: 90vh;
+  }
 }
 
 /* TASK ITEMS */
@@ -1870,15 +1902,21 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <div id="section-appointments" class="card section-wrapper">
         <div class="card-header">
           <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a4 4 0 00-4 4v2.5c0 .9-.3 1.8-.9 2.5L5.5 15h13l-1.6-2c-.6-.7-.9-1.6-.9-2.5V8a4 4 0 00-4-4z"/><path d="M10 18a2 2 0 004 0"/></svg></span>Appointments</div>
-          <button id="toggleAppointmentFormBtn" class="ghost-btn appointment-action-btn" type="button" aria-label="Add appointment" aria-expanded="false">+ Add Appointment</button>
+          <button id="addAppointmentBtn" class="ghost-btn appointment-action-btn" type="button" aria-label="Add appointment">Add Appointment</button>
         </div>
 
-        <div id="appointmentForm" role="dialog" aria-modal="false" aria-labelledby="appointmentFormHeading" style="display:none; padding: 20px; border-bottom: 1px solid var(--lux-border); background: var(--lux-hover);">
-          <div style="display: grid; gap: 10px;">
+        <div id="appointmentSaveConfirmation" class="appointment-confirmation" role="status" aria-live="polite" style="display:none;">✅ Appointment added</div>
+        <div style="padding: 0 20px 12px;">
+          <div style="font-size: 12px; color: var(--lux-text-sub); font-weight: 600;">Diagnostics: Add button wired: <span id="appointmentButtonWiredStatus">YES</span> · Opens: <span id="appointmentOpenCounter">0</span></div>
+        </div>
+
+        <div id="appointmentModalOverlay" class="appointment-modal-overlay" style="display:none;">
+          <div id="appointmentForm" class="appointment-modal" role="dialog" aria-modal="true" aria-labelledby="appointmentFormHeading">
+            <div style="display: grid; gap: 10px;">
             <div id="appointmentFormHeading" style="font-size:13px;font-weight:700;color:var(--lux-text-main);">Add Appointment</div>
-            <input id="appointmentTitle" class="pro-input" placeholder="Appointment title" aria-label="Appointment title" />
+            <input id="appointmentTitle" class="pro-input" placeholder="Appointment title" aria-label="Appointment title" required />
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-              <input id="appointmentDate" type="date" class="pro-input" aria-label="Appointment date" />
+              <input id="appointmentDate" type="date" class="pro-input" aria-label="Appointment date" required />
               <input id="appointmentTime" type="time" class="pro-input" aria-label="Appointment time" />
             </div>
             <input id="appointmentLocation" class="pro-input" placeholder="Location (optional)" aria-label="Appointment location" />
@@ -1888,6 +1926,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               <button id="cancelAppointmentBtn" class="ghost-btn appointment-action-btn" type="button" onclick="closeAppointmentForm()">Cancel</button>
             </div>
           </div>
+        </div>
         </div>
 
         <div id="appointmentsList" style="padding: 16px 20px;"></div>
