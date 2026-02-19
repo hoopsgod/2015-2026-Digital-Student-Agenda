@@ -7,8 +7,7 @@ const MOBILE_BREAKPOINT = 768;
 const ONBOARDING_STORAGE_KEY = "focusflow_onboarding_complete_v1";
 const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 
-const APPOINTMENT_BUTTON_BUILD_STAMP = "2026-02-20T00:35";
-const APPOINTMENTS_STORAGE_KEY = "focusflex_appointments_v1";
+const APPT_STORAGE_KEY = "ff_appointments_v1";
 
 // ---- Safari polyfills ----
 if (!Element.prototype.closest) {
@@ -33,13 +32,6 @@ if (!Element.prototype.matches) {
       return i > -1;
     };
 }
-
-let appointmentPressDiagnostics = {
-  presses: 0,
-  lastEvent: "none",
-  eventTarget: "none",
-  elementFromPoint: "none"
-};
 
 let landingPreviewMode = 'desktop';
 
@@ -191,7 +183,7 @@ const DB = {
   schedule: readJSON('agenda_schedule', []),
   scheduleSettings: readJSON('agenda_scheduleSettings', { dayStyle: 'letter', dayCount: 2 }),
   notes: readJSON('agenda_notes', []),
-  appointments: readJSON(APPOINTMENTS_STORAGE_KEY, readJSON('agenda_appointments', [])),
+  appointments: readJSON('agenda_appointments', []),
   links: readJSON('agenda_links', []),
   uploads: readJSON('agenda_uploads', []),
   focusSessions: readJSON('agenda_focusSessions', []),
@@ -1755,235 +1747,141 @@ function formatAppointmentDateTime(appt) {
   return `${dateLabel} · ${formatTime(appt.time)}`;
 }
 
-function setAppointmentFormOpen(isOpen) {
-  if (isOpen) {
-    openAppointmentModal();
-  } else {
-    closeAppointmentModal();
+function loadAppointments() {
+  try {
+    const raw = localStorage.getItem(APPT_STORAGE_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) {
+    console.warn("Failed to load appointments", e);
+    return [];
   }
 }
 
-function describeElement(element) {
-  if (!element || element.nodeType !== 1) return 'none';
-  const className = typeof element.className === 'string' ? element.className.trim().replace(/\s+/g, '.') : '';
-  return `${element.tagName.toLowerCase()}${className ? `.${className}` : ''}`;
-}
-
-function showAppointmentToast(messageText, isSuccess = true) {
-  const message = document.getElementById('appointmentSaveConfirmation');
-  if (!message) return;
-  message.textContent = messageText;
-  message.style.borderColor = isSuccess ? 'rgba(22, 163, 74, 0.35)' : 'rgba(220, 38, 38, 0.35)';
-  message.style.background = isSuccess ? 'rgba(22, 163, 74, 0.12)' : 'rgba(220, 38, 38, 0.12)';
-  message.style.color = isSuccess ? '#166534' : '#991b1b';
-  message.style.display = 'block';
-  clearTimeout(showAppointmentToast.timeoutId);
-  showAppointmentToast.timeoutId = setTimeout(() => {
-    message.style.display = 'none';
-  }, 2000);
-}
-
-function formatDiagnosticsTimestamp() {
-  const now = new Date();
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-}
-
-function renderAppointmentDiagnostics() {
-  const stampLabel = document.getElementById('appointmentsBuildStampLabel');
-  const stampValue = document.getElementById('appointmentsBuildStampValue');
-  const presses = document.getElementById('appointmentPressCount');
-  const lastEvent = document.getElementById('appointmentLastEvent');
-  const target = document.getElementById('appointmentEventTarget');
-  const topEl = document.getElementById('appointmentElementFromPoint');
-  const badge = document.getElementById('appointmentPassBadge');
-  if (stampLabel) {
-    const status = appointmentPressDiagnostics.presses > 0
-      ? `OK (tap registered) ${appointmentPressDiagnostics.lastEvent}`
-      : APPOINTMENT_BUTTON_BUILD_STAMP;
-    stampLabel.textContent = `APPT BTN BUILD: ${status}`;
-  }
-  if (stampValue) stampValue.textContent = APPOINTMENT_BUTTON_BUILD_STAMP;
-  if (presses) presses.textContent = String(appointmentPressDiagnostics.presses);
-  if (lastEvent) lastEvent.textContent = appointmentPressDiagnostics.lastEvent;
-  if (target) target.textContent = appointmentPressDiagnostics.eventTarget;
-  if (topEl) topEl.textContent = appointmentPressDiagnostics.elementFromPoint;
-  if (badge) {
-    const pass = appointmentPressDiagnostics.presses > 0;
-    badge.textContent = pass ? 'PASS' : 'FAIL';
-    badge.classList.toggle('pass', pass);
+function saveAppointments(appts) {
+  try {
+    localStorage.setItem(APPT_STORAGE_KEY, JSON.stringify(appts));
+  } catch (e) {
+    console.warn("Failed to save appointments", e);
   }
 }
 
-function ensureAppointmentModal() {
-  let modal = document.getElementById('appointmentModal');
-  if (modal) return modal;
-  modal = document.createElement('div');
-  modal.id = 'appointmentModal';
-  modal.className = 'appointments-modal';
-  modal.style.display = 'none';
-  modal.innerHTML = `
-    <div class="appointments-modal-sheet" role="dialog" aria-modal="true" aria-labelledby="appointmentModalTitle">
-      <div style="font-size:16px;font-weight:800;color:var(--lux-text-main);" id="appointmentModalTitle">Add Appointment</div>
-      <input id="appointmentModalTitleInput" class="pro-input" placeholder="Title" aria-label="Appointment title" required />
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div style="display:grid;gap:6px;">
-          <label for="appointmentModalDateInput" style="font-size:12px;font-weight:700;color:var(--lux-text-sub);">Date</label>
-          <input id="appointmentModalDateInput" type="date" class="pro-input" aria-label="Appointment date" required />
-        </div>
-        <div style="display:grid;gap:6px;">
-          <label for="appointmentModalTimeInput" style="font-size:12px;font-weight:700;color:var(--lux-text-sub);">Time</label>
-          <input id="appointmentModalTimeInput" type="time" class="pro-input" aria-label="Appointment time" />
-        </div>
-      </div>
-      <input id="appointmentModalLocationInput" class="pro-input" placeholder="Location" aria-label="Appointment location" />
-      <textarea id="appointmentModalNotesInput" class="pro-input" placeholder="Notes (optional)" aria-label="Appointment notes" rows="3"></textarea>
-      <div class="appointments-modal-actions">
-        <button type="button" class="ghost-btn" data-action="cancel-appointment-modal">Cancel</button>
-        <button type="button" class="primary-btn" data-action="save-appointment-modal">Save</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeAppointmentModal();
-    if (e.target.closest('[data-action="cancel-appointment-modal"]')) closeAppointmentModal();
-    if (e.target.closest('[data-action="save-appointment-modal"]')) addAppointment();
-  });
-  return modal;
+function apptDateTimeValue(a) {
+  // a.date = YYYY-MM-DD, a.time = HH:MM
+  const iso = `${a.date}T${a.time}:00`;
+  const t = Date.parse(iso);
+  return Number.isFinite(t) ? t : 0;
 }
 
-function openAppointmentModal() {
-  const modal = ensureAppointmentModal();
-  modal.style.display = 'flex';
-  window.requestAnimationFrame(() => {
-    modal.querySelector('#appointmentModalTitleInput')?.focus();
-  });
-}
+function addAppointmentFromForm(formEl) {
+  const title = (formEl.querySelector('[name="title"]')?.value || "").trim();
+  const date  = (formEl.querySelector('[name="date"]')?.value || "").trim();
+  const time  = (formEl.querySelector('[name="time"]')?.value || "").trim();
+  const location = (formEl.querySelector('[name="location"]')?.value || "").trim();
 
-function openAddAppointmentModal() {
-  openAppointmentModal();
-}
-
-function closeAppointmentModal() {
-  const modal = document.getElementById('appointmentModal');
-  if (!modal) return;
-  modal.style.display = 'none';
-}
-
-function bindAppointmentFormTrigger() {
-  const diagnosticsToggle = document.getElementById('appointmentsDiagnosticsToggle');
-  const diagnosticsPanel = document.getElementById('appointmentsDiagnosticsPanel');
-
-  if (diagnosticsToggle && diagnosticsToggle.dataset.bound !== 'true') {
-    diagnosticsToggle.addEventListener('click', () => {
-      const open = diagnosticsPanel?.style.display !== 'block';
-      if (diagnosticsPanel) diagnosticsPanel.style.display = open ? 'block' : 'none';
-    });
-    diagnosticsToggle.dataset.bound = 'true';
+  if (!title || !date || !time) {
+    alert("Please enter Title, Date, and Time.");
+    return false;
   }
 
-  ensureAppointmentModal();
-  renderAppointmentDiagnostics();
-}
-
-function clearAppointmentForm() {
-  const fields = ['appointmentModalTitleInput', 'appointmentModalDateInput', 'appointmentModalTimeInput', 'appointmentModalLocationInput', 'appointmentModalNotesInput'];
-  fields.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-}
-
-function saveAppointmentsToStorage() {
-  if (DEMO_MODE) return;
-  STORAGE.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(DB.appointments));
-}
-
-function normalizeAppointmentDateValue(rawDate) {
-  const value = (rawDate || '').trim();
-  if (!value) return '';
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-
-  const slashMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (slashMatch) {
-    const [, month, day, year] = slashMatch;
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return '';
-  const year = parsed.getFullYear();
-  const month = String(parsed.getMonth() + 1).padStart(2, '0');
-  const day = String(parsed.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function addAppointment() {
-  const title = (document.getElementById('appointmentModalTitleInput')?.value || '').trim();
-  const date = normalizeAppointmentDateValue(document.getElementById('appointmentModalDateInput')?.value || '');
-  const time = document.getElementById('appointmentModalTimeInput')?.value || '';
-  const location = (document.getElementById('appointmentModalLocationInput')?.value || '').trim();
-  const notes = (document.getElementById('appointmentModalNotesInput')?.value || '').trim();
-
-  if (!title || !date) {
-    showAppointmentToast('Please add both a title and date.', false);
-    return;
-  }
-
-  DB.appointments.push({
-    id: Date.now(),
+  const appts = loadAppointments();
+  appts.push({
+    id: "a_" + Math.random().toString(36).slice(2) + "_" + Date.now(),
     title,
     date,
     time,
     location,
-    notes,
-    createdAt: new Date().toISOString()
+    createdAt: Date.now()
   });
 
-  saveAppointmentsToStorage();
-  clearAppointmentForm();
-  closeAppointmentModal();
-  renderAppointments();
+  appts.sort((x, y) => apptDateTimeValue(x) - apptDateTimeValue(y));
+  saveAppointments(appts);
+
+  // Reset form (Safari-safe)
+  try { formEl.reset(); } catch (_) {}
+
+  // Re-render appointments UI
+  renderAppointmentsSection();
   renderTodayAppointments();
-  showAppointmentToast('Appointment added', true);
+  return false;
 }
 
-function deleteAppointment(id) {
-  const appt = DB.appointments.find(a => a.id === id);
-  if (!appt) return;
-  showConfirm('Delete Appointment?', `Remove "${appt.title}" from your planner?`, 'Delete', () => {
-    DB.appointments = DB.appointments.filter(a => a.id !== id);
-    saveAppointmentsToStorage();
-    renderAppointments();
-    renderTodayAppointments();
-  }, '🗓️');
+function deleteAppointmentById(id) {
+  const appts = loadAppointments().filter(a => a.id !== id);
+  saveAppointments(appts);
+  renderAppointmentsSection();
+  renderTodayAppointments();
 }
 
-function renderAppointments() {
-  bindAppointmentFormTrigger();
-  const list = document.getElementById('appointmentsList');
-  if (!list) return;
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-  const sorted = [...DB.appointments]
-    .sort((a, b) => (a.date + (a.time || '23:59')).localeCompare(b.date + (b.time || '23:59')));
+function renderAppointmentsSection() {
+  const container = document.getElementById('section-appointments');
 
-  if (!sorted.length) {
-    list.innerHTML = '<div class="empty-msg">No appointments yet. Tap + Add to create your first one.</div>';
-    return;
-  }
+  if (!container) return;
 
-  list.innerHTML = sorted.map(a => `
-    <article class="appointment-card">
-      <div class="appointment-main">
-        <div class="appointment-title">${a.title}</div>
-        <div class="appointment-meta"><span class="ui-icon" aria-hidden="true">${icon('calendar')}</span>${formatAppointmentDateTime(a)}</div>
-        ${a.location ? `<div class="appointment-location">${a.location}</div>` : ''}
-        ${a.notes ? `<div class="appointment-notes">${a.notes}</div>` : ''}
+  const appts = loadAppointments();
+  appts.sort((x, y) => apptDateTimeValue(x) - apptDateTimeValue(y));
+
+  const itemsHtml = appts.length
+    ? appts.map(a => {
+        const when = `${escapeHtml(a.date)} ${escapeHtml(a.time)}`;
+        const loc = a.location ? `<div class="appt-loc">${escapeHtml(a.location)}</div>` : "";
+        return `
+          <div class="appt-item">
+            <div class="appt-main">
+              <div class="appt-title">${escapeHtml(a.title)}</div>
+              <div class="appt-when">${when}</div>
+              ${loc}
+            </div>
+            <button type="button" class="appt-del" onclick="deleteAppointmentById('${escapeHtml(a.id)}')">Delete</button>
+          </div>
+        `;
+      }).join("")
+    : `<div class="appt-empty">No appointments yet.</div>`;
+
+  container.innerHTML = `
+    <div class="appt-wrap">
+      <div class="appt-head">Appointments</div>
+
+      <form class="appt-form" onsubmit="return addAppointmentFromForm(this);">
+        <div class="appt-row">
+          <label class="appt-label">Title</label>
+          <input name="title" class="appt-input" type="text" placeholder="e.g., Dentist" required />
+        </div>
+
+        <div class="appt-grid">
+          <div class="appt-row">
+            <label class="appt-label">Date</label>
+            <input name="date" class="appt-input" type="date" required />
+          </div>
+
+          <div class="appt-row">
+            <label class="appt-label">Time</label>
+            <input name="time" class="appt-input" type="time" required />
+          </div>
+        </div>
+
+        <div class="appt-row">
+          <label class="appt-label">Location (optional)</label>
+          <input name="location" class="appt-input" type="text" placeholder="e.g., Main St Office" />
+        </div>
+
+        <button class="appt-submit" type="submit">Add Appointment</button>
+      </form>
+
+      <div class="appt-list">
+        ${itemsHtml}
       </div>
-      <button class="danger-btn" onclick="deleteAppointment(${a.id})" aria-label="Delete appointment ${a.title}"><span class="ui-icon" aria-hidden="true">${icon('close')}</span><span>Delete</span></button>
-    </article>
-  `).join('');
+    </div>
+  `;
 }
 
 function renderTodayAppointments() {
@@ -1991,7 +1889,7 @@ function renderTodayAppointments() {
   if (!container) return;
   const now = new Date();
 
-  const upcomingItems = DB.appointments
+  const upcomingItems = loadAppointments()
     .map(a => ({ ...a, startsAt: normalizeAppointmentDateTime(a.date, a.time) }))
     .filter(a => a.startsAt && a.startsAt.getTime() >= now.getTime())
     .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
@@ -2013,89 +1911,9 @@ function renderTodayAppointments() {
   `).join('');
 }
 
-// ===============================
-// SAFARI-PROOF APPOINTMENT ADD FAB
-// ===============================
-function ensureAddAppointmentFab() {
-  if (document.getElementById('addAppointmentFab')) return;
-
-  const fab = document.createElement('button');
-  fab.id = 'addAppointmentFab';
-  fab.type = 'button';
-  fab.setAttribute('aria-label', 'Add appointment');
-  fab.textContent = '+';
-
-  // Hard override styles so iOS Safari cannot ignore taps due to overlay/z-index/pointer-events.
-  fab.style.position = 'fixed';
-  fab.style.right = '16px';
-  fab.style.bottom = '84px'; // above bottom nav
-  fab.style.width = '56px';
-  fab.style.height = '56px';
-  fab.style.borderRadius = '999px';
-  fab.style.border = '0';
-  fab.style.cursor = 'pointer';
-  fab.style.zIndex = '2147483647';
-  fab.style.pointerEvents = 'auto';
-  fab.style.touchAction = 'manipulation';
-  fab.style.webkitTapHighlightColor = 'transparent';
-  fab.style.boxShadow = '0 10px 24px rgba(0,0,0,0.25)';
-  fab.style.fontSize = '28px';
-  fab.style.lineHeight = '56px';
-  fab.style.textAlign = 'center';
-
-  // Use your theme variable if present, otherwise default to a safe blue.
-  try {
-    const theme = getComputedStyle(document.documentElement).getPropertyValue('--accent')?.trim();
-    fab.style.background = theme || '#2563eb';
-  } catch (_) {
-    fab.style.background = '#2563eb';
-  }
-  fab.style.color = '#fff';
-
-  // Default hidden until we are on Appointments
-  fab.style.display = 'none';
-
-  function openModal(e) {
-    if (e && e.cancelable) e.preventDefault();
-    if (e) e.stopPropagation();
-
-    // Diagnostics (if present)
-    try {
-      if (typeof appointmentPressDiagnostics === 'object') {
-        appointmentPressDiagnostics.presses += 1;
-        appointmentPressDiagnostics.lastEvent = e?.type || 'unknown';
-        appointmentPressDiagnostics.eventTarget = 'FAB#addAppointmentFab';
-      }
-      if (typeof renderAppointmentDiagnostics === 'function') renderAppointmentDiagnostics();
-    } catch (_) {}
-
-    // Open appointment modal
-    if (typeof openAddAppointmentModal === 'function') {
-      openAddAppointmentModal();
-      return;
-    }
-    if (typeof openAppointmentModal === 'function') {
-      openAppointmentModal();
-      return;
-    }
-    console.warn('No appointment modal opener function found.');
-  }
-
-  // iOS Safari: bind multiple event types, non-passive touch, capture to avoid interference
-  fab.addEventListener('click', openModal, true);
-  fab.addEventListener('pointerup', openModal, true);
-  fab.addEventListener('touchend', openModal, { capture: true, passive: false });
-
-  document.body.appendChild(fab);
-}
-
-function setAddAppointmentFabVisible(visible) {
-  const fab = document.getElementById('addAppointmentFab');
-  if (!fab) return;
-  fab.style.display = visible ? 'inline-flex' : 'none';
-  fab.style.alignItems = 'center';
-  fab.style.justifyContent = 'center';
-}
+window.renderAppointmentsSection = renderAppointmentsSection;
+window.addAppointmentFromForm = addAppointmentFromForm;
+window.deleteAppointmentById = deleteAppointmentById;
 
 // ==================== NAVIGATION ====================
 const sectionMeta = {
@@ -2159,11 +1977,8 @@ function switchSection(sectionId) {
   closeMobileSidebar();
   if (sectionId === 'heatmap') updateAnalytics();
   if (sectionId === 'schedule') renderSchedule();
-  if (sectionId === 'appointments') renderAppointments();
+  if (sectionId === 'appointments') renderAppointmentsSection();
 
-  // Ensure the FAB exists and only show it on the Appointments section
-  ensureAddAppointmentFab();
-  setAddAppointmentFabVisible(sectionId === 'appointments' || sectionId === 'appts' || sectionId === 'appointmentsSection');
 }
 
 function toggleMobileSidebar() {
@@ -2523,7 +2338,7 @@ function renderApp({ demoMode = false } = {}) {
   renderSchedule();
   renderUploads();
   renderNotes();
-  renderAppointments();
+  renderAppointmentsSection();
   renderLinks();
   updateDashboard();
   updateAnalytics();
@@ -2536,7 +2351,6 @@ function renderApp({ demoMode = false } = {}) {
 
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
-  ensureAddAppointmentFab();
 
   if (!window.location.hash || window.location.hash === '#') {
     window.location.hash = ROUTES.LANDING;
@@ -2589,20 +2403,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('globalSearch')?.addEventListener('search', performGlobalSearch);
 
-  const appointmentAddButton = document.getElementById('addAppointmentBtn');
-  if (appointmentAddButton) {
-    appointmentAddButton.disabled = false;
-    appointmentAddButton.style.pointerEvents = 'auto';
-    let currentParent = appointmentAddButton.parentElement;
-    while (currentParent) {
-      if (window.getComputedStyle(currentParent).pointerEvents === 'none') {
-        currentParent.style.pointerEvents = 'auto';
-      }
-      currentParent = currentParent.parentElement;
-    }
-  }
-
-
   // Date & countdown
   const today = new Date();
   document.getElementById('dateDisplay').textContent = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -2649,6 +2449,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   renderApp({ demoMode: DEMO_MODE });
+
+  const appointmentsSection = document.getElementById('section-appointments');
+  if (appointmentsSection?.classList.contains('active')) {
+    renderAppointmentsSection();
+  }
+
   maybeShowCustomizeTip();
   maybeShowOnboarding();
 });
