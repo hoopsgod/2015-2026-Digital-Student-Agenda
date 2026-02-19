@@ -1791,11 +1791,18 @@ function renderAppointmentDiagnostics() {
   }
 }
 
+let lastAppointmentTapAt = 0;
+
 function captureAppointmentButtonTap(event) {
   if (!event) return;
   const trigger = event.target?.closest?.('#addAppointmentBtn') || event.target?.closest?.('[data-action="add-appointment"]');
   if (!trigger) return;
-  if (event.type === 'pointerup') {
+
+  const now = Date.now();
+  if (now - lastAppointmentTapAt < 450) return;
+  lastAppointmentTapAt = now;
+
+  if (event.type === 'touchend') {
     event.preventDefault();
   }
 
@@ -1815,10 +1822,6 @@ function captureAppointmentButtonTap(event) {
   renderAppointmentDiagnostics();
   showAppointmentToast(`Add Appointment pressed (#${nextPress})`, true);
   openAppointmentModal();
-}
-
-function handleAddAppointmentClick(event) {
-  captureAppointmentButtonTap(event);
 }
 
 function ensureAppointmentModal() {
@@ -1870,8 +1873,8 @@ function bindAppointmentFormTrigger() {
   const diagnosticsPanel = document.getElementById('appointmentsDiagnosticsPanel');
 
   if (addButton && addButton.dataset.bound !== 'true') {
-    addButton.addEventListener('click', handleAddAppointmentClick);
-    addButton.addEventListener('pointerup', handleAddAppointmentClick);
+    addButton.addEventListener('click', captureAppointmentButtonTap);
+    addButton.addEventListener('touchend', captureAppointmentButtonTap, { passive: false });
     addButton.dataset.bound = 'true';
   }
 
