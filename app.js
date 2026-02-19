@@ -2014,62 +2014,87 @@ function renderTodayAppointments() {
 }
 
 // ===============================
-// SAFARI-PROOF ADD APPOINTMENT FIX
+// SAFARI-PROOF APPOINTMENT ADD FAB
 // ===============================
-function installAppointmentAddHandlerDelegated() {
-  if (window.__apptAddDelegatedInstalled) return;
-  window.__apptAddDelegatedInstalled = true;
+function ensureAddAppointmentFab() {
+  if (document.getElementById('addAppointmentFab')) return;
 
-  // Make opener callable from inline onclick fallback too
-  try { window.openAddAppointmentModal = openAddAppointmentModal; } catch (_) {}
+  const fab = document.createElement('button');
+  fab.id = 'addAppointmentFab';
+  fab.type = 'button';
+  fab.setAttribute('aria-label', 'Add appointment');
+  fab.textContent = '+';
 
-  function markDiagnostics(e, btn) {
-    try {
-      if (typeof appointmentPressDiagnostics === "object") {
-        appointmentPressDiagnostics.presses += 1;
-        appointmentPressDiagnostics.lastEvent = e.type || "unknown";
-        appointmentPressDiagnostics.eventTarget =
-          (btn && btn.tagName ? btn.tagName : "unknown") +
-          (btn && btn.id ? "#" + btn.id : "");
-        const x = typeof e.clientX === "number" ? e.clientX : 0;
-        const y = typeof e.clientY === "number" ? e.clientY : 0;
-        const top = document.elementFromPoint(x, y);
-        appointmentPressDiagnostics.elementFromPoint = top ? top.tagName : "none";
-      }
-      if (typeof renderAppointmentDiagnostics === "function") renderAppointmentDiagnostics();
-    } catch (_) {}
+  // Hard override styles so iOS Safari cannot ignore taps due to overlay/z-index/pointer-events.
+  fab.style.position = 'fixed';
+  fab.style.right = '16px';
+  fab.style.bottom = '84px'; // above bottom nav
+  fab.style.width = '56px';
+  fab.style.height = '56px';
+  fab.style.borderRadius = '999px';
+  fab.style.border = '0';
+  fab.style.cursor = 'pointer';
+  fab.style.zIndex = '2147483647';
+  fab.style.pointerEvents = 'auto';
+  fab.style.touchAction = 'manipulation';
+  fab.style.webkitTapHighlightColor = 'transparent';
+  fab.style.boxShadow = '0 10px 24px rgba(0,0,0,0.25)';
+  fab.style.fontSize = '28px';
+  fab.style.lineHeight = '56px';
+  fab.style.textAlign = 'center';
+
+  // Use your theme variable if present, otherwise default to a safe blue.
+  try {
+    const theme = getComputedStyle(document.documentElement).getPropertyValue('--accent')?.trim();
+    fab.style.background = theme || '#2563eb';
+  } catch (_) {
+    fab.style.background = '#2563eb';
   }
+  fab.style.color = '#fff';
 
-  function fire(e) {
-    const btn = e.target && e.target.closest
-      ? e.target.closest('#addAppointmentBtn, [data-action="open-add-appointment"]')
-      : null;
-    if (!btn) return;
+  // Default hidden until we are on Appointments
+  fab.style.display = 'none';
 
-    // Stop navigation/overlays
-    if (e.cancelable) e.preventDefault();
-    e.stopPropagation();
+  function openModal(e) {
+    if (e && e.cancelable) e.preventDefault();
+    if (e) e.stopPropagation();
 
-    markDiagnostics(e, btn);
+    // Diagnostics (if present)
+    try {
+      if (typeof appointmentPressDiagnostics === 'object') {
+        appointmentPressDiagnostics.presses += 1;
+        appointmentPressDiagnostics.lastEvent = e?.type || 'unknown';
+        appointmentPressDiagnostics.eventTarget = 'FAB#addAppointmentFab';
+      }
+      if (typeof renderAppointmentDiagnostics === 'function') renderAppointmentDiagnostics();
+    } catch (_) {}
 
-    // Open modal
-    if (typeof openAddAppointmentModal === "function") {
+    // Open appointment modal
+    if (typeof openAddAppointmentModal === 'function') {
       openAddAppointmentModal();
       return;
     }
-    if (typeof openAppointmentModal === "function") {
+    if (typeof openAppointmentModal === 'function') {
       openAppointmentModal();
       return;
     }
-
-    console.warn("Appointment modal opener not found.");
+    console.warn('No appointment modal opener function found.');
   }
 
-  // Capture phase for iOS Safari reliability
-  document.addEventListener("click", fire, true);
-  document.addEventListener("pointerup", fire, true);
-  document.addEventListener("touchend", fire, { capture: true, passive: false });
-  document.addEventListener("touchstart", fire, { capture: true, passive: false });
+  // iOS Safari: bind multiple event types, non-passive touch, capture to avoid interference
+  fab.addEventListener('click', openModal, true);
+  fab.addEventListener('pointerup', openModal, true);
+  fab.addEventListener('touchend', openModal, { capture: true, passive: false });
+
+  document.body.appendChild(fab);
+}
+
+function setAddAppointmentFabVisible(visible) {
+  const fab = document.getElementById('addAppointmentFab');
+  if (!fab) return;
+  fab.style.display = visible ? 'inline-flex' : 'none';
+  fab.style.alignItems = 'center';
+  fab.style.justifyContent = 'center';
 }
 
 // ==================== NAVIGATION ====================
@@ -2135,6 +2160,10 @@ function switchSection(sectionId) {
   if (sectionId === 'heatmap') updateAnalytics();
   if (sectionId === 'schedule') renderSchedule();
   if (sectionId === 'appointments') renderAppointments();
+
+  // Ensure the FAB exists and only show it on the Appointments section
+  ensureAddAppointmentFab();
+  setAddAppointmentFabVisible(sectionId === 'appointments' || sectionId === 'appts' || sectionId === 'appointmentsSection');
 }
 
 function toggleMobileSidebar() {
@@ -2507,7 +2536,7 @@ function renderApp({ demoMode = false } = {}) {
 
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
-  installAppointmentAddHandlerDelegated();
+  ensureAddAppointmentFab();
 
   if (!window.location.hash || window.location.hash === '#') {
     window.location.hash = ROUTES.LANDING;
