@@ -339,6 +339,13 @@ body.dark-mode .pro-input:focus-visible {
 }
 .section-wrapper.active { display: block !important; }
 
+@media (max-width: 768px) {
+  .section-wrapper {
+    content-visibility: visible;
+    contain-intrinsic-size: auto;
+  }
+}
+
 .card { background: var(--lux-card); border-radius: 16px; border: 1px solid rgba(148, 163, 184, 0.24); box-shadow: 0 6px 20px rgba(0,0,0,0.06); overflow: hidden; }
 body.dark-mode .card { box-shadow: 0 6px 20px rgba(0,0,0,0.28); border-color: rgba(148, 163, 184, 0.3); }
 .card-header { padding: 22px; background: linear-gradient(135deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01)); border-bottom: 1px solid var(--lux-border); display: flex; justify-content: space-between; align-items: center; }
@@ -1853,7 +1860,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <div id="section-appointments" class="card section-wrapper">
         <div class="card-header">
           <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a4 4 0 00-4 4v2.5c0 .9-.3 1.8-.9 2.5L5.5 15h13l-1.6-2c-.6-.7-.9-1.6-.9-2.5V8a4 4 0 00-4-4z"/><path d="M10 18a2 2 0 004 0"/></svg></span>Appointments</div>
-          <button id="toggleAppointmentFormBtn" class="ghost-btn appointment-action-btn" type="button" aria-label="Add appointment" aria-expanded="false" onclick="openAppointmentForm()">+ Add Appointment</button>
+          <button id="toggleAppointmentFormBtn" class="ghost-btn appointment-action-btn" type="button" aria-label="Add appointment" aria-expanded="false" onclick="openAddAppointment()">+ Add Appointment</button>
         </div>
 
         <div id="appointmentForm" role="dialog" aria-modal="false" aria-labelledby="appointmentFormHeading" style="display:none; padding: 20px; border-bottom: 1px solid var(--lux-border); background: var(--lux-hover);">
