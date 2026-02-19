@@ -445,24 +445,33 @@ body.dark-mode .card-title { color: var(--titan-accent); }
     radial-gradient(circle at 10% 8%, color-mix(in srgb, var(--titan-accent) 18%, transparent 82%), transparent 38%),
     linear-gradient(165deg, color-mix(in srgb, var(--lux-card) 94%, var(--titan-accent) 6%), color-mix(in srgb, var(--lux-hover) 97%, var(--titan-primary) 3%));
 }
-.appointments-content { position: relative; z-index: 1; }
-.appointments-controls {
-  position: relative;
-  z-index: 2;
+.appointments-content { position: relative; z-index: 2; }
+.appointments-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+}
+.appointments-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+.appointments-controls {
+  position: relative;
+  z-index: 2;
   padding: 0 20px 12px;
 }
 .appointments-build-stamp { font-size: 11px; font-weight: 700; color: var(--lux-text-sub); }
 .appointments-add-btn {
-  min-height: 44px;
-  min-width: 44px;
-  padding: 10px 16px;
+  min-height: 36px;
+  min-width: 36px;
+  padding: 6px 12px;
   pointer-events: auto;
   position: relative;
   z-index: 5;
+  border-radius: 999px;
 }
 .appointments-diagnostics-link { font-size: 12px; font-weight: 700; color: var(--titan-primary); text-decoration: underline; cursor: pointer; }
 .appointments-diagnostics-panel {
@@ -489,6 +498,26 @@ body.dark-mode .card-title { color: var(--titan-accent); }
   background: rgba(22, 163, 74, 0.16);
   color: #166534;
 }
+.appointments-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.5);
+  padding: 16px;
+}
+.appointments-modal-sheet {
+  width: min(560px, 100%);
+  border-radius: 16px 16px 0 0;
+  border: 1px solid var(--lux-border);
+  background: var(--lux-card);
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+.appointments-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
 
 .appointments-inline-form {
   margin: 0 20px 14px;
@@ -1935,9 +1964,12 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         <div class="appointments-bg" aria-hidden="true"></div>
 
         <div class="appointments-content">
-          <div class="card-header">
+          <div class="card-header appointments-header-row">
             <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a4 4 0 00-4 4v2.5c0 .9-.3 1.8-.9 2.5L5.5 15h13l-1.6-2c-.6-.7-.9-1.6-.9-2.5V8a4 4 0 00-4-4z"/><path d="M10 18a2 2 0 004 0"/></svg></span>Appointments</div>
-            <button id="appointmentsDiagnosticsToggle" class="ghost-btn" type="button">Diagnostics</button>
+            <div class="appointments-header-actions">
+              <button id="appointmentsDiagnosticsToggle" class="ghost-btn" type="button">Diagnostics</button>
+              <button id="addAppointmentBtn" data-action="add-appointment" class="ghost-btn appointment-action-btn appointments-add-btn" type="button" aria-label="Add appointment">+ Add</button>
+            </div>
           </div>
 
           <div id="appointmentSaveConfirmation" class="appointment-confirmation" role="status" aria-live="polite" style="display:none;">✅ Appointment added</div>
@@ -1951,28 +1983,11 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <div><span id="appointmentPassBadge" class="appointments-pass-badge">FAIL</span></div>
           </div>
 
-          <div id="appointmentInlineForm" class="appointments-inline-form" style="display:none;">
-            <div style="display: grid; gap: 10px;">
-              <div style="font-size:13px;font-weight:700;color:var(--lux-text-main);">Add Appointment</div>
-              <input id="appointmentTitle" class="pro-input" placeholder="Appointment title" aria-label="Appointment title" required />
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <input id="appointmentDate" type="date" class="pro-input" aria-label="Appointment date" required />
-                <input id="appointmentTime" type="time" class="pro-input" aria-label="Appointment time" />
-              </div>
-              <input id="appointmentNotes" class="pro-input" placeholder="Notes (optional)" aria-label="Appointment notes" />
-              <div style="display:flex;gap:8px;">
-                <button id="saveAppointmentBtn" class="primary-btn appointment-action-btn" type="button" onclick="addAppointment()">Save Appointment</button>
-                <button id="cancelAppointmentBtn" class="ghost-btn appointment-action-btn" type="button" onclick="closeAppointmentForm()">Cancel</button>
-              </div>
-            </div>
-          </div>
-
           <div id="appointmentsList" style="padding: 16px 20px;"></div>
         </div>
 
         <div class="appointments-controls">
           <span id="appointmentsBuildStampLabel" class="appointments-build-stamp">APPT BTN BUILD: --</span>
-          <button id="add-appointment-btn" class="ghost-btn appointment-action-btn appointments-add-btn" type="button" aria-label="Add appointment" onclick="handleAppointmentPressCapture(event)">Add Appointment</button>
         </div>
       </div>
 
