@@ -1975,8 +1975,9 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               <button
                 id="addAppointmentBtn"
                 type="button"
-                data-action="open-add-appointment"
                 class="chip-btn"
+                data-action="open-add-appointment"
+                onclick="window.openAddAppointmentModal && window.openAddAppointmentModal();"
               >
                 + Add
               </button>

@@ -10,6 +10,30 @@ const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 const APPOINTMENT_BUTTON_BUILD_STAMP = "2026-02-20T00:35";
 const APPOINTMENTS_STORAGE_KEY = "focusflex_appointments_v1";
 
+// ---- Safari polyfills ----
+if (!Element.prototype.closest) {
+  Element.prototype.closest = function (s) {
+    let el = this;
+    if (!document.documentElement.contains(el)) return null;
+    do {
+      if (el.matches && el.matches(s)) return el;
+      el = el.parentElement || el.parentNode;
+    } while (el !== null && el.nodeType === 1);
+    return null;
+  };
+}
+if (!Element.prototype.matches) {
+  Element.prototype.matches =
+    Element.prototype.msMatchesSelector ||
+    Element.prototype.webkitMatchesSelector ||
+    function (s) {
+      const matches = (this.document || this.ownerDocument).querySelectorAll(s);
+      let i = matches.length;
+      while (--i >= 0 && matches.item(i) !== this) {}
+      return i > -1;
+    };
+}
+
 let appointmentPressDiagnostics = {
   presses: 0,
   lastEvent: "none",
@@ -1992,61 +2016,60 @@ function renderTodayAppointments() {
 // ===============================
 // SAFARI-PROOF ADD APPOINTMENT FIX
 // ===============================
+function installAppointmentAddHandlerDelegated() {
+  if (window.__apptAddDelegatedInstalled) return;
+  window.__apptAddDelegatedInstalled = true;
 
-function installAppointmentAddHandler() {
-  if (window._appointmentHandlerInstalled) return;
-  window._appointmentHandlerInstalled = true;
+  // Make opener callable from inline onclick fallback too
+  try { window.openAddAppointmentModal = openAddAppointmentModal; } catch (_) {}
 
-  function getAppointmentButtonFromEventTarget(target) {
-    if (!target) return null;
-    const targetEl = target.nodeType === 1 ? target : target.parentElement;
-    if (!targetEl || typeof targetEl.closest !== 'function') return null;
-    return targetEl.closest('#addAppointmentBtn, [data-action="open-add-appointment"]');
+  function markDiagnostics(e, btn) {
+    try {
+      if (typeof appointmentPressDiagnostics === "object") {
+        appointmentPressDiagnostics.presses += 1;
+        appointmentPressDiagnostics.lastEvent = e.type || "unknown";
+        appointmentPressDiagnostics.eventTarget =
+          (btn && btn.tagName ? btn.tagName : "unknown") +
+          (btn && btn.id ? "#" + btn.id : "");
+        const x = typeof e.clientX === "number" ? e.clientX : 0;
+        const y = typeof e.clientY === "number" ? e.clientY : 0;
+        const top = document.elementFromPoint(x, y);
+        appointmentPressDiagnostics.elementFromPoint = top ? top.tagName : "none";
+      }
+      if (typeof renderAppointmentDiagnostics === "function") renderAppointmentDiagnostics();
+    } catch (_) {}
   }
 
-  function openAppointmentModalSafely(eventName, target) {
-    appointmentPressDiagnostics.presses += 1;
-    appointmentPressDiagnostics.lastEvent = `${eventName} @ ${formatDiagnosticsTimestamp()}`;
-    appointmentPressDiagnostics.eventTarget = describeElement(target && target.nodeType === 1 ? target : target?.parentElement);
-    appointmentPressDiagnostics.elementFromPoint = describeElement(document.elementFromPoint(window.innerWidth / 2, 180));
-    renderAppointmentDiagnostics();
-
-    openAddAppointmentModal();
-    window.setTimeout(() => {
-      const modalOpen = document.getElementById('appointmentModal')?.style.display === 'flex';
-      if (!modalOpen) openAddAppointmentModal();
-    }, 0);
-  }
-
-  function handler(e) {
-    const btn = getAppointmentButtonFromEventTarget(e.target);
-
+  function fire(e) {
+    const btn = e.target && e.target.closest
+      ? e.target.closest('#addAppointmentBtn, [data-action="open-add-appointment"]')
+      : null;
     if (!btn) return;
 
+    // Stop navigation/overlays
     if (e.cancelable) e.preventDefault();
     e.stopPropagation();
 
-    if (typeof openAddAppointmentModal !== 'function') return;
-    openAppointmentModalSafely(e.type, e.target);
+    markDiagnostics(e, btn);
+
+    // Open modal
+    if (typeof openAddAppointmentModal === "function") {
+      openAddAppointmentModal();
+      return;
+    }
+    if (typeof openAppointmentModal === "function") {
+      openAppointmentModal();
+      return;
+    }
+
+    console.warn("Appointment modal opener not found.");
   }
 
-  // Use capture phase for Safari reliability
-  document.addEventListener("click", handler, true);
-  document.addEventListener("pointerup", handler, true);
-  document.addEventListener("touchend", handler, { capture: true, passive: false });
-
-  const addBtn = document.getElementById('addAppointmentBtn');
-  if (addBtn) {
-    addBtn.onclick = () => openAppointmentModalSafely('onclick', addBtn);
-    addBtn.addEventListener('mouseup', (e) => {
-      if (e.button !== 0) return;
-      openAppointmentModalSafely('mouseup', e.target);
-    });
-    addBtn.addEventListener('keyup', (e) => {
-      if (e.key !== 'Enter' && e.key !== ' ') return;
-      openAppointmentModalSafely(`keyup:${e.key}`, e.target);
-    });
-  }
+  // Capture phase for iOS Safari reliability
+  document.addEventListener("click", fire, true);
+  document.addEventListener("pointerup", fire, true);
+  document.addEventListener("touchend", fire, { capture: true, passive: false });
+  document.addEventListener("touchstart", fire, { capture: true, passive: false });
 }
 
 // ==================== NAVIGATION ====================
@@ -2484,7 +2507,7 @@ function renderApp({ demoMode = false } = {}) {
 
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
-  installAppointmentAddHandler();
+  installAppointmentAddHandlerDelegated();
 
   if (!window.location.hash || window.location.hash === '#') {
     window.location.hash = ROUTES.LANDING;
@@ -2539,6 +2562,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const appointmentAddButton = document.getElementById('addAppointmentBtn');
   if (appointmentAddButton) {
+    appointmentAddButton.disabled = false;
     appointmentAddButton.style.pointerEvents = 'auto';
     let currentParent = appointmentAddButton.parentElement;
     while (currentParent) {
