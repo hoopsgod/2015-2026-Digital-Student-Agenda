@@ -3,11 +3,87 @@ const ROUTES = {
   APP: '#/app'
 };
 const DEMO_MODE = new URLSearchParams(window.location.search).get('demo') === '1';
+const TAP_DEBUG_MODE = new URLSearchParams(window.location.search).get('tapdebug') === '1';
 const MOBILE_BREAKPOINT = 768;
 const ONBOARDING_STORAGE_KEY = "focusflow_onboarding_complete_v1";
 const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 
 let landingPreviewMode = 'desktop';
+
+function shouldEnableTapDebugHUD() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return false;
+  if (TAP_DEBUG_MODE) return true;
+  return window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
+}
+
+function initTapDebugHUD() {
+  if (!shouldEnableTapDebugHUD()) return;
+
+  const hud = document.createElement('div');
+  hud.id = 'tapDebugHud';
+  hud.style.cssText = [
+    'position: fixed',
+    'left: 10px',
+    'right: 10px',
+    'bottom: 10px',
+    'z-index: 5000',
+    'padding: 8px 10px',
+    'border-radius: 10px',
+    'background: rgba(2, 6, 23, 0.92)',
+    'color: #f8fafc',
+    'font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace',
+    'pointer-events: none',
+    'white-space: pre-wrap',
+    'box-shadow: 0 8px 22px rgba(2, 6, 23, 0.45)'
+  ].join(';');
+  hud.textContent = 'Tap Debug HUD\nWaiting for tap…';
+  document.body.appendChild(hud);
+
+  let highlightedElement = null;
+  let previousOutline = '';
+  let previousOutlineOffset = '';
+
+  const describeNode = (node) => {
+    if (!node || node.nodeType !== 1) return '(none)';
+    const classes = typeof node.className === 'string' ? node.className.trim().replace(/\s+/g, '.') : '';
+    return `${node.tagName.toLowerCase()}${node.id ? `#${node.id}` : ''}${classes ? `.${classes}` : ''}`;
+  };
+
+  const handleTapLikeEvent = (event) => {
+    const pointSource = (event.touches && event.touches[0]) || (event.changedTouches && event.changedTouches[0]) || event;
+    const clientX = Number.isFinite(pointSource?.clientX) ? pointSource.clientX : null;
+    const clientY = Number.isFinite(pointSource?.clientY) ? pointSource.clientY : null;
+    const topElement = (clientX !== null && clientY !== null)
+      ? document.elementFromPoint(clientX, clientY)
+      : null;
+
+    if (highlightedElement && highlightedElement !== topElement) {
+      highlightedElement.style.outline = previousOutline;
+      highlightedElement.style.outlineOffset = previousOutlineOffset;
+      highlightedElement = null;
+    }
+
+    if (topElement && topElement !== highlightedElement) {
+      highlightedElement = topElement;
+      previousOutline = topElement.style.outline;
+      previousOutlineOffset = topElement.style.outlineOffset;
+      topElement.style.outline = '2px solid #ef4444';
+      topElement.style.outlineOffset = '1px';
+    }
+
+    const target = event.target;
+    hud.textContent = [
+      `Tap Debug HUD`,
+      `event: ${event.type}`,
+      `target: ${describeNode(target)}`,
+      `top@point(${clientX ?? 'n/a'}, ${clientY ?? 'n/a'}): ${describeNode(topElement)}`
+    ].join('\n');
+  };
+
+  document.addEventListener('pointerdown', handleTapLikeEvent, true);
+  document.addEventListener('touchstart', handleTapLikeEvent, true);
+  document.addEventListener('click', handleTapLikeEvent, true);
+}
 
 function setLandingPreviewMode(mode) {
   if (mode !== 'desktop' && mode !== 'mobile') return;
@@ -1724,6 +1800,20 @@ function openAddAppointment() {
   setAppointmentFormOpen(true);
 }
 
+function bindAppointmentFormTrigger() {
+  const trigger = document.getElementById('toggleAppointmentFormBtn');
+  if (!trigger || trigger.dataset.tapBound === 'true') return;
+
+  const openFromTap = (event) => {
+    event.preventDefault();
+    openAddAppointment();
+  };
+
+  trigger.addEventListener('pointerup', openFromTap);
+  trigger.addEventListener('touchend', openFromTap);
+  trigger.dataset.tapBound = 'true';
+}
+
 function openAppointmentForm() {
   openAddAppointment();
 }
@@ -1784,6 +1874,7 @@ function deleteAppointment(id) {
 }
 
 function renderAppointments() {
+  bindAppointmentFormTrigger();
   const list = document.getElementById('appointmentsList');
   if (!list) return;
   const today = new Date().toISOString().split('T')[0];
@@ -2270,6 +2361,8 @@ function renderApp({ demoMode = false } = {}) {
 
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
+  initTapDebugHUD();
+
   if (!window.location.hash || window.location.hash === '#') {
     window.location.hash = ROUTES.LANDING;
   } else if (shouldForceMobileLanding()) {

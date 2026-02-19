@@ -573,6 +573,16 @@ body.dark-mode .pro-select { background-color: #1e293b; }
 .appointment-action-btn:focus-visible { outline: 2px solid var(--titan-primary); outline-offset: 2px; }
 body.dark-mode .appointment-action-btn:focus-visible { outline-color: var(--titan-accent); }
 
+#section-appointments .card-header {
+  position: relative;
+  z-index: 2;
+}
+#toggleAppointmentFormBtn {
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
+}
+
 /* TASK ITEMS */
 .task-item {
   display: flex; align-items: flex-start; gap: 14px; padding: 16px 16px;
