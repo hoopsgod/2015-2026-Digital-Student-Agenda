@@ -1735,6 +1735,7 @@ function setAppointmentFormOpen(isOpen) {
   if (!inlineForm) return;
   inlineForm.style.display = isOpen ? 'block' : 'none';
   if (isOpen) {
+    inlineForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     const titleField = document.getElementById('appointmentTitle');
     titleField?.focus();
   }
@@ -1803,10 +1804,6 @@ function bindAppointmentFormTrigger() {
   const diagnosticsToggle = document.getElementById('appointmentsDiagnosticsToggle');
   const diagnosticsPanel = document.getElementById('appointmentsDiagnosticsPanel');
   if (!trigger || trigger.dataset.tapBound === 'true') return;
-
-  trigger.addEventListener('pointerdown', handleAppointmentPressCapture, true);
-  trigger.addEventListener('touchstart', handleAppointmentPressCapture, true);
-  trigger.addEventListener('click', handleAppointmentPressCapture, true);
 
   diagnosticsToggle?.addEventListener('click', () => {
     const open = diagnosticsPanel?.style.display !== 'block';
