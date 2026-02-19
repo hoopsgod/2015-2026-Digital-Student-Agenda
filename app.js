@@ -3,87 +3,20 @@ const ROUTES = {
   APP: '#/app'
 };
 const DEMO_MODE = new URLSearchParams(window.location.search).get('demo') === '1';
-const TAP_DEBUG_MODE = new URLSearchParams(window.location.search).get('tapdebug') === '1';
 const MOBILE_BREAKPOINT = 768;
 const ONBOARDING_STORAGE_KEY = "focusflow_onboarding_complete_v1";
 const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 
+const APPOINTMENT_BUTTON_BUILD_STAMP = "2026-02-19T18:42";
+
+let appointmentPressDiagnostics = {
+  presses: 0,
+  lastEvent: "none",
+  eventTarget: "none",
+  elementFromPoint: "none"
+};
+
 let landingPreviewMode = 'desktop';
-
-function shouldEnableTapDebugHUD() {
-  if (typeof window === 'undefined' || typeof document === 'undefined') return false;
-  if (TAP_DEBUG_MODE) return true;
-  return window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
-}
-
-function initTapDebugHUD() {
-  if (!shouldEnableTapDebugHUD()) return;
-
-  const hud = document.createElement('div');
-  hud.id = 'tapDebugHud';
-  hud.style.cssText = [
-    'position: fixed',
-    'left: 10px',
-    'right: 10px',
-    'bottom: 10px',
-    'z-index: 5000',
-    'padding: 8px 10px',
-    'border-radius: 10px',
-    'background: rgba(2, 6, 23, 0.92)',
-    'color: #f8fafc',
-    'font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace',
-    'pointer-events: none',
-    'white-space: pre-wrap',
-    'box-shadow: 0 8px 22px rgba(2, 6, 23, 0.45)'
-  ].join(';');
-  hud.textContent = 'Tap Debug HUD\nWaiting for tap…';
-  document.body.appendChild(hud);
-
-  let highlightedElement = null;
-  let previousOutline = '';
-  let previousOutlineOffset = '';
-
-  const describeNode = (node) => {
-    if (!node || node.nodeType !== 1) return '(none)';
-    const classes = typeof node.className === 'string' ? node.className.trim().replace(/\s+/g, '.') : '';
-    return `${node.tagName.toLowerCase()}${node.id ? `#${node.id}` : ''}${classes ? `.${classes}` : ''}`;
-  };
-
-  const handleTapLikeEvent = (event) => {
-    const pointSource = (event.touches && event.touches[0]) || (event.changedTouches && event.changedTouches[0]) || event;
-    const clientX = Number.isFinite(pointSource?.clientX) ? pointSource.clientX : null;
-    const clientY = Number.isFinite(pointSource?.clientY) ? pointSource.clientY : null;
-    const topElement = (clientX !== null && clientY !== null)
-      ? document.elementFromPoint(clientX, clientY)
-      : null;
-
-    if (highlightedElement && highlightedElement !== topElement) {
-      highlightedElement.style.outline = previousOutline;
-      highlightedElement.style.outlineOffset = previousOutlineOffset;
-      highlightedElement = null;
-    }
-
-    if (topElement && topElement !== highlightedElement) {
-      highlightedElement = topElement;
-      previousOutline = topElement.style.outline;
-      previousOutlineOffset = topElement.style.outlineOffset;
-      topElement.style.outline = '2px solid #ef4444';
-      topElement.style.outlineOffset = '1px';
-    }
-
-    const target = event.target;
-    hud.textContent = [
-      `Tap Debug HUD`,
-      `event: ${event.type}`,
-      `target: ${describeNode(target)}`,
-      `top@point(${clientX ?? 'n/a'}, ${clientY ?? 'n/a'}): ${describeNode(topElement)}`
-    ].join('\n');
-  };
-
-  document.addEventListener('pointerdown', handleTapLikeEvent, true);
-  document.addEventListener('touchstart', handleTapLikeEvent, true);
-  document.addEventListener('click', handleTapLikeEvent, true);
-}
 
 function setLandingPreviewMode(mode) {
   if (mode !== 'desktop' && mode !== 'mobile') return;
@@ -257,7 +190,6 @@ if (DB.links.length === 0) {
 
 // ==================== CONFIRM DIALOG ====================
 let pendingConfirmAction = null;
-let appointmentOpenCount = 0;
 
 function showConfirm(title, msg, btnLabel, action, icon) {
   document.getElementById('confirmTitle').textContent = title;
@@ -1799,50 +1731,90 @@ function formatAppointmentDateTime(appt) {
 }
 
 function setAppointmentFormOpen(isOpen) {
-  const overlay = document.getElementById('appointmentModalOverlay');
-  if (!overlay) return;
-  overlay.style.display = isOpen ? 'flex' : 'none';
-  document.body.style.overflow = isOpen ? 'hidden' : '';
+  const inlineForm = document.getElementById('appointmentInlineForm');
+  if (!inlineForm) return;
+  inlineForm.style.display = isOpen ? 'block' : 'none';
   if (isOpen) {
     const titleField = document.getElementById('appointmentTitle');
     titleField?.focus();
   }
 }
 
-function openAddAppointment() {
-  appointmentOpenCount += 1;
-  const openCounter = document.getElementById('appointmentOpenCounter');
-  if (openCounter) openCounter.textContent = String(appointmentOpenCount);
+function describeElement(element) {
+  if (!element || element.nodeType !== 1) return 'none';
+  const className = typeof element.className === 'string' ? element.className.trim().replace(/\s+/g, '.') : '';
+  return `${element.tagName.toLowerCase()}${className ? `.${className}` : ''}`;
+}
+
+function showAppointmentToast(messageText, isSuccess = true) {
+  const message = document.getElementById('appointmentSaveConfirmation');
+  if (!message) return;
+  message.textContent = messageText;
+  message.style.borderColor = isSuccess ? 'rgba(22, 163, 74, 0.35)' : 'rgba(220, 38, 38, 0.35)';
+  message.style.background = isSuccess ? 'rgba(22, 163, 74, 0.12)' : 'rgba(220, 38, 38, 0.12)';
+  message.style.color = isSuccess ? '#166534' : '#991b1b';
+  message.style.display = 'block';
+  clearTimeout(showAppointmentToast.timeoutId);
+  showAppointmentToast.timeoutId = setTimeout(() => {
+    message.style.display = 'none';
+  }, 2000);
+}
+
+function renderAppointmentDiagnostics() {
+  const stampLabel = document.getElementById('appointmentsBuildStampLabel');
+  const stampValue = document.getElementById('appointmentsBuildStampValue');
+  const presses = document.getElementById('appointmentPressCount');
+  const lastEvent = document.getElementById('appointmentLastEvent');
+  const target = document.getElementById('appointmentEventTarget');
+  const topEl = document.getElementById('appointmentElementFromPoint');
+  const badge = document.getElementById('appointmentPassBadge');
+  if (stampLabel) stampLabel.textContent = `APPT BTN BUILD: ${APPOINTMENT_BUTTON_BUILD_STAMP}`;
+  if (stampValue) stampValue.textContent = APPOINTMENT_BUTTON_BUILD_STAMP;
+  if (presses) presses.textContent = String(appointmentPressDiagnostics.presses);
+  if (lastEvent) lastEvent.textContent = appointmentPressDiagnostics.lastEvent;
+  if (target) target.textContent = appointmentPressDiagnostics.eventTarget;
+  if (topEl) topEl.textContent = appointmentPressDiagnostics.elementFromPoint;
+  if (badge) {
+    const pass = appointmentPressDiagnostics.presses > 0;
+    badge.textContent = pass ? 'PASS' : 'FAIL';
+    badge.classList.toggle('pass', pass);
+  }
+}
+
+function handleAppointmentPressCapture(event) {
+  const pt = (event.touches && event.touches[0]) || (event.changedTouches && event.changedTouches[0]) || event;
+  const x = Number.isFinite(pt?.clientX) ? pt.clientX : null;
+  const y = Number.isFinite(pt?.clientY) ? pt.clientY : null;
+  const topElement = x !== null && y !== null ? document.elementFromPoint(x, y) : null;
+  const nextPress = appointmentPressDiagnostics.presses + 1;
+  appointmentPressDiagnostics = {
+    presses: nextPress,
+    lastEvent: `${event.type} @ ${new Date().toLocaleTimeString()}`,
+    eventTarget: describeElement(event.target),
+    elementFromPoint: describeElement(topElement)
+  };
+  renderAppointmentDiagnostics();
+  showAppointmentToast(`Add Appointment pressed (#${nextPress})`, true);
   setAppointmentFormOpen(true);
 }
 
 function bindAppointmentFormTrigger() {
-  const trigger = document.getElementById('addAppointmentBtn');
-  const overlay = document.getElementById('appointmentModalOverlay');
+  const trigger = document.getElementById('add-appointment-btn');
+  const diagnosticsToggle = document.getElementById('appointmentsDiagnosticsToggle');
+  const diagnosticsPanel = document.getElementById('appointmentsDiagnosticsPanel');
   if (!trigger || trigger.dataset.tapBound === 'true') return;
 
-  trigger.addEventListener('click', openAddAppointment);
-  trigger.addEventListener('keydown', (event) => {
-    if (event.key === ' ' || event.key === 'Enter') {
-      event.preventDefault();
-      openAddAppointment();
-    }
-  });
+  trigger.addEventListener('pointerdown', handleAppointmentPressCapture, true);
+  trigger.addEventListener('touchstart', handleAppointmentPressCapture, true);
+  trigger.addEventListener('click', handleAppointmentPressCapture, true);
 
-  if (overlay && overlay.dataset.tapBound !== 'true') {
-    overlay.addEventListener('click', (event) => {
-      if (event.target === overlay) closeAppointmentForm();
-    });
-    overlay.dataset.tapBound = 'true';
-  }
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key !== 'Escape') return;
-    const isOpen = overlay && overlay.style.display !== 'none';
-    if (isOpen) closeAppointmentForm();
+  diagnosticsToggle?.addEventListener('click', () => {
+    const open = diagnosticsPanel?.style.display !== 'block';
+    if (diagnosticsPanel) diagnosticsPanel.style.display = open ? 'block' : 'none';
   });
 
   trigger.dataset.tapBound = 'true';
+  renderAppointmentDiagnostics();
 }
 
 function closeAppointmentForm() {
@@ -1850,7 +1822,7 @@ function closeAppointmentForm() {
 }
 
 function clearAppointmentForm() {
-  const fields = ['appointmentTitle', 'appointmentDate', 'appointmentTime', 'appointmentLocation', 'appointmentNotes'];
+  const fields = ['appointmentTitle', 'appointmentDate', 'appointmentTime', 'appointmentNotes'];
   fields.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
@@ -1861,7 +1833,6 @@ function addAppointment() {
   const title = (document.getElementById('appointmentTitle')?.value || '').trim();
   const date = document.getElementById('appointmentDate')?.value || '';
   const time = document.getElementById('appointmentTime')?.value || '';
-  const location = (document.getElementById('appointmentLocation')?.value || '').trim();
   const notes = (document.getElementById('appointmentNotes')?.value || '').trim();
 
   if (!title || !date) return;
@@ -1869,7 +1840,7 @@ function addAppointment() {
   const now = new Date();
   const appointmentDateTime = normalizeAppointmentDateTime(date, time);
   if (!appointmentDateTime || appointmentDateTime.getTime() < now.getTime()) {
-    showAppointmentStatus('Please choose a future date/time for this appointment.', false);
+    showAppointmentToast('Please choose a future date/time for this appointment.', false);
     return;
   }
 
@@ -1878,7 +1849,6 @@ function addAppointment() {
     title,
     date,
     time,
-    location,
     notes,
     createdAt: new Date().toISOString()
   });
@@ -1887,21 +1857,7 @@ function addAppointment() {
   closeAppointmentForm();
   renderAppointments();
   renderTodayAppointments();
-  showAppointmentStatus('✅ Appointment added', true);
-}
-
-function showAppointmentStatus(messageText, isSuccess) {
-  const message = document.getElementById('appointmentSaveConfirmation');
-  if (!message) return;
-  message.textContent = messageText;
-  message.style.borderColor = isSuccess ? 'rgba(22, 163, 74, 0.35)' : 'rgba(220, 38, 38, 0.35)';
-  message.style.background = isSuccess ? 'rgba(22, 163, 74, 0.12)' : 'rgba(220, 38, 38, 0.12)';
-  message.style.color = isSuccess ? '#166534' : '#991b1b';
-  message.style.display = 'block';
-  clearTimeout(showAppointmentStatus.timeoutId);
-  showAppointmentStatus.timeoutId = setTimeout(() => {
-    message.style.display = 'none';
-  }, 2000);
+  showAppointmentToast('Appointment added', true);
 }
 
 function deleteAppointment(id) {
@@ -2405,8 +2361,6 @@ function renderApp({ demoMode = false } = {}) {
 
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
-  initTapDebugHUD();
-
   if (!window.location.hash || window.location.hash === '#') {
     window.location.hash = ROUTES.LANDING;
   } else if (shouldForceMobileLanding()) {
@@ -2423,7 +2377,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyColorTheme(STORAGE.getItem('currentTheme') || 'deep-ocean');
   document.getElementById('hamburgerBtn')?.setAttribute('aria-expanded', 'false');
   setupPWAInstall();
-  if (!DEMO_MODE) registerServiceWorker();
+  // Service worker intentionally disabled to avoid stale cached builds during appointment-button diagnostics.
   monitorWebVitals();
 
   // Event listeners
