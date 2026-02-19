@@ -1819,6 +1819,7 @@ function bindAppointmentFormTrigger() {
   if (!trigger || trigger.dataset.tapBound === 'true') return;
 
   trigger.addEventListener('click', openAddAppointment);
+  trigger.addEventListener('pointerup', openAddAppointment);
   trigger.dataset.tapBound = 'true';
 }
 
