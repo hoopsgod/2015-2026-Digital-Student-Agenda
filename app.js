@@ -8,12 +8,26 @@ const ONBOARDING_STORAGE_KEY = "focusflow_onboarding_complete_v1";
 const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 
 const APPT_KEY = "focusflow_appointments_v2";
+let apptHandlersBound = false;
+
+function apptNormalize(item) {
+  return {
+    id: String(item?.id || ""),
+    title: String(item?.title || "").trim(),
+    date: String(item?.date || "").trim(),
+    time: String(item?.time || "").trim(),
+    location: String(item?.location || "").trim(),
+    notes: String(item?.notes || "").trim(),
+    createdAt: Number(item?.createdAt || Date.now())
+  };
+}
 
 function apptLoad() {
   try {
     const raw = localStorage.getItem(APPT_KEY);
     const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr : [];
+    if (!Array.isArray(arr)) return [];
+    return arr.map(apptNormalize).filter(a => a.id && a.title && a.date && a.time);
   } catch (e) {
     console.warn("apptLoad failed", e);
     return [];
@@ -95,6 +109,25 @@ function apptRender() {
   const container = apptGetContainer();
   if (!container) return;
 
+  if (!apptHandlersBound) {
+    container.addEventListener("submit", e => {
+      const form = e.target.closest(".apw-form");
+      if (!form) return;
+      e.preventDefault();
+      apptAddFromForm(form);
+    });
+
+    container.addEventListener("click", e => {
+      const button = e.target.closest(".apw-del");
+      if (!button) return;
+      const id = button.getAttribute("data-appt-delete-id");
+      if (!id) return;
+      apptDelete(id);
+    });
+
+    apptHandlersBound = true;
+  }
+
   const list = apptLoad();
   list.sort((a, b) => apptSortValue(a) - apptSortValue(b));
 
@@ -111,7 +144,7 @@ function apptRender() {
               ${loc}
               ${notes}
             </div>
-            <button type="button" class="apw-del" onclick="window.apptDelete('${escapeHtml(a.id)}')">Delete</button>
+            <button type="button" class="apw-del" data-appt-delete-id="${escapeHtml(a.id)}">Delete</button>
           </div>
         `;
       }).join("")
@@ -125,7 +158,7 @@ function apptRender() {
       </div>
 
       <div class="apw-card">
-      <form class="apw-form" onsubmit="return window.apptAddFromForm(this);">
+      <form class="apw-form">
         <div class="apw-row">
           <label class="apw-label">Title *</label>
           <input class="apw-input" name="title" type="text" placeholder="e.g., Dentist appointment" required />
