@@ -7,7 +7,8 @@ const MOBILE_BREAKPOINT = 768;
 const ONBOARDING_STORAGE_KEY = "focusflow_onboarding_complete_v1";
 const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 
-const APPOINTMENT_BUTTON_BUILD_STAMP = "2026-02-19T18:42";
+const APPOINTMENT_BUTTON_BUILD_STAMP = "2026-02-19T20:15";
+const APPOINTMENTS_STORAGE_KEY = "focusflex_appointments_v1";
 
 let appointmentPressDiagnostics = {
   presses: 0,
@@ -166,7 +167,7 @@ const DB = {
   schedule: readJSON('agenda_schedule', []),
   scheduleSettings: readJSON('agenda_scheduleSettings', { dayStyle: 'letter', dayCount: 2 }),
   notes: readJSON('agenda_notes', []),
-  appointments: readJSON('agenda_appointments', []),
+  appointments: readJSON(APPOINTMENTS_STORAGE_KEY, readJSON('agenda_appointments', [])),
   links: readJSON('agenda_links', []),
   uploads: readJSON('agenda_uploads', []),
   focusSessions: readJSON('agenda_focusSessions', []),
@@ -1731,13 +1732,10 @@ function formatAppointmentDateTime(appt) {
 }
 
 function setAppointmentFormOpen(isOpen) {
-  const inlineForm = document.getElementById('appointmentInlineForm');
-  if (!inlineForm) return;
-  inlineForm.style.display = isOpen ? 'block' : 'none';
   if (isOpen) {
-    inlineForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    const titleField = document.getElementById('appointmentTitle');
-    titleField?.focus();
+    openAppointmentModal();
+  } else {
+    closeAppointmentModal();
   }
 }
 
@@ -1761,6 +1759,12 @@ function showAppointmentToast(messageText, isSuccess = true) {
   }, 2000);
 }
 
+function formatDiagnosticsTimestamp() {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+}
+
 function renderAppointmentDiagnostics() {
   const stampLabel = document.getElementById('appointmentsBuildStampLabel');
   const stampValue = document.getElementById('appointmentsBuildStampValue');
@@ -1769,7 +1773,12 @@ function renderAppointmentDiagnostics() {
   const target = document.getElementById('appointmentEventTarget');
   const topEl = document.getElementById('appointmentElementFromPoint');
   const badge = document.getElementById('appointmentPassBadge');
-  if (stampLabel) stampLabel.textContent = `APPT BTN BUILD: ${APPOINTMENT_BUTTON_BUILD_STAMP}`;
+  if (stampLabel) {
+    const status = appointmentPressDiagnostics.presses > 0
+      ? `OK (tap registered) ${appointmentPressDiagnostics.lastEvent}`
+      : APPOINTMENT_BUTTON_BUILD_STAMP;
+    stampLabel.textContent = `APPT BTN BUILD: ${status}`;
+  }
   if (stampValue) stampValue.textContent = APPOINTMENT_BUTTON_BUILD_STAMP;
   if (presses) presses.textContent = String(appointmentPressDiagnostics.presses);
   if (lastEvent) lastEvent.textContent = appointmentPressDiagnostics.lastEvent;
@@ -1782,66 +1791,121 @@ function renderAppointmentDiagnostics() {
   }
 }
 
-function handleAppointmentPressCapture(event) {
+function captureAppointmentButtonTap(event) {
+  if (!event) return;
+  const trigger = event.target?.closest?.('#addAppointmentBtn') || event.target?.closest?.('[data-action="add-appointment"]');
+  if (!trigger) return;
+  event.preventDefault();
+  event.stopPropagation();
+
   const pt = (event.touches && event.touches[0]) || (event.changedTouches && event.changedTouches[0]) || event;
   const x = Number.isFinite(pt?.clientX) ? pt.clientX : null;
   const y = Number.isFinite(pt?.clientY) ? pt.clientY : null;
   const topElement = x !== null && y !== null ? document.elementFromPoint(x, y) : null;
   const nextPress = appointmentPressDiagnostics.presses + 1;
+  const stamp = formatDiagnosticsTimestamp();
   appointmentPressDiagnostics = {
     presses: nextPress,
-    lastEvent: `${event.type} @ ${new Date().toLocaleTimeString()}`,
+    lastEvent: stamp,
     eventTarget: describeElement(event.target),
     elementFromPoint: describeElement(topElement)
   };
+  console.info('[APPOINTMENTS_TAP_OK]', { eventType: event.type, stamp, target: appointmentPressDiagnostics.eventTarget });
   renderAppointmentDiagnostics();
   showAppointmentToast(`Add Appointment pressed (#${nextPress})`, true);
-  setAppointmentFormOpen(true);
+  openAppointmentModal();
+}
+
+function ensureAppointmentModal() {
+  let modal = document.getElementById('appointmentModal');
+  if (modal) return modal;
+  modal = document.createElement('div');
+  modal.id = 'appointmentModal';
+  modal.className = 'appointments-modal';
+  modal.style.display = 'none';
+  modal.innerHTML = `
+    <div class="appointments-modal-sheet" role="dialog" aria-modal="true" aria-labelledby="appointmentModalTitle">
+      <div style="font-size:16px;font-weight:800;color:var(--lux-text-main);" id="appointmentModalTitle">Add Appointment</div>
+      <input id="appointmentModalTitleInput" class="pro-input" placeholder="Title" aria-label="Appointment title" required />
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <input id="appointmentModalDateInput" type="date" class="pro-input" aria-label="Appointment date" required />
+        <input id="appointmentModalTimeInput" type="time" class="pro-input" aria-label="Appointment time" />
+      </div>
+      <textarea id="appointmentModalNotesInput" class="pro-input" placeholder="Notes (optional)" aria-label="Appointment notes" rows="3"></textarea>
+      <div class="appointments-modal-actions">
+        <button type="button" class="ghost-btn" data-action="cancel-appointment-modal">Cancel</button>
+        <button type="button" class="primary-btn" data-action="save-appointment-modal">Save</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeAppointmentModal();
+    if (e.target.closest('[data-action="cancel-appointment-modal"]')) closeAppointmentModal();
+    if (e.target.closest('[data-action="save-appointment-modal"]')) addAppointment();
+  });
+  return modal;
+}
+
+function openAppointmentModal() {
+  const modal = ensureAppointmentModal();
+  modal.style.display = 'flex';
+  modal.querySelector('#appointmentModalTitleInput')?.focus();
+}
+
+function closeAppointmentModal() {
+  const modal = document.getElementById('appointmentModal');
+  if (!modal) return;
+  modal.style.display = 'none';
 }
 
 function bindAppointmentFormTrigger() {
-  const trigger = document.getElementById('add-appointment-btn');
   const diagnosticsToggle = document.getElementById('appointmentsDiagnosticsToggle');
   const diagnosticsPanel = document.getElementById('appointmentsDiagnosticsPanel');
-  if (!trigger || trigger.dataset.tapBound === 'true') return;
 
-  diagnosticsToggle?.addEventListener('click', () => {
-    const open = diagnosticsPanel?.style.display !== 'block';
-    if (diagnosticsPanel) diagnosticsPanel.style.display = open ? 'block' : 'none';
-  });
+  if (!document.body.dataset.appointmentDelegatesBound) {
+    document.addEventListener('click', captureAppointmentButtonTap, true);
+    document.addEventListener('pointerup', captureAppointmentButtonTap, true);
+    document.body.dataset.appointmentDelegatesBound = 'true';
+  }
 
-  trigger.dataset.tapBound = 'true';
+  if (diagnosticsToggle && diagnosticsToggle.dataset.bound !== 'true') {
+    diagnosticsToggle.addEventListener('click', () => {
+      const open = diagnosticsPanel?.style.display !== 'block';
+      if (diagnosticsPanel) diagnosticsPanel.style.display = open ? 'block' : 'none';
+    });
+    diagnosticsToggle.dataset.bound = 'true';
+  }
+
+  ensureAppointmentModal();
   renderAppointmentDiagnostics();
 }
 
-function closeAppointmentForm() {
-  setAppointmentFormOpen(false);
-}
-
 function clearAppointmentForm() {
-  const fields = ['appointmentTitle', 'appointmentDate', 'appointmentTime', 'appointmentNotes'];
+  const fields = ['appointmentModalTitleInput', 'appointmentModalDateInput', 'appointmentModalTimeInput', 'appointmentModalNotesInput'];
   fields.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
 }
 
+function saveAppointmentsToStorage() {
+  if (DEMO_MODE) return;
+  STORAGE.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(DB.appointments));
+}
+
 function addAppointment() {
-  const title = (document.getElementById('appointmentTitle')?.value || '').trim();
-  const date = document.getElementById('appointmentDate')?.value || '';
-  const time = document.getElementById('appointmentTime')?.value || '';
-  const notes = (document.getElementById('appointmentNotes')?.value || '').trim();
+  const title = (document.getElementById('appointmentModalTitleInput')?.value || '').trim();
+  const date = document.getElementById('appointmentModalDateInput')?.value || '';
+  const time = document.getElementById('appointmentModalTimeInput')?.value || '';
+  const notes = (document.getElementById('appointmentModalNotesInput')?.value || '').trim();
 
-  if (!title || !date) return;
-
-  const now = new Date();
-  const appointmentDateTime = normalizeAppointmentDateTime(date, time);
-  if (!appointmentDateTime || appointmentDateTime.getTime() < now.getTime()) {
-    showAppointmentToast('Please choose a future date/time for this appointment.', false);
+  if (!title || !date) {
+    showAppointmentToast('Please add both a title and date.', false);
     return;
   }
 
-  DB.appointments.unshift({
+  DB.appointments.push({
     id: Date.now(),
     title,
     date,
@@ -1849,9 +1913,10 @@ function addAppointment() {
     notes,
     createdAt: new Date().toISOString()
   });
-  DB.save('appointments');
+
+  saveAppointmentsToStorage();
   clearAppointmentForm();
-  closeAppointmentForm();
+  closeAppointmentModal();
   renderAppointments();
   renderTodayAppointments();
   showAppointmentToast('Appointment added', true);
@@ -1862,7 +1927,7 @@ function deleteAppointment(id) {
   if (!appt) return;
   showConfirm('Delete Appointment?', `Remove "${appt.title}" from your planner?`, 'Delete', () => {
     DB.appointments = DB.appointments.filter(a => a.id !== id);
-    DB.save('appointments');
+    saveAppointmentsToStorage();
     renderAppointments();
     renderTodayAppointments();
   }, '🗓️');
@@ -1872,23 +1937,20 @@ function renderAppointments() {
   bindAppointmentFormTrigger();
   const list = document.getElementById('appointmentsList');
   if (!list) return;
-  const today = localISODate();
 
-  const upcoming = DB.appointments
-    .filter(a => a.date >= today)
+  const sorted = [...DB.appointments]
     .sort((a, b) => (a.date + (a.time || '23:59')).localeCompare(b.date + (b.time || '23:59')));
 
-  if (!upcoming.length) {
-    list.innerHTML = '<div class="empty-msg">No upcoming appointments yet. Add your first appointment card above.</div>';
+  if (!sorted.length) {
+    list.innerHTML = '<div class="empty-msg">No appointments yet. Tap + Add to create your first one.</div>';
     return;
   }
 
-  list.innerHTML = upcoming.map(a => `
+  list.innerHTML = sorted.map(a => `
     <article class="appointment-card">
       <div class="appointment-main">
         <div class="appointment-title">${a.title}</div>
         <div class="appointment-meta"><span class="ui-icon" aria-hidden="true">${icon('calendar')}</span>${formatAppointmentDateTime(a)}</div>
-        ${a.location ? `<div class="appointment-meta"><span class="ui-icon" aria-hidden="true">${icon('map')}</span>${a.location}</div>` : ''}
         ${a.notes ? `<div class="appointment-notes">${a.notes}</div>` : ''}
       </div>
       <button class="danger-btn" onclick="deleteAppointment(${a.id})" aria-label="Delete appointment ${a.title}"><span class="ui-icon" aria-hidden="true">${icon('close')}</span><span>Delete</span></button>
