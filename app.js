@@ -2268,6 +2268,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('closeSettings').addEventListener('click', toggleSettingsPanel);
   document.getElementById('settingsPanelBackdrop').addEventListener('click', toggleSettingsPanel);
   document.getElementById('mobileSidebarBackdrop').addEventListener('click', closeMobileSidebar);
+  document.getElementById('toggleAppointmentFormBtn')?.addEventListener('click', toggleAppointmentForm);
+  document.getElementById('saveAppointmentBtn')?.addEventListener('click', addAppointment);
+  document.getElementById('cancelAppointmentBtn')?.addEventListener('click', toggleAppointmentForm);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeMobileSidebar();
