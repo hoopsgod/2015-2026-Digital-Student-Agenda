@@ -1707,10 +1707,32 @@ function formatAppointmentDateTime(appt) {
   return `${dateLabel} · ${formatTime(appt.time)}`;
 }
 
+function setAppointmentFormOpen(isOpen) {
+  const form = document.getElementById('appointmentForm');
+  const trigger = document.getElementById('toggleAppointmentFormBtn');
+  if (!form) return;
+  form.style.display = isOpen ? 'block' : 'none';
+  form.setAttribute('aria-modal', isOpen ? 'true' : 'false');
+  if (trigger) trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  if (isOpen) {
+    const titleField = document.getElementById('appointmentTitle');
+    titleField?.focus();
+  }
+}
+
+function openAppointmentForm() {
+  setAppointmentFormOpen(true);
+}
+
+function closeAppointmentForm() {
+  setAppointmentFormOpen(false);
+}
+
 function toggleAppointmentForm() {
   const form = document.getElementById('appointmentForm');
   if (!form) return;
-  form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+  const isOpen = form.style.display !== 'none' && form.style.display !== '';
+  setAppointmentFormOpen(!isOpen);
 }
 
 function clearAppointmentForm() {
@@ -1741,7 +1763,7 @@ function addAppointment() {
   });
   DB.save('appointments');
   clearAppointmentForm();
-  toggleAppointmentForm();
+  closeAppointmentForm();
   renderAppointments();
   renderTodayAppointments();
 }
@@ -2268,9 +2290,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('closeSettings').addEventListener('click', toggleSettingsPanel);
   document.getElementById('settingsPanelBackdrop').addEventListener('click', toggleSettingsPanel);
   document.getElementById('mobileSidebarBackdrop').addEventListener('click', closeMobileSidebar);
-  document.getElementById('toggleAppointmentFormBtn')?.addEventListener('click', toggleAppointmentForm);
-  document.getElementById('saveAppointmentBtn')?.addEventListener('click', addAppointment);
-  document.getElementById('cancelAppointmentBtn')?.addEventListener('click', toggleAppointmentForm);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeMobileSidebar();
