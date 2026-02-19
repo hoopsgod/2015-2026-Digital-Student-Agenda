@@ -7,15 +7,14 @@ const MOBILE_BREAKPOINT = 768;
 const ONBOARDING_STORAGE_KEY = "focusflow_onboarding_complete_v1";
 const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 
-const APPT_KEY = "focusflow_appointments_v2";
+const APPT_KEY = "focusflow_appts_widget_v1";
 
 function apptLoad() {
   try {
     const raw = localStorage.getItem(APPT_KEY);
     const arr = raw ? JSON.parse(raw) : [];
     return Array.isArray(arr) ? arr : [];
-  } catch (e) {
-    console.warn("apptLoad failed", e);
+  } catch (_e) {
     return [];
   }
 }
@@ -24,7 +23,7 @@ function apptSave(list) {
   try {
     localStorage.setItem(APPT_KEY, JSON.stringify(list));
   } catch (e) {
-    console.warn("apptSave failed", e);
+    console.warn("Appointment save failed", e);
   }
 }
 
@@ -42,91 +41,45 @@ function escapeHtml(s) {
     .replace(/'/g, "&#039;");
 }
 
-function apptAddFromForm(formEl) {
-  const title = (formEl.querySelector('[name="title"]')?.value || "").trim();
-  const date = (formEl.querySelector('[name="date"]')?.value || "").trim();
-  const time = (formEl.querySelector('[name="time"]')?.value || "").trim();
-  const location = (formEl.querySelector('[name="location"]')?.value || "").trim();
-  const notes = (formEl.querySelector('[name="notes"]')?.value || "").trim();
-
-  if (!title || !date || !time) {
-    alert("Please enter Title, Date, and Time.");
-    return false;
-  }
-
-  const list = apptLoad();
-  list.push({
-    id: "appt_" + Math.random().toString(36).slice(2) + "_" + Date.now(),
-    title,
-    date,
-    time,
-    location,
-    notes,
-    createdAt: Date.now()
-  });
-
-  list.sort((a, b) => apptSortValue(a) - apptSortValue(b));
-  apptSave(list);
-
-  try { formEl.reset(); } catch (_) {}
-
-  apptRender();
-  return false;
-}
-
-function apptDelete(id) {
-  const list = apptLoad().filter(x => x.id !== id);
-  apptSave(list);
-  apptRender();
-}
-
 function apptGetContainer() {
-  return (
-    document.getElementById("section-appointments") ||
-    document.getElementById("appointmentsSection") ||
-    document.querySelector('[data-section="appointments"]') ||
-    document.getElementById("appointments") ||
-    null
-  );
+  return document.getElementById("appointments-root") || document.getElementById("section-appointments") || null;
 }
 
 function apptRender() {
-  const container = apptGetContainer();
-  if (!container) return;
+  const root = apptGetContainer();
+  if (!root) return;
 
-  const list = apptLoad();
-  list.sort((a, b) => apptSortValue(a) - apptSortValue(b));
+  const list = apptLoad().slice().sort((a, b) => apptSortValue(a) - apptSortValue(b));
 
-  const items = list.length
-    ? list.map(a => {
-        const dt = `${escapeHtml(a.date)} ${escapeHtml(a.time)}`;
-        const loc = a.location ? `<div class="appt-meta"><strong>Location:</strong> ${escapeHtml(a.location)}</div>` : "";
-        const notes = a.notes ? `<div class="appt-meta"><strong>Notes:</strong> ${escapeHtml(a.notes)}</div>` : "";
+  const itemsHtml = list.length
+    ? list.map((a) => {
+        const when = `${escapeHtml(a.date)} ${escapeHtml(a.time)}`;
+        const loc = a.location ? ` • ${escapeHtml(a.location)}` : "";
+        const notes = a.notes ? `<div class="appt-meta">${escapeHtml(a.notes)}</div>` : "";
         return `
           <div class="appt-item">
             <div class="appt-left">
               <div class="appt-title">${escapeHtml(a.title)}</div>
-              <div class="appt-when">${dt}</div>
-              ${loc}
+              <div class="appt-when">${when}${loc}</div>
               ${notes}
             </div>
-            <button type="button" class="appt-del" onclick="window.apptDelete('${escapeHtml(a.id)}')">Delete</button>
+            <button type="button" class="appt-del" data-appt-del="${escapeHtml(a.id)}">Delete</button>
           </div>
         `;
       }).join("")
-    : `<div class="appt-empty">No appointments yet.</div>`;
+    : '<div class="appt-empty">No appointments yet.</div>';
 
-  container.innerHTML = `
+  root.innerHTML = `
     <div class="appt-wrap">
       <div class="appt-head">
         <div class="appt-h1">Appointments</div>
-        <div class="appt-sub">Add upcoming events with date, time, and location.</div>
+        <div class="appt-sub">Add date, time, and location. Saved on this device.</div>
       </div>
 
-      <form class="appt-form" onsubmit="return window.apptAddFromForm(this);">
+      <form class="appt-form" id="appt-form">
         <div class="appt-row">
           <label class="appt-label">Title *</label>
-          <input class="appt-input" name="title" type="text" placeholder="e.g., Dentist appointment" required />
+          <input class="appt-input" name="title" type="text" required placeholder="e.g., Dentist" />
         </div>
 
         <div class="appt-grid">
@@ -147,22 +100,67 @@ function apptRender() {
 
         <div class="appt-row">
           <label class="appt-label">Notes</label>
-          <input class="appt-input" name="notes" type="text" placeholder="e.g., Bring paperwork" />
+          <textarea class="appt-input" name="notes" placeholder="Optional"></textarea>
         </div>
 
         <button class="appt-submit" type="submit">Add Appointment</button>
       </form>
 
-      <div class="appt-list">
-        ${items}
-      </div>
+      <div class="appt-list">${itemsHtml}</div>
     </div>
   `;
+
+  const form = root.querySelector('#appt-form');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const title = (form.title.value || '').trim();
+      const date = (form.date.value || '').trim();
+      const time = (form.time.value || '').trim();
+      const location = (form.location.value || '').trim();
+      const notes = (form.notes.value || '').trim();
+
+      if (!title || !date || !time) {
+        alert('Please enter Title, Date, and Time.');
+        return;
+      }
+
+      const appts = apptLoad();
+      appts.push({
+        id: 'appt_' + Math.random().toString(36).slice(2) + '_' + Date.now(),
+        title,
+        date,
+        time,
+        location,
+        notes,
+        createdAt: Date.now()
+      });
+
+      appts.sort((a, b) => apptSortValue(a) - apptSortValue(b));
+      apptSave(appts);
+
+      try { form.reset(); } catch (_e) {}
+      apptRender();
+    });
+  }
+
+  if (!root.dataset.apptClickBound) {
+    root.addEventListener('click', function (e) {
+      const btn = e.target && e.target.closest ? e.target.closest('[data-appt-del]') : null;
+      if (!btn) return;
+
+      const id = btn.getAttribute('data-appt-del');
+      const appts = apptLoad().filter((a) => a.id !== id);
+      apptSave(appts);
+      apptRender();
+    }, { capture: true });
+    root.dataset.apptClickBound = '1';
+  }
 }
 
-window.apptAddFromForm = apptAddFromForm;
-window.apptDelete = apptDelete;
 window.apptRender = apptRender;
+window.__apptRender = apptRender;
 
 // ---- Safari polyfills ----
 if (!Element.prototype.closest) {
