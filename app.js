@@ -7,8 +7,7 @@ const MOBILE_BREAKPOINT = 768;
 const ONBOARDING_STORAGE_KEY = "focusflow_onboarding_complete_v1";
 const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 
-const APPT_KEY = "focusflow_appointments_v2";
-let apptHandlersBound = false;
+const APPT_KEY = "ff_appointments";
 
 function apptNormalize(item) {
   return {
@@ -22,33 +21,13 @@ function apptNormalize(item) {
   };
 }
 
-function apptLoad() {
-  try {
-    const raw = localStorage.getItem(APPT_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(arr)) return [];
-    return arr.map(apptNormalize).filter(a => a.id && a.title && a.date && a.time);
-  } catch (e) {
-    console.warn("apptLoad failed", e);
-    return [];
-  }
+function apptSortValue(item) {
+  const stamp = Date.parse(`${item.date}T${item.time || "00:00"}:00`);
+  return Number.isFinite(stamp) ? stamp : 0;
 }
 
-function apptSave(list) {
-  try {
-    localStorage.setItem(APPT_KEY, JSON.stringify(list));
-  } catch (e) {
-    console.warn("apptSave failed", e);
-  }
-}
-
-function apptSortValue(a) {
-  const t = Date.parse(`${a.date}T${a.time}:00`);
-  return Number.isFinite(t) ? t : 0;
-}
-
-function escapeHtml(s) {
-  return String(s)
+function escapeHtml(value) {
+  return String(value)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -56,21 +35,57 @@ function escapeHtml(s) {
     .replace(/'/g, "&#039;");
 }
 
-function apptAddFromForm(formEl) {
-  const title = (formEl.querySelector('[name="title"]')?.value || "").trim();
-  const date = apptNormalizeDateInput((formEl.querySelector('[name="date"]')?.value || "").trim());
-  const time = apptNormalizeTimeInput((formEl.querySelector('[name="time"]')?.value || "").trim());
-  const location = (formEl.querySelector('[name="location"]')?.value || "").trim();
-  const notes = (formEl.querySelector('[name="notes"]')?.value || "").trim();
+function apptLoad() {
+  try {
+    const raw = localStorage.getItem(APPT_KEY);
+    const list = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(list)) return [];
+    return list
+      .map(apptNormalize)
+      .filter(a => a.id && a.title && a.date)
+      .sort((a, b) => apptSortValue(a) - apptSortValue(b));
+  } catch (error) {
+    console.warn("Unable to load appointments", error);
+    return [];
+  }
+}
 
-  if (!title || !date || !time) {
-    alert("Please enter Title, Date, and Time.");
-    return false;
+function apptSave(list) {
+  const clean = (Array.isArray(list) ? list : [])
+    .map(apptNormalize)
+    .filter(a => a.id && a.title && a.date)
+    .sort((a, b) => apptSortValue(a) - apptSortValue(b));
+  localStorage.setItem(APPT_KEY, JSON.stringify(clean));
+}
+
+function toggleApptForm() {
+  const form = document.getElementById("apptForm");
+  if (!form) return;
+  const show = form.style.display === "none" || form.style.display === "";
+  form.style.display = show ? "block" : "none";
+}
+
+function addAppointment() {
+  const titleEl = document.getElementById("apptTitle");
+  const dateEl = document.getElementById("apptDate");
+  const timeEl = document.getElementById("apptTime");
+  const locationEl = document.getElementById("apptLocation");
+  const notesEl = document.getElementById("apptNotes");
+
+  const title = (titleEl?.value || "").trim();
+  const date = (dateEl?.value || "").trim();
+  const time = (timeEl?.value || "").trim();
+  const location = (locationEl?.value || "").trim();
+  const notes = (notesEl?.value || "").trim();
+
+  if (!title || !date) {
+    alert("Please enter both title and date.");
+    return;
   }
 
   const list = apptLoad();
   list.push({
-    id: "appt_" + Math.random().toString(36).slice(2) + "_" + Date.now(),
+    id: `appt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     title,
     date,
     time,
@@ -78,163 +93,65 @@ function apptAddFromForm(formEl) {
     notes,
     createdAt: Date.now()
   });
-
-  list.sort((a, b) => apptSortValue(a) - apptSortValue(b));
   apptSave(list);
 
-  try { formEl.reset(); } catch (_) {}
+  if (titleEl) titleEl.value = "";
+  if (dateEl) dateEl.value = "";
+  if (timeEl) timeEl.value = "";
+  if (locationEl) locationEl.value = "";
+  if (notesEl) notesEl.value = "";
 
-  apptRender();
-  return false;
+  const form = document.getElementById("apptForm");
+  if (form) form.style.display = "none";
+
+  renderAppointments();
 }
 
-function apptNormalizeDateInput(raw) {
-  if (!raw) return "";
-  const value = String(raw).trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-  const parsed = new Date(value);
-  if (!Number.isFinite(parsed.getTime())) return "";
-  const y = parsed.getFullYear();
-  const m = String(parsed.getMonth() + 1).padStart(2, "0");
-  const d = String(parsed.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+function deleteAppointment(id) {
+  const next = apptLoad().filter(item => item.id !== id);
+  apptSave(next);
+  renderAppointments();
 }
 
-function apptNormalizeTimeInput(raw) {
-  if (!raw) return "";
-  const value = String(raw).trim();
-  const hhmm = value.match(/^(\d{1,2}):(\d{2})$/);
-  if (hhmm) {
-    const h = Number(hhmm[1]);
-    const m = Number(hhmm[2]);
-    if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
-      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-    }
+function renderAppointments() {
+  const listEl = document.getElementById("apptList");
+  if (!listEl) return;
+
+  const list = apptLoad();
+
+  if (!list.length) {
+    listEl.innerHTML = `<div class="empty-msg" style="padding:20px;">No appointments yet.</div>`;
+    return;
   }
-  const ampm = value.match(/^(\d{1,2})(?::(\d{2}))?\s*([aApP][mM])$/);
-  if (ampm) {
-    let h = Number(ampm[1]);
-    const m = Number(ampm[2] || "0");
-    const period = ampm[3].toLowerCase();
-    if (h >= 1 && h <= 12 && m >= 0 && m <= 59) {
-      if (period === "pm" && h < 12) h += 12;
-      if (period === "am" && h === 12) h = 0;
-      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-    }
-  }
-  return "";
-}
 
-function apptDelete(id) {
-  const list = apptLoad().filter(x => x.id !== id);
-  apptSave(list);
-  apptRender();
-}
-
-function apptGetContainer() {
-  return (
-    document.getElementById("appointments-root") ||
-    document.getElementById("section-appointments") ||
-    document.getElementById("appointmentsSection") ||
-    document.querySelector('[data-section="appointments"]') ||
-    document.getElementById("appointments") ||
-    null
-  );
+  listEl.innerHTML = list.map(item => {
+    const meta = [item.date, item.time].filter(Boolean).join(" • ");
+    const location = item.location ? `<div class="task-meta">Location: ${escapeHtml(item.location)}</div>` : "";
+    const notes = item.notes ? `<div class="task-meta">Notes: ${escapeHtml(item.notes)}</div>` : "";
+    return `
+      <div class="task-item">
+        <div class="task-body">
+          <div class="task-title">${escapeHtml(item.title)}</div>
+          <div class="task-meta">${escapeHtml(meta)}</div>
+          ${location}
+          ${notes}
+        </div>
+        <div class="task-actions">
+          <button class="danger-btn" onclick="deleteAppointment('${escapeHtml(item.id)}')">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 
 function apptRender() {
-  const container = apptGetContainer();
-  if (!container) return;
-
-  if (!apptHandlersBound) {
-    container.addEventListener("submit", e => {
-      const form = e.target.closest(".apw-form");
-      if (!form) return;
-      e.preventDefault();
-      apptAddFromForm(form);
-    });
-
-    container.addEventListener("click", e => {
-      const button = e.target.closest(".apw-del");
-      if (!button) return;
-      const id = button.getAttribute("data-appt-delete-id");
-      if (!id) return;
-      apptDelete(id);
-    });
-
-    apptHandlersBound = true;
-  }
-
-  const list = apptLoad();
-  list.sort((a, b) => apptSortValue(a) - apptSortValue(b));
-
-  const items = list.length
-    ? list.map(a => {
-        const dt = `${escapeHtml(a.date)} ${escapeHtml(a.time)}`;
-        const loc = a.location ? `<div class="apw-item-meta"><strong>Location:</strong> ${escapeHtml(a.location)}</div>` : "";
-        const notes = a.notes ? `<div class="apw-item-notes"><strong>Notes:</strong> ${escapeHtml(a.notes)}</div>` : "";
-        return `
-          <div class="apw-item">
-            <div class="apw-left">
-              <div class="apw-item-title">${escapeHtml(a.title)}</div>
-              <div class="apw-item-meta">${dt}</div>
-              ${loc}
-              ${notes}
-            </div>
-            <button type="button" class="apw-del" data-appt-delete-id="${escapeHtml(a.id)}">Delete</button>
-          </div>
-        `;
-      }).join("")
-    : `<div class="apw-empty">No appointments yet.</div>`;
-
-  container.innerHTML = `
-    <div class="apw">
-      <div class="apw-h">
-        <div class="apw-title">Appointments</div>
-        <div class="apw-sub">Add upcoming events with date, time, and location.</div>
-      </div>
-
-      <div class="apw-card">
-      <form class="apw-form">
-        <div class="apw-row">
-          <label class="apw-label">Title *</label>
-          <input class="apw-input" name="title" type="text" placeholder="e.g., Dentist appointment" required />
-        </div>
-
-        <div class="apw-grid">
-          <div class="apw-row">
-            <label class="apw-label">Date *</label>
-            <input class="apw-input" name="date" type="date" required placeholder="YYYY-MM-DD" pattern="\\d{4}-\\d{2}-\\d{2}" />
-          </div>
-          <div class="apw-row">
-            <label class="apw-label">Time *</label>
-            <input class="apw-input" name="time" type="time" required placeholder="HH:MM or 9:30 PM" />
-          </div>
-        </div>
-
-        <div class="apw-row">
-          <label class="apw-label">Location</label>
-          <input class="apw-input" name="location" type="text" placeholder="e.g., Main Office" />
-        </div>
-
-        <div class="apw-row">
-          <label class="apw-label">Notes</label>
-          <textarea class="apw-textarea" name="notes" placeholder="e.g., Bring paperwork"></textarea>
-        </div>
-
-        <button class="apw-btn" type="submit">Add Appointment</button>
-      </form>
-    </div>
-
-      <div class="apw-list">
-        ${items}
-      </div>
-    </div>
-  `;
+  renderAppointments();
 }
 
-window.apptAddFromForm = apptAddFromForm;
-window.apptDelete = apptDelete;
+window.toggleApptForm = toggleApptForm;
+window.addAppointment = addAppointment;
+window.deleteAppointment = deleteAppointment;
+window.renderAppointments = renderAppointments;
 window.apptRender = apptRender;
 
 // ---- Safari polyfills ----
@@ -2013,7 +1930,7 @@ function switchSection(sectionId) {
   closeMobileSidebar();
   if (sectionId === 'heatmap') updateAnalytics();
   if (sectionId === 'schedule') renderSchedule();
-  if (sectionId === 'appointments') apptRender();
+  if (sectionId === 'appointments') renderAppointments();
 
 }
 

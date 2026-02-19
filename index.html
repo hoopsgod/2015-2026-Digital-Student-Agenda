@@ -1829,8 +1829,41 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
       <!-- ========== APPOINTMENTS ========== -->
       <div id="section-appointments" class="card section-wrapper">
-        <!-- Appointments Widget Mount Point -->
-        <div id="appointments-root"></div>
+        <div class="card-header">
+          <div class="card-title">Appointments</div>
+          <button class="ghost-btn" onclick="toggleApptForm()">+ Add Appointment</button>
+        </div>
+
+        <div id="apptForm" style="display:none; padding: 20px; border-bottom: 1px solid var(--lux-border);">
+          <div class="form-field">
+            <label class="form-label" for="apptTitle">Title</label>
+            <input id="apptTitle" class="pro-input" type="text" placeholder="Appointment title" />
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px; margin-top:10px;">
+            <div class="form-field">
+              <label class="form-label" for="apptDate">Date</label>
+              <input id="apptDate" class="pro-input" type="date" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="apptTime">Time</label>
+              <input id="apptTime" class="pro-input" type="time" />
+            </div>
+          </div>
+          <div class="form-field" style="margin-top:10px;">
+            <label class="form-label" for="apptLocation">Location (optional)</label>
+            <input id="apptLocation" class="pro-input" type="text" placeholder="Location" />
+          </div>
+          <div class="form-field" style="margin-top:10px;">
+            <label class="form-label" for="apptNotes">Notes (optional)</label>
+            <input id="apptNotes" class="pro-input" type="text" placeholder="Notes" />
+          </div>
+          <div style="display:flex; gap:8px; margin-top:12px;">
+            <button class="primary-btn" onclick="addAppointment()">Save</button>
+            <button class="ghost-btn" onclick="toggleApptForm()">Cancel</button>
+          </div>
+        </div>
+
+        <div id="apptList"></div>
       </div>
 
       <!-- ========== NOTES ========== -->
