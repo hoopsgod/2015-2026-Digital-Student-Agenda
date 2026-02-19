@@ -101,60 +101,62 @@ function apptRender() {
   const items = list.length
     ? list.map(a => {
         const dt = `${escapeHtml(a.date)} ${escapeHtml(a.time)}`;
-        const loc = a.location ? `<div class="appt-meta"><strong>Location:</strong> ${escapeHtml(a.location)}</div>` : "";
-        const notes = a.notes ? `<div class="appt-meta"><strong>Notes:</strong> ${escapeHtml(a.notes)}</div>` : "";
+        const loc = a.location ? `<div class="apw-item-meta"><strong>Location:</strong> ${escapeHtml(a.location)}</div>` : "";
+        const notes = a.notes ? `<div class="apw-item-notes"><strong>Notes:</strong> ${escapeHtml(a.notes)}</div>` : "";
         return `
-          <div class="appt-item">
-            <div class="appt-left">
-              <div class="appt-title">${escapeHtml(a.title)}</div>
-              <div class="appt-when">${dt}</div>
+          <div class="apw-item">
+            <div class="apw-left">
+              <div class="apw-item-title">${escapeHtml(a.title)}</div>
+              <div class="apw-item-meta">${dt}</div>
               ${loc}
               ${notes}
             </div>
-            <button type="button" class="appt-del" onclick="window.apptDelete('${escapeHtml(a.id)}')">Delete</button>
+            <button type="button" class="apw-del" onclick="window.apptDelete('${escapeHtml(a.id)}')">Delete</button>
           </div>
         `;
       }).join("")
-    : `<div class="appt-empty">No appointments yet.</div>`;
+    : `<div class="apw-empty">No appointments yet.</div>`;
 
   container.innerHTML = `
-    <div class="appt-wrap">
-      <div class="appt-head">
-        <div class="appt-h1">Appointments</div>
-        <div class="appt-sub">Add upcoming events with date, time, and location.</div>
+    <div class="apw">
+      <div class="apw-h">
+        <div class="apw-title">Appointments</div>
+        <div class="apw-sub">Add upcoming events with date, time, and location.</div>
       </div>
 
-      <form class="appt-form" onsubmit="return window.apptAddFromForm(this);">
-        <div class="appt-row">
-          <label class="appt-label">Title *</label>
-          <input class="appt-input" name="title" type="text" placeholder="e.g., Dentist appointment" required />
+      <div class="apw-card">
+      <form class="apw-form" onsubmit="return window.apptAddFromForm(this);">
+        <div class="apw-row">
+          <label class="apw-label">Title *</label>
+          <input class="apw-input" name="title" type="text" placeholder="e.g., Dentist appointment" required />
         </div>
 
-        <div class="appt-grid">
-          <div class="appt-row">
-            <label class="appt-label">Date *</label>
-            <input class="appt-input" name="date" type="date" required />
+        <div class="apw-grid">
+          <div class="apw-row">
+            <label class="apw-label">Date *</label>
+            <input class="apw-input" name="date" type="date" required />
           </div>
-          <div class="appt-row">
-            <label class="appt-label">Time *</label>
-            <input class="appt-input" name="time" type="time" required />
+          <div class="apw-row">
+            <label class="apw-label">Time *</label>
+            <input class="apw-input" name="time" type="time" required />
           </div>
         </div>
 
-        <div class="appt-row">
-          <label class="appt-label">Location</label>
-          <input class="appt-input" name="location" type="text" placeholder="e.g., Main Office" />
+        <div class="apw-row">
+          <label class="apw-label">Location</label>
+          <input class="apw-input" name="location" type="text" placeholder="e.g., Main Office" />
         </div>
 
-        <div class="appt-row">
-          <label class="appt-label">Notes</label>
-          <input class="appt-input" name="notes" type="text" placeholder="e.g., Bring paperwork" />
+        <div class="apw-row">
+          <label class="apw-label">Notes</label>
+          <textarea class="apw-textarea" name="notes" placeholder="e.g., Bring paperwork"></textarea>
         </div>
 
-        <button class="appt-submit" type="submit">Add Appointment</button>
+        <button class="apw-btn" type="submit">Add Appointment</button>
       </form>
+    </div>
 
-      <div class="appt-list">
+      <div class="apw-list">
         ${items}
       </div>
     </div>
