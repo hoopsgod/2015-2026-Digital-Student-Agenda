@@ -1804,13 +1804,7 @@ function bindAppointmentFormTrigger() {
   const trigger = document.getElementById('toggleAppointmentFormBtn');
   if (!trigger || trigger.dataset.tapBound === 'true') return;
 
-  const openFromTap = (event) => {
-    event.preventDefault();
-    openAddAppointment();
-  };
-
-  trigger.addEventListener('pointerup', openFromTap);
-  trigger.addEventListener('touchend', openFromTap);
+  trigger.addEventListener('click', openAddAppointment);
   trigger.dataset.tapBound = 'true';
 }
 
