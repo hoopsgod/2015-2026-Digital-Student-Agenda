@@ -1968,6 +1968,37 @@ function renderTodayAppointments() {
   `).join('');
 }
 
+// ===============================
+// SAFARI-PROOF ADD APPOINTMENT FIX
+// ===============================
+
+function installAppointmentAddHandler() {
+  if (window._appointmentHandlerInstalled) return;
+  window._appointmentHandlerInstalled = true;
+
+  function handler(e) {
+    const btn = e.target.closest
+      ? e.target.closest('#addAppointmentBtn, [data-action="open-add-appointment"]')
+      : null;
+
+    if (!btn) return;
+
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
+
+    if (typeof openAddAppointmentModal === "function") {
+      openAddAppointmentModal();
+    } else {
+      console.warn("openAddAppointmentModal not found");
+    }
+  }
+
+  // Use capture phase for Safari reliability
+  document.addEventListener("click", handler, true);
+  document.addEventListener("pointerup", handler, true);
+  document.addEventListener("touchend", handler, { capture: true, passive: false });
+}
+
 // ==================== NAVIGATION ====================
 const sectionMeta = {
   profile: { label: 'Dashboard' },
@@ -2401,32 +2432,10 @@ function renderApp({ demoMode = false } = {}) {
   switchSection('profile');
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  const btn = document.getElementById("addAppointmentBtn");
-  if (!btn) return;
-
-  function handleAddAppointment(event) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    console.log("Add Appointment button triggered");
-
-    if (typeof openAddAppointmentModal === "function") {
-      openAddAppointmentModal();
-    } else if (typeof createAppointment === "function") {
-      createAppointment();
-    }
-  }
-
-  btn.addEventListener("click", handleAddAppointment);
-  btn.addEventListener("touchend", handleAddAppointment, { passive: false });
-  if (window.PointerEvent) {
-    btn.addEventListener("pointerup", handleAddAppointment);
-  }
-});
-
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
+  installAppointmentAddHandler();
+
   if (!window.location.hash || window.location.hash === '#') {
     window.location.hash = ROUTES.LANDING;
   } else if (shouldForceMobileLanding()) {
