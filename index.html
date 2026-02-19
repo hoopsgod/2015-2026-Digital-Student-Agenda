@@ -1972,7 +1972,14 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a4 4 0 00-4 4v2.5c0 .9-.3 1.8-.9 2.5L5.5 15h13l-1.6-2c-.6-.7-.9-1.6-.9-2.5V8a4 4 0 00-4-4z"/><path d="M10 18a2 2 0 004 0"/></svg></span>Appointments</div>
             <div class="appointments-header-actions">
               <button id="appointmentsDiagnosticsToggle" class="ghost-btn" type="button">Diagnostics</button>
-              <button id="addAppointmentBtn" data-action="add-appointment" class="ghost-btn appointment-action-btn appointments-add-btn" type="button" aria-label="Add appointment">+ Add</button>
+              <button
+                id="addAppointmentBtn"
+                type="button"
+                data-action="open-add-appointment"
+                class="chip-btn"
+              >
+                + Add
+              </button>
             </div>
           </div>
 
