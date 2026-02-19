@@ -82,6 +82,7 @@ function apptDelete(id) {
 
 function apptGetContainer() {
   return (
+    document.getElementById("appointments-root") ||
     document.getElementById("section-appointments") ||
     document.getElementById("appointmentsSection") ||
     document.querySelector('[data-section="appointments"]') ||
