@@ -7,8 +7,5 @@
     "screenshots": "node scripts/capture-landing-screenshots.mjs",
     "screenshots:preview-modes": "node scripts/capture-landing-preview-modes.mjs",
     "test:e2e": "node scripts/e2e-appointments-mobile.js"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.51.0"
   }
 }
