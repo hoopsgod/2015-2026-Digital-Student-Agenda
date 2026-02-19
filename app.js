@@ -1791,12 +1791,20 @@ function renderAppointmentDiagnostics() {
   }
 }
 
+let lastAppointmentTapAt = 0;
+
 function captureAppointmentButtonTap(event) {
   if (!event) return;
   const trigger = event.target?.closest?.('#addAppointmentBtn') || event.target?.closest?.('[data-action="add-appointment"]');
   if (!trigger) return;
-  event.preventDefault();
-  event.stopPropagation();
+
+  const now = Date.now();
+  if (now - lastAppointmentTapAt < 450) return;
+  lastAppointmentTapAt = now;
+
+  if (event.type === 'touchend') {
+    event.preventDefault();
+  }
 
   const pt = (event.touches && event.touches[0]) || (event.changedTouches && event.changedTouches[0]) || event;
   const x = Number.isFinite(pt?.clientX) ? pt.clientX : null;
@@ -1860,13 +1868,19 @@ function closeAppointmentModal() {
 }
 
 function bindAppointmentFormTrigger() {
+  const addButton = document.getElementById('addAppointmentBtn');
   const diagnosticsToggle = document.getElementById('appointmentsDiagnosticsToggle');
   const diagnosticsPanel = document.getElementById('appointmentsDiagnosticsPanel');
 
-  if (!document.body.dataset.appointmentDelegatesBound) {
+  if (addButton && addButton.dataset.bound !== 'true') {
+    addButton.addEventListener('click', captureAppointmentButtonTap);
+    addButton.addEventListener('touchend', captureAppointmentButtonTap, { passive: false });
+    addButton.dataset.bound = 'true';
+  }
+
+  if (!document.body.dataset.appointmentDocumentDelegateBound) {
     document.addEventListener('click', captureAppointmentButtonTap, true);
-    document.addEventListener('pointerup', captureAppointmentButtonTap, true);
-    document.body.dataset.appointmentDelegatesBound = 'true';
+    document.body.dataset.appointmentDocumentDelegateBound = 'true';
   }
 
   if (diagnosticsToggle && diagnosticsToggle.dataset.bound !== 'true') {
