@@ -1777,6 +1777,20 @@ function formatAppointmentDate(dateStr) {
   return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
+function localISODate(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function normalizeAppointmentDateTime(date, time) {
+  if (!date) return null;
+  const normalizedTime = time || '23:59';
+  const dt = new Date(`${date}T${normalizedTime}`);
+  return Number.isNaN(dt.getTime()) ? null : dt;
+}
+
 function formatAppointmentDateTime(appt) {
   const dateLabel = formatAppointmentDate(appt.date);
   if (!appt.time) return dateLabel + ' · Time TBD';
@@ -1840,6 +1854,13 @@ function addAppointment() {
 
   if (!title || !date) return;
 
+  const now = new Date();
+  const appointmentDateTime = normalizeAppointmentDateTime(date, time);
+  if (!appointmentDateTime || appointmentDateTime.getTime() < now.getTime()) {
+    showToast('Please choose a future date/time for this appointment.');
+    return;
+  }
+
   DB.appointments.unshift({
     id: Date.now(),
     title,
@@ -1871,7 +1892,7 @@ function renderAppointments() {
   bindAppointmentFormTrigger();
   const list = document.getElementById('appointmentsList');
   if (!list) return;
-  const today = new Date().toISOString().split('T')[0];
+  const today = localISODate();
 
   const upcoming = DB.appointments
     .filter(a => a.date >= today)
@@ -1898,20 +1919,22 @@ function renderAppointments() {
 function renderTodayAppointments() {
   const container = document.getElementById('todayAppointments');
   if (!container) return;
-  const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
 
-  const todaysItems = DB.appointments
-    .filter(a => a.date === today)
-    .sort((a, b) => (a.time || '23:59').localeCompare(b.time || '23:59'));
+  const upcomingItems = DB.appointments
+    .map(a => ({ ...a, startsAt: normalizeAppointmentDateTime(a.date, a.time) }))
+    .filter(a => a.startsAt && a.startsAt.getTime() >= now.getTime())
+    .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
+    .slice(0, 5);
 
-  if (!todaysItems.length) {
-    container.innerHTML = '<div class="dashboard-callout-empty">No appointments today. Enjoy the open time.</div>';
+  if (!upcomingItems.length) {
+    container.innerHTML = '<div class="dashboard-callout-empty">No upcoming appointments. Enjoy the open time.</div>';
     return;
   }
 
-  container.innerHTML = todaysItems.map(a => `
+  container.innerHTML = upcomingItems.map(a => `
     <div class="dashboard-appointment-item">
-      <div class="dashboard-appointment-time">${a.time ? formatTime(a.time) : 'Time TBD'}</div>
+      <div class="dashboard-appointment-time">${a.time ? formatTime(a.time) : 'Time TBD'}<br><span style="font-size:11px;color:var(--lux-text-sub);font-weight:500;">${formatAppointmentDate(a.date)}</span></div>
       <div class="dashboard-appointment-details">
         <div class="dashboard-appointment-title">${a.title}</div>
         ${a.location ? `<div class="dashboard-appointment-location">${a.location}</div>` : ''}
