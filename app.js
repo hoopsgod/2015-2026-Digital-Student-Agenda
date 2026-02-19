@@ -1720,8 +1720,12 @@ function setAppointmentFormOpen(isOpen) {
   }
 }
 
-function openAppointmentForm() {
+function openAddAppointment() {
   setAppointmentFormOpen(true);
+}
+
+function openAppointmentForm() {
+  openAddAppointment();
 }
 
 function closeAppointmentForm() {
