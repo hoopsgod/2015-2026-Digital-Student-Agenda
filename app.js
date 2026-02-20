@@ -8,6 +8,16 @@ const ONBOARDING_STORAGE_KEY = "focusflow_onboarding_complete_v1";
 const CUSTOMIZE_TIP_STORAGE_KEY = "focusflow_customize_tip_seen_v1";
 
 const APPT_KEY = "ff_appointments";
+// localStorage keys for motivation + progressive enhancement helpers.
+const STREAK_KEY = 'ff_daily_streak';
+const QUOTE_CARD_COLLAPSED_KEY = 'quoteCardCollapsed';
+const APPT_REMINDERS_KEY = 'ff_appointment_reminders';
+const REMINDER_PERMISSION_ASKED_KEY = 'ff_reminder_permission_asked';
+
+let toastTimer = null;
+let activeVoiceInput = null;
+let speechRecognition = null;
+const reminderTimeouts = {};
 
 function apptNormalize(item) {
   return {
@@ -17,6 +27,7 @@ function apptNormalize(item) {
     time: String(item?.time || "").trim(),
     location: String(item?.location || "").trim(),
     notes: String(item?.notes || "").trim(),
+    reminderOffsetMinutes: Number(item?.reminderOffsetMinutes || 0),
     createdAt: Number(item?.createdAt || Date.now())
   };
 }
@@ -71,12 +82,14 @@ function addAppointment() {
   const timeEl = document.getElementById("apptTime");
   const locationEl = document.getElementById("apptLocation");
   const notesEl = document.getElementById("apptNotes");
+  const reminderEl = document.getElementById("apptReminder");
 
   const title = (titleEl?.value || "").trim();
   const date = (dateEl?.value || "").trim();
   const time = (timeEl?.value || "").trim();
   const location = (locationEl?.value || "").trim();
   const notes = (notesEl?.value || "").trim();
+  const reminderOffsetMinutes = parseInt(reminderEl?.value || '0', 10) || 0;
 
   if (!title || !date) {
     alert("Please enter both title and date.");
@@ -91,6 +104,7 @@ function addAppointment() {
     time,
     location,
     notes,
+    reminderOffsetMinutes,
     createdAt: Date.now()
   });
   apptSave(list);
@@ -100,16 +114,34 @@ function addAppointment() {
   if (timeEl) timeEl.value = "";
   if (locationEl) locationEl.value = "";
   if (notesEl) notesEl.value = "";
+  if (reminderEl) reminderEl.value = '0';
 
   const form = document.getElementById("apptForm");
   if (form) form.style.display = "none";
 
   renderAppointments();
+  updateAppointmentReminder(list[list.length - 1].id, reminderOffsetMinutes);
 }
 
 function deleteAppointment(id) {
   const next = apptLoad().filter(item => item.id !== id);
   apptSave(next);
+  const reminders = reminderLoad().filter(item => item.appointmentId !== id);
+  reminderSave(reminders);
+  scheduleAppointmentReminders();
+  renderAppointments();
+}
+
+
+function setAppointmentReminder(id, offsetValue) {
+  const offset = parseInt(offsetValue || '0', 10) || 0;
+  const list = apptLoad();
+  const item = list.find(appt => appt.id === id);
+  if (!item) return;
+  item.reminderOffsetMinutes = offset;
+  apptSave(list);
+  updateAppointmentReminder(id, offset);
+  showToast(offset > 0 ? 'Reminder scheduled.' : 'Reminder turned off.', 'info');
   renderAppointments();
 }
 
@@ -128,6 +160,7 @@ function renderAppointments() {
     const meta = [item.date, item.time].filter(Boolean).join(" • ");
     const location = item.location ? `<div class="task-meta">Location: ${escapeHtml(item.location)}</div>` : "";
     const notes = item.notes ? `<div class="task-meta">Notes: ${escapeHtml(item.notes)}</div>` : "";
+    const reminderValue = Number(item.reminderOffsetMinutes || 0);
     return `
       <div class="task-item">
         <div class="task-body">
@@ -136,7 +169,15 @@ function renderAppointments() {
           ${location}
           ${notes}
         </div>
-        <div class="task-actions">
+        <div class="task-actions" style="display:grid;gap:8px;">
+          <select class="pro-select pro-input" aria-label="Set reminder for ${escapeHtml(item.title)}" onchange="setAppointmentReminder('${escapeHtml(item.id)}', this.value)">
+            <option value="0" ${reminderValue === 0 ? 'selected' : ''}>Reminder: Off</option>
+            <option value="5" ${reminderValue === 5 ? 'selected' : ''}>5 min before</option>
+            <option value="10" ${reminderValue === 10 ? 'selected' : ''}>10 min before</option>
+            <option value="30" ${reminderValue === 30 ? 'selected' : ''}>30 min before</option>
+            <option value="60" ${reminderValue === 60 ? 'selected' : ''}>1 hour before</option>
+            <option value="1440" ${reminderValue === 1440 ? 'selected' : ''}>1 day before</option>
+          </select>
           <button class="danger-btn" onclick="deleteAppointment('${escapeHtml(item.id)}')">Delete</button>
         </div>
       </div>
@@ -154,7 +195,10 @@ window.toggleApptForm = toggleApptForm;
 window.addAppointment = addAppointment;
 window.deleteAppointment = deleteAppointment;
 window.renderAppointments = renderAppointments;
+window.setAppointmentReminder = setAppointmentReminder;
 window.apptRender = apptRender;
+window.toggleQuoteCard = toggleQuoteCard;
+window.toggleVoiceInput = toggleVoiceInput;
 
 // ---- Safari polyfills ----
 if (!Element.prototype.closest) {
@@ -328,6 +372,242 @@ function readJSON(key, fallback) {
   } catch (_) {
     return fallback;
   }
+}
+
+function showToast(message, variant = 'info') {
+  const toast = document.getElementById('appToast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.className = `app-toast show ${variant}`;
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.className = 'app-toast';
+  }, 2000);
+}
+
+function getTodayKey() {
+  return dateKeyFromLocalDate(new Date());
+}
+
+function loadStreakData() {
+  // Streak model: if a day passes with 0 completions, streak resets to 0.
+  const base = { lastCompletionDate: null, currentStreak: 0, bestStreak: 0 };
+  const data = readJSON(STREAK_KEY, base) || base;
+  return {
+    lastCompletionDate: data.lastCompletionDate || null,
+    currentStreak: Number(data.currentStreak || 0),
+    bestStreak: Number(data.bestStreak || 0)
+  };
+}
+
+function saveStreakData(data) {
+  STORAGE.setItem(STREAK_KEY, JSON.stringify(data));
+}
+
+function updateStreakForCompletion() {
+  const streak = loadStreakData();
+  const today = getTodayKey();
+  if (streak.lastCompletionDate === today) return { incremented: false, streak };
+
+  if (!streak.lastCompletionDate) {
+    streak.currentStreak = 1;
+  } else {
+    const previous = new Date(`${streak.lastCompletionDate}T00:00:00`);
+    const now = new Date(`${today}T00:00:00`);
+    const daysApart = Math.round((now - previous) / 86400000);
+    streak.currentStreak = daysApart === 1 ? streak.currentStreak + 1 : 1;
+  }
+
+  streak.lastCompletionDate = today;
+  streak.bestStreak = Math.max(streak.bestStreak, streak.currentStreak);
+  saveStreakData(streak);
+  return { incremented: true, streak };
+}
+
+function renderStreakBadge(celebrate = false) {
+  const data = loadStreakData();
+  const streakEl = document.getElementById('streakCurrent');
+  const bestEl = document.getElementById('streakBest');
+  const noteEl = document.getElementById('streakNote');
+  if (streakEl) streakEl.textContent = data.currentStreak;
+  if (bestEl) bestEl.textContent = data.bestStreak;
+  if (noteEl) noteEl.textContent = celebrate ? 'Nice—keep it going.' : 'Complete at least one task each day.';
+  const badge = document.getElementById('streakBadge');
+  if (badge) {
+    badge.classList.toggle('celebrate', celebrate);
+    if (celebrate) setTimeout(() => badge.classList.remove('celebrate'), 1200);
+  }
+}
+
+function applyQuoteCardPreference() {
+  const card = document.getElementById('quoteCard');
+  const button = document.getElementById('quoteCardToggle');
+  if (!card || !button) return;
+  const collapsed = STORAGE.getItem(QUOTE_CARD_COLLAPSED_KEY) !== 'false';
+  card.classList.toggle('collapsed', collapsed);
+  button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+}
+
+function toggleQuoteCard() {
+  const card = document.getElementById('quoteCard');
+  const button = document.getElementById('quoteCardToggle');
+  if (!card || !button) return;
+  const collapsed = card.classList.toggle('collapsed');
+  button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+  STORAGE.setItem(QUOTE_CARD_COLLAPSED_KEY, collapsed ? 'true' : 'false');
+}
+
+function updateQuotePreview(text) {
+  const preview = document.getElementById('quotePreview');
+  if (!preview) return;
+  preview.textContent = text.length > 70 ? `${text.slice(0, 70)}…` : text;
+}
+
+function getSpeechRecognition() {
+  if (speechRecognition) return speechRecognition;
+  const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Ctor) return null;
+  speechRecognition = new Ctor();
+  speechRecognition.lang = 'en-US';
+  speechRecognition.continuous = false;
+  speechRecognition.interimResults = false;
+  return speechRecognition;
+}
+
+function setMicAvailability() {
+  const supported = Boolean(getSpeechRecognition());
+  document.querySelectorAll('.voice-btn').forEach(btn => {
+    if (!supported) {
+      btn.disabled = true;
+      btn.title = 'Voice input not supported on this device.';
+      btn.style.display = 'none';
+      return;
+    }
+    btn.disabled = false;
+    btn.style.display = 'inline-flex';
+  });
+}
+
+function toggleVoiceInput(fieldId, buttonEl) {
+  const recognition = getSpeechRecognition();
+  if (!recognition) {
+    showToast('Voice input not supported on this device.', 'warn');
+    return;
+  }
+  const input = document.getElementById(fieldId);
+  if (!input || !buttonEl) return;
+
+  if (activeVoiceInput && activeVoiceInput.fieldId === fieldId) {
+    recognition.stop();
+    return;
+  }
+
+  if (activeVoiceInput?.buttonEl) {
+    activeVoiceInput.buttonEl.classList.remove('listening');
+    activeVoiceInput.buttonEl.setAttribute('aria-label', 'Start voice input');
+    activeVoiceInput.buttonEl.textContent = '🎤';
+  }
+
+  activeVoiceInput = { fieldId, buttonEl };
+  buttonEl.classList.add('listening');
+  buttonEl.setAttribute('aria-label', 'Stop voice input');
+  buttonEl.textContent = 'Listening…';
+
+  recognition.onresult = (event) => {
+    const transcript = Array.from(event.results || []).map(r => r[0]?.transcript || '').join(' ').trim();
+    if (!transcript) return;
+    input.value = input.value ? `${input.value} ${transcript}` : transcript;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  recognition.onerror = () => showToast('Voice input failed. Please try again.', 'warn');
+  recognition.onend = () => {
+    if (activeVoiceInput?.buttonEl) {
+      activeVoiceInput.buttonEl.classList.remove('listening');
+      activeVoiceInput.buttonEl.setAttribute('aria-label', 'Start voice input');
+      activeVoiceInput.buttonEl.textContent = '🎤';
+    }
+    activeVoiceInput = null;
+  };
+
+  try {
+    recognition.start();
+  } catch (_) {
+    showToast('Voice input unavailable right now.', 'warn');
+  }
+}
+
+function reminderLoad() {
+  return readJSON(APPT_REMINDERS_KEY, []);
+}
+
+function reminderSave(items) {
+  // Stores appointment reminder preferences/schedules for best-effort rehydration on load.
+  STORAGE.setItem(APPT_REMINDERS_KEY, JSON.stringify(items));
+}
+
+function maybeRequestReminderPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'default') return;
+  if (STORAGE.getItem(REMINDER_PERMISSION_ASKED_KEY) === 'true') return;
+  STORAGE.setItem(REMINDER_PERMISSION_ASKED_KEY, 'true');
+  Notification.requestPermission().catch(() => {});
+}
+
+function fireAppointmentReminder(reminder) {
+  const appt = apptLoad().find(a => a.id === reminder.appointmentId);
+  if (!appt) return;
+  const label = `Reminder: ${appt.title}`;
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification('FocusFlex Appointment', { body: label });
+  } else {
+    showToast(label, 'info');
+  }
+  playAlarmTone();
+
+  const next = reminderLoad().filter(r => r.id !== reminder.id);
+  reminderSave(next);
+}
+
+function scheduleAppointmentReminders() {
+  Object.values(reminderTimeouts).forEach(id => clearTimeout(id));
+  for (const key of Object.keys(reminderTimeouts)) delete reminderTimeouts[key];
+
+  const now = Date.now();
+  const reminders = reminderLoad().filter(r => r.reminderEnabled);
+  const upcoming = reminders.filter(r => Number(r.scheduledAt) > now);
+  reminderSave(upcoming);
+
+  upcoming.forEach(reminder => {
+    const delay = Number(reminder.scheduledAt) - now;
+    if (delay <= 0) return;
+    reminderTimeouts[reminder.id] = setTimeout(() => fireAppointmentReminder(reminder), delay);
+  });
+}
+
+function updateAppointmentReminder(apptId, offsetMinutes) {
+  const reminders = reminderLoad().filter(r => r.appointmentId !== apptId);
+  if (offsetMinutes <= 0) {
+    reminderSave(reminders);
+    scheduleAppointmentReminders();
+    return;
+  }
+
+  const appt = apptLoad().find(a => a.id === apptId);
+  if (!appt) return;
+  const appointmentAt = Date.parse(`${appt.date}T${appt.time || '09:00'}:00`);
+  if (!Number.isFinite(appointmentAt)) return;
+  const scheduledAt = appointmentAt - (offsetMinutes * 60000);
+
+  reminders.push({
+    id: `rem_${apptId}`,
+    appointmentId: apptId,
+    reminderOffsetMinutes: offsetMinutes,
+    reminderEnabled: true,
+    scheduledAt
+  });
+  reminderSave(reminders);
+  maybeRequestReminderPermission();
+  scheduleAppointmentReminders();
 }
 
 // ==================== DATA STORE ====================
@@ -728,7 +1008,19 @@ function addTask() {
 
 function toggleTask(id) {
   const t = DB.tasks.find(x => x.id === id);
-  if (t) { t.completed = !t.completed; t.completedAt = t.completed ? new Date().toISOString() : null; }
+  if (t) {
+    const wasCompleted = Boolean(t.completed);
+    t.completed = !t.completed;
+    t.completedAt = t.completed ? new Date().toISOString() : null;
+    if (!wasCompleted && t.completed) {
+      const result = updateStreakForCompletion();
+      showToast('Nice work — 1 step done.', 'good');
+      if (result.incremented) {
+        showToast('Streak +1 🔥', 'good');
+        renderStreakBadge(true);
+      }
+    }
+  }
   DB.save('tasks');
   renderTasks();
   updateDashboard();
@@ -1875,6 +2167,8 @@ function updateDashboard() {
   if (doneEl) doneEl.textContent = done;
 
   updateFocusStats();
+  renderDashboardTaskProgress();
+  renderStreakBadge(false);
   // Priority-first rendering keeps high-signal data at the top for fast scanning.
   renderDashboardPriorityLists();
   renderAppointmentsOverview();
@@ -1925,6 +2219,34 @@ function renderAppointmentsOverview() {
       return `<div class="dashboard-appt-item"><span class="dashboard-appt-time">${escapeHtml(formatAppointmentDateLabel(item.date))} • ${escapeHtml(timeLabel)}</span><span class="dashboard-appt-title">${escapeHtml(item.title)}</span></div>`;
     }).join('');
   }
+}
+
+function renderDashboardTaskProgress() {
+  const progressRoot = document.getElementById('dashboardTaskProgress');
+  if (!progressRoot) return;
+
+  const today = getTodayKey();
+  const dueTodayTasks = DB.tasks.filter(t => t.due === today);
+  const completedToday = DB.tasks.filter(t => {
+    if (!t.completed) return false;
+    if (t.completedAt) return String(t.completedAt).startsWith(today);
+    return t.due === today;
+  }).length;
+
+  const fallbackTotal = DB.tasks.filter(t => t.due === today || (t.completedAt && String(t.completedAt).startsWith(today))).length;
+  const total = dueTodayTasks.length > 0 ? dueTodayTasks.length : fallbackTotal;
+  const remaining = Math.max(total - completedToday, 0);
+  const percent = total > 0 ? Math.round((completedToday / total) * 100) : 0;
+
+  progressRoot.innerHTML = `
+    <div class="progress-card" aria-live="polite">
+      <div class="progress-card-label">Today's Tasks</div>
+      <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="${Math.max(total, 1)}" aria-valuenow="${Math.min(completedToday, Math.max(total, 1))}" aria-label="Today's task completion progress">
+        <div class="progress-fill" style="width:${percent}%;"></div>
+      </div>
+      <div class="progress-card-meta">${total > 0 ? `${completedToday} completed • ${remaining} remaining${percent >= 0 ? ` • ${percent}%` : ''}` : 'No tasks due today. Add one small task to build momentum.'}</div>
+    </div>
+  `;
 }
 
 function renderDashboardPriorityLists() {
@@ -2257,13 +2579,12 @@ let currentQuoteIndex = -1;
 function nextQuote() {
   const textEl = document.getElementById('quoteText');
   const authorEl = document.getElementById('quoteAuthor');
+  if (!textEl || !authorEl) return;
 
-  // Fade out
   textEl.style.opacity = '0';
   authorEl.style.opacity = '0';
 
   setTimeout(() => {
-    // Pick a new random quote (different from current)
     let idx;
     do { idx = Math.floor(Math.random() * QUOTES.length); } while (idx === currentQuoteIndex && QUOTES.length > 1);
     currentQuoteIndex = idx;
@@ -2271,20 +2592,22 @@ function nextQuote() {
 
     textEl.textContent = '"' + q.text + '"';
     authorEl.textContent = '— ' + q.author;
+    updateQuotePreview(q.text);
 
-    // Fade in
     textEl.style.opacity = '1';
     authorEl.style.opacity = '1';
-  }, 300);
+  }, 200);
 }
 
 function initQuote() {
-  // Use a daily seed so the quote changes each day but stays consistent during the day
   const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
   currentQuoteIndex = dayOfYear % QUOTES.length;
   const q = QUOTES[currentQuoteIndex];
-  document.getElementById('quoteText').textContent = '"' + q.text + '"';
-  document.getElementById('quoteAuthor').textContent = '— ' + q.author;
+  const textEl = document.getElementById('quoteText');
+  const authorEl = document.getElementById('quoteAuthor');
+  if (textEl) textEl.textContent = '"' + q.text + '"';
+  if (authorEl) authorEl.textContent = '— ' + q.author;
+  updateQuotePreview(q.text);
 }
 
 
@@ -2416,6 +2739,7 @@ function renderApp({ demoMode = false } = {}) {
   updateDashboard();
   updateAnalytics();
   initQuote();
+  applyQuoteCardPreference();
   loadBranding();
   DB.syncMetadata.lastSyncedAt = new Date().toISOString();
   DB.save('syncMetadata');
@@ -2504,6 +2828,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (breakInput) breakInput.value = DB.pomodoroSettings.breakMinutes || 5;
   primeAudioOnFirstInteraction();
   resetPomodoro();
+  setMicAvailability();
+  scheduleAppointmentReminders();
 
   const naturalInput = document.getElementById('taskNaturalInput');
   if (naturalInput) {
@@ -2530,7 +2856,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   renderApp({ demoMode: DEMO_MODE });
-
+  renderStreakBadge(false);
 
   maybeShowCustomizeTip();
   maybeShowOnboarding();

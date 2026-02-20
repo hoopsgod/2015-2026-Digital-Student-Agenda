@@ -426,6 +426,32 @@ body.dark-mode .dashboard-panel { box-shadow: 0 6px 18px rgba(0,0,0,0.24); }
 .dashboard-list-item-title { font-size: 13px; font-weight: 600; color: var(--lux-text-main); }
 .dashboard-list-item-meta { font-size: 11px; color: var(--lux-text-sub); }
 
+.progress-card { display:grid; gap:10px; padding:14px; border:1px solid var(--lux-border); border-radius:12px; background:var(--lux-hover); }
+.progress-card-label { font-size:12px; font-weight:700; color:var(--lux-text-main); }
+.progress-track { width:100%; height:10px; border-radius:999px; background:rgba(148,163,184,0.28); overflow:hidden; }
+.progress-fill { height:100%; background:linear-gradient(90deg,#22c55e,#16a34a); transition:width .2s ease; }
+.progress-card-meta { font-size:12px; color:var(--lux-text-sub); }
+.streak-badge { display:grid; gap:4px; padding:12px; border-radius:12px; border:1px solid var(--lux-border); background:color-mix(in srgb, var(--lux-card) 70%, #fff 30%); }
+.streak-badge.celebrate { animation: pulseBadge 0.7s ease; }
+@keyframes pulseBadge { 0%{transform:scale(1)} 50%{transform:scale(1.03)} 100%{transform:scale(1)} }
+.streak-line { font-size:13px; font-weight:700; color:var(--lux-text-main); }
+.streak-note { font-size:11px; color:var(--lux-text-sub); }
+.quote-card { border:1px solid var(--lux-border); border-radius:12px; background:color-mix(in srgb, var(--lux-hover) 85%, var(--lux-card) 15%); }
+.quote-toggle-btn { width:100%; background:none; border:none; padding:12px 14px; text-align:left; display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:12px; color:var(--lux-text-main); }
+.quote-preview { font-size:11px; color:var(--lux-text-sub); margin-top:4px; }
+.quote-card-body { padding:0 14px 14px; display:grid; gap:8px; }
+.quote-card.collapsed .quote-card-body { display:none; }
+.quote-card .quote-text { font-size:14px; margin-bottom:0; }
+.quote-card .quote-author { font-size:11px; }
+.voice-input-row { display:flex; gap:8px; align-items:center; }
+.voice-btn { min-width:40px; height:40px; border-radius:10px; border:1px solid var(--lux-border); background:var(--lux-card); cursor:pointer; }
+.voice-btn.listening { color:#fff; background:#1d4ed8; }
+.note-editor-wrap { display:flex; gap:8px; align-items:flex-start; }
+.note-editor-wrap .voice-btn { margin-top:4px; }
+.app-toast { position:fixed; bottom:20px; right:20px; z-index:4000; background:#0f172a; color:#fff; padding:10px 14px; border-radius:10px; font-size:12px; opacity:0; transform:translateY(8px); pointer-events:none; transition:all .2s ease; }
+.app-toast.show { opacity:1; transform:translateY(0); }
+@media (max-width: 768px) { .app-toast{left:12px; right:12px; bottom:72px;} }
+
 .dashboard-secondary-toggle {
   border: 1px solid var(--lux-border);
   border-radius: 16px;
@@ -1620,6 +1646,17 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
           <!-- Priority-first dashboard cards: key info at top for fast scanning. -->
           <section class="dashboard-priority-grid" aria-label="Priority dashboard metrics">
+            <article class="dashboard-panel" aria-labelledby="taskProgressHeading">
+              <div class="dashboard-section-header">
+                <h3 id="taskProgressHeading">Tasks Momentum</h3>
+              </div>
+              <div id="dashboardTaskProgress"></div>
+              <div id="streakBadge" class="streak-badge">
+                <div class="streak-line">Streak: <span id="streakCurrent">0</span> days · Best: <span id="streakBest">0</span> days</div>
+                <div id="streakNote" class="streak-note">Complete at least one task each day.</div>
+              </div>
+            </article>
+
             <article class="dashboard-panel" aria-labelledby="dueTodayHeading">
               <div class="dashboard-section-header">
                 <h3 id="dueTodayHeading">Tasks Due Today</h3>
@@ -1663,10 +1700,19 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               <!-- Inspirational Quote -->
               <div class="dashboard-section">
                 <div class="dashboard-section-label">Daily Inspiration</div>
-                <div id="quoteBox" class="quote-box">
-                  <div id="quoteText" class="quote-text"></div>
-                  <div id="quoteAuthor" class="quote-author"></div>
-                  <button onclick="nextQuote()" class="quote-refresh-btn" title="New quote" aria-label="Load another inspirational quote">↻</button>
+                <div id="quoteCard" class="quote-card collapsed">
+                  <button id="quoteCardToggle" class="quote-toggle-btn" type="button" onclick="toggleQuoteCard()" aria-expanded="false">
+                    <span>
+                      <strong>Daily Inspiration</strong>
+                      <div id="quotePreview" class="quote-preview"></div>
+                    </span>
+                    <span aria-hidden="true">▾</span>
+                  </button>
+                  <div class="quote-card-body">
+                    <div id="quoteText" class="quote-text"></div>
+                    <div id="quoteAuthor" class="quote-author"></div>
+                    <button onclick="nextQuote()" class="quote-refresh-btn" title="Refresh quote" aria-label="Load another inspirational quote">↻</button>
+                  </div>
                 </div>
               </div>
 
@@ -1731,7 +1777,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               </div>
               <div class="form-field">
                 <label class="form-label" for="taskTitle">Assignment title</label>
-                <input id="taskTitle" class="pro-input" placeholder="Example: Finish chapter 3 questions" aria-label="Assignment title" />
+                <div class="voice-input-row"><input id="taskTitle" class="pro-input" placeholder="Example: Finish chapter 3 questions" aria-label="Assignment title" /><button class="voice-btn" type="button" onclick="toggleVoiceInput('taskTitle', this)" aria-label="Start voice input" title="Start voice input">🎤</button></div>
               </div>
               <div class="quick-subject-row" aria-label="Quick subject buttons">
                 <button type="button" class="quick-subject-btn" onclick="setTaskSubject('Math')">Math</button>
@@ -1992,6 +2038,14 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               <label class="form-label" for="apptNotes">Notes (optional)</label>
               <input id="apptNotes" class="pro-input" placeholder="Any extra details..." aria-label="Appointment notes" />
             </div>
+            <div class="form-field">
+              <label class="form-label" for="apptReminder">Reminder</label>
+              <select id="apptReminder" class="pro-select pro-input" aria-label="Reminder offset">
+                <option value="0" selected>Off</option><option value="5">5 min</option><option value="10">10 min</option><option value="30">30 min</option><option value="60">1 hour</option><option value="1440">1 day</option>
+              </select>
+            </div>
+            <div style="font-size:11px;color:var(--lux-text-sub);">Reminders are best-effort while this tab is open.</div>
+            <div><button class="ghost-btn" type="button" onclick="testAlarmFlow()">Test reminder sound</button></div>
             <div style="display:flex; gap:8px;">
               <button class="primary-btn" onclick="addAppointment()">Save Appointment</button>
               <button class="ghost-btn" onclick="toggleApptForm()">Cancel</button>
@@ -2021,7 +2075,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <select id="noteLinkedTask" class="pro-select pro-input"></select>
             <select id="noteLinkedSchedule" class="pro-select pro-input"></select>
           </div>
-          <textarea id="noteContent" class="note-editor" placeholder="Write your note..."></textarea>
+          <div class="note-editor-wrap"><textarea id="noteContent" class="note-editor" placeholder="Write your note..."></textarea><button class="voice-btn" type="button" onclick="toggleVoiceInput('noteContent', this)" aria-label="Start voice input" title="Start voice input">🎤</button></div>
           <div class="note-insights">
             <span id="noteContentStats">0 words · 0 chars</span>
             <span>Tip: Press Ctrl/Cmd + S to save quickly.</span>
@@ -2305,5 +2359,6 @@ function renderAppointments() {
 })();
 </script>
 <script src="app.js" defer></script>
+  <div id="appToast" class="app-toast" aria-live="polite"></div>
 </body>
 </html>
