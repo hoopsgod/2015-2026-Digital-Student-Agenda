@@ -130,23 +130,134 @@ body.dark-mode .sidebar { border-right-color: rgba(255,255,255,0.08); box-shadow
 /* MAIN */
 .main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; z-index: 1; overflow: hidden; }
 
-.app-header {
-  background: linear-gradient(120deg, #0f172a 0%, #1e293b 100%);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-left: none;
-  border-right: none;
-  padding: 16px 32px;
-  display: flex; justify-content: space-between; align-items: center;
+:root{
+  --bg0: #070a12;
+  --bg1: #0b1430;
+  --card: rgba(255,255,255,0.08);
+  --stroke: rgba(255,255,255,0.14);
+  --text: rgba(255,255,255,0.92);
+  --muted: rgba(255,255,255,0.65);
+  --accent: #7CFF00;
+  --radius: 16px;
+  --radius-sm: 12px;
+}
+
+.app-header{
+  position: sticky;
+  top: 0;
   z-index: 50;
-  box-shadow: 0 14px 30px rgba(1, 6, 20, 0.3), inset 0 1px 0 rgba(255,255,255,0.08);
-  position: relative; overflow: hidden;
-  backdrop-filter: blur(8px);
+  padding-top: env(safe-area-inset-top);
+  background: linear-gradient(135deg, var(--bg0), var(--bg1));
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.22);
 }
-.app-header::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+
+.header-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 14px 16px 10px 16px;
 }
-.app-header::after { display: none; }
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  text-decoration:none;
+  min-width: 0;
+}
+
+.brand-logo{
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  box-shadow: 0 10px 18px rgba(0,0,0,0.25);
+}
+
+.brand-text{
+  display:flex;
+  flex-direction:column;
+  line-height: 1.05;
+  min-width: 0;
+}
+
+.brand-name{
+  color: var(--accent);
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  font-size: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-tagline{
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-actions{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.icon-btn{
+  height: 44px;
+  width: 44px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+}
+
+.pill-btn{
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.header-search{
+  padding: 0 16px 14px;
+}
+
+.search-input{
+  width: 100%;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  padding: 0 14px;
+}
+
+.search-input::placeholder { color: var(--muted); }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 .onboarding-overlay {
   position: fixed;
@@ -1413,7 +1524,58 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   }
 }
 
-  </style>
+
+
+/* Header refresh overrides */
+.app-header .header-actions { margin-left: 0; }
+.icon-btn:hover,
+.pill-btn:hover { background: rgba(255,255,255,0.12); }
+
+.brand:focus-visible,
+.icon-btn:focus-visible,
+.pill-btn:focus-visible,
+.search-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 899px) {
+  .header-inner {
+    padding: 12px 14px 8px;
+  }
+
+  .brand-name {
+    font-size: 20px;
+  }
+
+  .brand-tagline {
+    font-size: 12px;
+  }
+
+  .header-actions {
+    gap: 8px;
+  }
+
+  .pill-btn {
+    padding: 0 12px;
+  }
+
+  .header-search {
+    padding: 0 14px 12px;
+  }
+}
+
+@media (min-width: 900px) {
+  .header-inner {
+    padding: 14px 20px 10px;
+  }
+
+  .header-search {
+    padding: 0 20px 14px;
+  }
+}
+
+</style>
 </head>
 <body style="margin: 0; padding: 0;">
   <main id="landingRoot" class="landing-page">
@@ -1584,26 +1746,43 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
     <!-- MAIN CONTENT -->
 <div class="main-content">
-  <div class="app-header">
-    <div class="header-left">
-      <img class="header-logo" src="assets/main-logo.svg" alt="FocusFlex" width="176" height="52" fetchpriority="high" decoding="async">
-      <div class="header-brand">
-        <div class="header-title">FocusFlex</div>
-        <div class="header-subtitle">Plan smarter every day</div>
-        <div class="mobile-header-subtitle">Plan Smarter Everyday</div>
+  <header class="app-header">
+    <div class="header-inner">
+      <a class="brand" href="#/app" aria-label="Go to dashboard">
+        <img class="brand-logo" src="assets/main-logo.svg" alt="" width="42" height="42" fetchpriority="high" decoding="async">
+        <div class="brand-text">
+          <div class="brand-name">FocusFlex</div>
+          <div class="brand-tagline">Plan smarter everyday</div>
+        </div>
+      </a>
+
+      <div class="header-actions">
+        <button class="icon-btn" type="button" aria-label="Settings" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsPanel" aria-expanded="false">
+          <span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1 2.3 2.5.7 2-1.5 2 3.4-1.8 1.7.3 2.6 2.2 1.5-2 3.4-2.4-.9-2.2 1.5-.4 2.5h-4l-.4-2.5-2.2-1.5-2.4.9-2-3.4 2.2-1.5.3-2.6L2.5 7.9l2-3.4 2 1.5 2.5-.7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+        </button>
+
+        <button class="pill-btn" type="button" id="helpTourBtn" title="Open help tour">
+          Help
+        </button>
+
+        <button class="icon-btn" type="button" aria-label="Menu" id="menuBtn" aria-controls="mobileSidebar" aria-expanded="false" onclick="toggleMobileSidebar()">
+          <span aria-hidden="true">☰</span>
+        </button>
       </div>
     </div>
-    <div class="header-actions">
-      <label for="globalSearch" class="sr-only" style="position:absolute;left:-9999px;">Search notes and tasks</label>
-      <input id="globalSearch" class="pro-input global-search panel-focus-ring" type="search" placeholder="Search notes + tasks" aria-label="Search notes and tasks" />
-      <button class="header-btn help-tour-btn tooltip-target" id="openTourBtn" type="button" title="Open help tour" data-tooltip="Open a short guided tour anytime." aria-describedby="tipOpenTour">Help / Tour</button>
-      <span id="tipOpenTour" class="sr-only" style="position:absolute;left:-9999px;">Open a short guided tour anytime.</span>
-      <div class="header-status-pill"><span class="status-dot"></span>Synced & Ready</div>
-      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-controls="mobileSidebar" aria-expanded="false" onclick="toggleMobileSidebar()"><span class="ui-icon icon-lg" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span></button>
-      <button class="header-btn install-btn" id="installBtn" style="display:none;" aria-hidden="true">Install App</button>
-      <button class="header-btn" id="settingsToggle" aria-label="Open settings" aria-haspopup="dialog" aria-controls="settingsPanel" aria-expanded="false"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1 2.3 2.5.7 2-1.5 2 3.4-1.8 1.7.3 2.6 2.2 1.5-2 3.4-2.4-.9-2.2 1.5-.4 2.5h-4l-.4-2.5-2.2-1.5-2.4.9-2-3.4 2.2-1.5.3-2.6L2.5 7.9l2-3.4 2 1.5 2.5-.7z"/><circle cx="12" cy="12" r="3"/></svg></span></button>
+
+    <div class="header-search">
+      <label class="sr-only" for="globalSearch">Search notes and tasks</label>
+      <input
+        id="globalSearch"
+        class="search-input panel-focus-ring"
+        type="search"
+        placeholder="Search notes and tasks"
+        autocomplete="off"
+      />
     </div>
-  </div>
+    <button class="pill-btn install-btn" id="installBtn" type="button" style="display:none;" aria-hidden="true" tabindex="-1">Install App</button>
+  </header>
 
   <div class="app-container">
     <div class="bento-grid">
