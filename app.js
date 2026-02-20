@@ -2359,7 +2359,7 @@ function switchSection(sectionId) {
 }
 
 function toggleMobileSidebar() {
-  const sidebar = document.querySelector('.sidebar');
+  const sidebar = document.getElementById('mobileSidebar');
   const backdrop = document.getElementById('mobileSidebarBackdrop');
   const hamburger = document.getElementById('menuBtn');
   if (!sidebar || !backdrop || !hamburger) return;
@@ -2369,7 +2369,7 @@ function toggleMobileSidebar() {
   hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 function closeMobileSidebar() {
-  const sidebar = document.querySelector('.sidebar');
+  const sidebar = document.getElementById('mobileSidebar');
   const backdrop = document.getElementById('mobileSidebarBackdrop');
   const hamburger = document.getElementById('menuBtn');
   if (!sidebar || !backdrop || !hamburger) return;
