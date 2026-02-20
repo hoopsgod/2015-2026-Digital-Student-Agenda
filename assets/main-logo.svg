@@ -1,10 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="FocusFlex logo">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Titans logo">
   <defs>
-    <linearGradient id="focusflowGradient" x1="172" y1="852" x2="852" y2="172" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#25cc20"/>
-      <stop offset="1" stop-color="#b8ff0f"/>
+    <radialGradient id="bgGlow" cx="50%" cy="42%" r="60%">
+      <stop offset="0%" stop-color="#d9ff33" stop-opacity="0.95"/>
+      <stop offset="45%" stop-color="#86a818" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#070b11" stop-opacity="1"/>
+    </radialGradient>
+    <linearGradient id="shield" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1f2937"/>
+      <stop offset="100%" stop-color="#0b1220"/>
     </linearGradient>
+    <linearGradient id="lime" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ebff66"/>
+      <stop offset="100%" stop-color="#b1f200"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#9ca3af"/>
+    </linearGradient>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
-  <rect x="172" y="172" width="680" height="680" rx="110" fill="url(#focusflowGradient)"/>
-  <path fill="#fff" d="M294 727l52-332c3-18 18-31 36-31h301l66 52-113 75 20-45H437l-8 46h191l-31 64c-7 11-19 17-32 17H416l-10 64c-2 11-9 20-19 24z"/>
+
+  <rect width="1024" height="1024" fill="url(#bgGlow)"/>
+
+  <g filter="url(#softGlow)">
+    <path d="M512 140L790 235V495c0 152-112 292-278 360C346 787 234 647 234 495V235z" fill="url(#shield)" stroke="#d1d5db" stroke-width="18"/>
+    <path d="M512 194L744 274V492c0 126-90 243-232 299-142-56-232-173-232-299V274z" fill="#0f172a" stroke="#334155" stroke-width="8"/>
+
+    <path d="M412 320c42-50 158-49 200 0l-22 67c-19-17-46-27-78-27s-59 10-78 27z" fill="url(#lime)"/>
+    <path d="M430 430c0-50 37-90 82-90s82 40 82 90v126H430z" fill="url(#steel)" stroke="#111827" stroke-width="10"/>
+    <path d="M478 402h68v142h-68z" fill="#111827"/>
+    <path d="M474 560h76l-32 118h-12z" fill="#cbd5e1" stroke="#111827" stroke-width="8"/>
+
+    <g transform="translate(252 590)">
+      <path d="M42 86h438l-44 78H0z" fill="#0b1220"/>
+      <path d="M64 0h452l-36 92H24z" fill="url(#lime)" stroke="#0f172a" stroke-width="10"/>
+      <text x="258" y="68" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-size="112" letter-spacing="6" fill="#dbff4a" stroke="#13200e" stroke-width="8">TITANS</text>
+    </g>
+
+    <path d="M638 472l87 34-54 28 16 62-58-20-38 48 5-68-54-38 63-19z" fill="url(#lime)" stroke="#0f172a" stroke-width="8"/>
+    <path d="M318 472l-87 34 54 28-16 62 58-20 38 48-5-68 54-38-63-19z" fill="url(#lime)" stroke="#0f172a" stroke-width="8"/>
+  </g>
 </svg>
