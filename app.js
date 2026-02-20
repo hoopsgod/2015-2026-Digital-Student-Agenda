@@ -454,6 +454,14 @@ function normalizeLinkIcon(rawIcon) {
 
 function setTaskStep(step) {
   const safeStep = Math.min(Math.max(parseInt(step, 10) || 1, 1), 3);
+  // Progress indicator updates here so Step X text and bar always match Next/Back clicks.
+  const stepLabel = document.getElementById('taskStepLabel');
+  if (stepLabel) stepLabel.textContent = `You're on Step ${safeStep} of 3`;
+  const progressTrack = document.querySelector('.task-progress-track');
+  if (progressTrack) progressTrack.setAttribute('aria-valuenow', String(safeStep));
+  const progressFill = document.getElementById('taskStepProgressFill');
+  if (progressFill) progressFill.style.width = `${Math.round((safeStep / 3) * 100)}%`;
+
   document.querySelectorAll('.task-step-dot').forEach(el => {
     el.classList.toggle('active', parseInt(el.dataset.taskStep, 10) === safeStep);
   });
@@ -542,8 +550,7 @@ function renderOnboardingStep() {
 function advanceOnboarding(direction) {
   const total = document.querySelectorAll('.onboarding-step').length;
   if (direction > 0 && onboardingStep === total) {
-    STORAGE.setItem(ONBOARDING_STORAGE_KEY, 'true');
-    document.getElementById('onboardingOverlay')?.classList.remove('active');
+    dismissOnboardingTour(true);
     return;
   }
   onboardingStep = Math.min(Math.max(onboardingStep + direction, 1), total);
@@ -551,13 +558,64 @@ function advanceOnboarding(direction) {
 }
 
 function maybeShowOnboarding() {
-  if (DEMO_MODE) return;
-  if (STORAGE.getItem(ONBOARDING_STORAGE_KEY) === 'true') return;
-  if (normalizedHash() !== ROUTES.APP) return;
+  // Onboarding is user-initiated via Help/Tour button; no automatic modal on load.
+}
+
+function openOnboardingTour() {
   onboardingStep = 1;
   renderOnboardingStep();
   document.getElementById('onboardingOverlay')?.classList.add('active');
   document.getElementById('onboardingCard')?.focus();
+}
+
+function dismissOnboardingTour(savePreference = true) {
+  if (savePreference) STORAGE.setItem(ONBOARDING_STORAGE_KEY, 'true');
+  document.getElementById('onboardingOverlay')?.classList.remove('active');
+}
+
+function setupCustomTooltips() {
+  const tooltip = document.getElementById('customTooltip');
+  if (!tooltip) return;
+
+  let activeEl = null;
+  const showTooltip = (target) => {
+    const text = target?.dataset?.tooltip;
+    if (!text) return;
+    activeEl = target;
+    tooltip.textContent = text;
+    tooltip.classList.add('visible');
+    tooltip.setAttribute('aria-hidden', 'false');
+
+    const rect = target.getBoundingClientRect();
+    const tipRect = tooltip.getBoundingClientRect();
+    const top = Math.max(10, rect.top - tipRect.height - 8);
+    const left = Math.min(window.innerWidth - tipRect.width - 10, Math.max(10, rect.left + (rect.width / 2) - (tipRect.width / 2)));
+    tooltip.style.top = `${top}px`;
+    tooltip.style.left = `${left}px`;
+  };
+
+  const hideTooltip = () => {
+    activeEl = null;
+    tooltip.classList.remove('visible');
+    tooltip.setAttribute('aria-hidden', 'true');
+  };
+
+  document.querySelectorAll('.tooltip-target[data-tooltip]').forEach(el => {
+    el.addEventListener('mouseenter', () => showTooltip(el));
+    el.addEventListener('focus', () => showTooltip(el));
+    el.addEventListener('mouseleave', hideTooltip);
+    el.addEventListener('blur', hideTooltip);
+    el.addEventListener('click', () => {
+      if (activeEl === el) {
+        hideTooltip();
+      } else {
+        showTooltip(el);
+      }
+    });
+  });
+
+  window.addEventListener('scroll', hideTooltip, { passive: true });
+  window.addEventListener('resize', hideTooltip);
 }
 
 function maybeShowCustomizeTip() {
@@ -751,7 +809,7 @@ function renderTasks() {
   renderSubjectFilters();
 
   if (tasks.length === 0) {
-    list.innerHTML = '<div class="empty-msg">No tasks yet. Click "+ Add Task" to get started!</div>';
+    list.innerHTML = '<div class="empty-msg">No tasks yet. Click "Add Task" to get started!</div>';
     return;
   }
 
@@ -1915,11 +1973,12 @@ function renderDashboardPriorityLists() {
 // ==================== NAVIGATION ====================
 const sectionMeta = {
   profile: { label: 'Dashboard' },
-  agenda: { label: 'Log Homework' },
+  // Standardized navigation labels for clear verb-first actions.
+  agenda: { label: 'Add Homework' },
   schedule: { label: 'Schedule' },
   heatmap: { label: 'Analytics' },
   notes: { label: 'Notes' },
-  links: { label: 'Quick Links' }
+  links: { label: 'Open Links' }
 };
 let sectionHistory = ['profile'];
 let isBackNavigation = false;
@@ -2421,6 +2480,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   document.getElementById('globalSearch')?.addEventListener('search', performGlobalSearch);
+  document.getElementById('openTourBtn')?.addEventListener('click', openOnboardingTour);
+  document.getElementById('closeTourBtn')?.addEventListener('click', () => dismissOnboardingTour(true));
+  document.getElementById('onboardingOverlay')?.addEventListener('click', (event) => {
+    if (event.target?.id === 'onboardingOverlay') dismissOnboardingTour(true);
+  });
+  setupCustomTooltips();
 
   // Date & countdown
   const today = new Date();
