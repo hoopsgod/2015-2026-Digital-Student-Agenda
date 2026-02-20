@@ -1830,40 +1830,44 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <!-- ========== APPOINTMENTS ========== -->
       <div id="section-appointments" class="card section-wrapper">
         <div class="card-header">
-          <div class="card-title">Appointments</div>
+          <div class="card-title">
+            <span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/><path d="M8 14h3M8 17h5"/></svg></span>
+            Appointments
+          </div>
           <button class="ghost-btn" onclick="toggleApptForm()">+ Add Appointment</button>
         </div>
-
-        <div id="apptForm" style="display:none; padding: 20px; border-bottom: 1px solid var(--lux-border);">
-          <div class="form-field">
-            <label class="form-label" for="apptTitle">Title</label>
-            <input id="apptTitle" class="pro-input" type="text" placeholder="Appointment title" />
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px; margin-top:10px;">
+        <div id="apptForm" style="display:none; padding:20px; border-bottom:1px solid var(--lux-border); background:var(--lux-hover);">
+          <div style="display:grid; gap:10px;">
+            <div style="font-size:13px; font-weight:700; color:var(--lux-text-main); margin-bottom:2px;">Add Appointment</div>
             <div class="form-field">
-              <label class="form-label" for="apptDate">Date</label>
-              <input id="apptDate" class="pro-input" type="date" />
+              <label class="form-label" for="apptTitle">Title / Event</label>
+              <input id="apptTitle" class="pro-input" placeholder="e.g. Doctor appointment, Team meeting" aria-label="Appointment title" />
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div class="form-field">
+                <label class="form-label" for="apptDate">Date</label>
+                <input id="apptDate" type="date" class="pro-input" aria-label="Appointment date" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="apptTime">Time (optional)</label>
+                <input id="apptTime" type="time" class="pro-input" aria-label="Appointment time" />
+              </div>
             </div>
             <div class="form-field">
-              <label class="form-label" for="apptTime">Time</label>
-              <input id="apptTime" class="pro-input" type="time" />
+              <label class="form-label" for="apptLocation">Location (optional)</label>
+              <input id="apptLocation" class="pro-input" placeholder="e.g. Room 204, Gym, Main office" aria-label="Appointment location" />
             </div>
-          </div>
-          <div class="form-field" style="margin-top:10px;">
-            <label class="form-label" for="apptLocation">Location (optional)</label>
-            <input id="apptLocation" class="pro-input" type="text" placeholder="Location" />
-          </div>
-          <div class="form-field" style="margin-top:10px;">
-            <label class="form-label" for="apptNotes">Notes (optional)</label>
-            <input id="apptNotes" class="pro-input" type="text" placeholder="Notes" />
-          </div>
-          <div style="display:flex; gap:8px; margin-top:12px;">
-            <button class="primary-btn" onclick="addAppointment()">Save</button>
-            <button class="ghost-btn" onclick="toggleApptForm()">Cancel</button>
+            <div class="form-field">
+              <label class="form-label" for="apptNotes">Notes (optional)</label>
+              <input id="apptNotes" class="pro-input" placeholder="Any extra details..." aria-label="Appointment notes" />
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="primary-btn" onclick="addAppointment()">Save Appointment</button>
+              <button class="ghost-btn" onclick="toggleApptForm()">Cancel</button>
+            </div>
           </div>
         </div>
-
-        <div id="apptList"></div>
+        <div id="apptList" style="padding:16px 20px;"></div>
       </div>
 
       <!-- ========== NOTES ========== -->
