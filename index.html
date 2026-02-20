@@ -1527,7 +1527,13 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
 
 /* Header refresh overrides */
-.app-header .header-actions { margin-left: 0; }
+.app-header .header-actions {
+  margin-left: 0;
+  display: flex;
+  width: auto;
+  flex-wrap: nowrap;
+  grid-template-columns: none;
+}
 .icon-btn:hover,
 .pill-btn:hover { background: rgba(255,255,255,0.12); }
 
@@ -1539,9 +1545,19 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   outline-offset: 2px;
 }
 
+.install-btn {
+  min-width: 0;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
 @media (max-width: 899px) {
   .header-inner {
     padding: 12px 14px 8px;
+  }
+
+  .brand {
+    flex: 1;
   }
 
   .brand-name {
@@ -1552,7 +1568,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
     font-size: 12px;
   }
 
-  .header-actions {
+  .app-header .header-actions {
     gap: 8px;
   }
 
@@ -1562,6 +1578,52 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
   .header-search {
     padding: 0 14px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-inner {
+    align-items: center;
+    gap: 10px;
+  }
+
+  .app-header .header-actions {
+    display: flex;
+    width: auto;
+    gap: 6px;
+  }
+
+  .icon-btn,
+  .pill-btn {
+    height: 40px;
+  }
+
+  .icon-btn {
+    width: 40px;
+  }
+
+  .brand-logo {
+    width: 38px;
+    height: 38px;
+  }
+
+  .brand-name {
+    font-size: 18px;
+  }
+
+  .brand-tagline {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 420px) {
+  .brand-tagline {
+    display: none;
+  }
+
+  .pill-btn {
+    padding: 0 10px;
+    font-size: 13px;
   }
 }
 
@@ -1761,9 +1823,8 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
           <span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1 2.3 2.5.7 2-1.5 2 3.4-1.8 1.7.3 2.6 2.2 1.5-2 3.4-2.4-.9-2.2 1.5-.4 2.5h-4l-.4-2.5-2.2-1.5-2.4.9-2-3.4 2.2-1.5.3-2.6L2.5 7.9l2-3.4 2 1.5 2.5-.7z"/><circle cx="12" cy="12" r="3"/></svg></span>
         </button>
 
-        <button class="pill-btn" type="button" id="helpTourBtn" title="Open help tour">
-          Help
-        </button>
+        <button class="pill-btn" type="button" id="helpTourBtn" title="Open help tour">Help</button>
+        <button class="pill-btn install-btn" id="installBtn" type="button" style="display:none;" aria-hidden="true">Install</button>
 
         <button class="icon-btn" type="button" aria-label="Menu" id="menuBtn" aria-controls="mobileSidebar" aria-expanded="false" onclick="toggleMobileSidebar()">
           <span aria-hidden="true">☰</span>
@@ -1781,7 +1842,6 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
         autocomplete="off"
       />
     </div>
-    <button class="pill-btn install-btn" id="installBtn" type="button" style="display:none;" aria-hidden="true" tabindex="-1">Install App</button>
   </header>
 
   <div class="app-container">
