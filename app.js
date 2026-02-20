@@ -2070,9 +2070,11 @@ function renderThemeGrid() {
 }
 
 // ==================== BRANDING ====================
-const COMPANY_LOGO = 'assets/main-logo.svg';
+const COMPANY_LOGO_VERSION = '2026.02.20';
+const COMPANY_LOGO = `assets/main-logo.svg?v=${COMPANY_LOGO_VERSION}`;
 const DEFAULT_DASHBOARD_LOGO = COMPANY_LOGO;
-const DASHBOARD_LOGO_STORAGE_KEY = 'dashboard_logo';
+const LEGACY_DASHBOARD_LOGO_STORAGE_KEY = 'dashboard_logo';
+const DASHBOARD_LOGO_STORAGE_KEY = 'dashboard_logo_v2';
 const DEFAULT_NAME = 'My Agenda';
 const DEFAULT_SUBTITLE = '2025-2026 Digital Agenda';
 const DEFAULT_TAGLINE = 'Elite Athlete Dashboard';
@@ -2102,8 +2104,25 @@ function handleDashboardLogoUpload(input) {
   input.value = '';
 }
 
+function getStoredDashboardLogo() {
+  const modernLogo = STORAGE.getItem(DASHBOARD_LOGO_STORAGE_KEY);
+  if (modernLogo) return modernLogo;
+
+  const legacyLogo = STORAGE.getItem(LEGACY_DASHBOARD_LOGO_STORAGE_KEY);
+  if (!legacyLogo) return '';
+
+  if (legacyLogo.startsWith('data:image/')) {
+    STORAGE.setItem(DASHBOARD_LOGO_STORAGE_KEY, legacyLogo);
+    return legacyLogo;
+  }
+
+  STORAGE.removeItem(LEGACY_DASHBOARD_LOGO_STORAGE_KEY);
+  return '';
+}
+
 function resetDashboardLogo() {
   STORAGE.removeItem(DASHBOARD_LOGO_STORAGE_KEY);
+  STORAGE.removeItem(LEGACY_DASHBOARD_LOGO_STORAGE_KEY);
   applyDashboardLogo(DEFAULT_DASHBOARD_LOGO);
 }
 
@@ -2112,7 +2131,7 @@ function applyLogo() {
   document.querySelectorAll('.sidebar-logo-img').forEach(img => img.src = COMPANY_LOGO);
   document.querySelectorAll('.header-logo, .landing-brand-logo').forEach(img => img.src = COMPANY_LOGO);
 
-  const customDashboardLogo = STORAGE.getItem(DASHBOARD_LOGO_STORAGE_KEY);
+  const customDashboardLogo = getStoredDashboardLogo();
   applyDashboardLogo(customDashboardLogo || DEFAULT_DASHBOARD_LOGO);
 }
 
