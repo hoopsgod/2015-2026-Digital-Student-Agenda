@@ -406,6 +406,22 @@ body.dark-mode .card-title { color: var(--titan-accent); }
   font-size: 12px;
 }
 
+.dashboard-appt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.dashboard-appt-column {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--titan-accent) 16%, white 84%), color-mix(in srgb, var(--titan-accent) 7%, white 93%));
+  border: 1px solid color-mix(in srgb, var(--titan-accent) 42%, white 58%);
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+.dashboard-appt-heading { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: color-mix(in srgb, var(--titan-primary) 72%, #000 28%); }
+.dashboard-appt-list { display: grid; gap: 6px; }
+.dashboard-appt-item { background: rgba(255,255,255,0.68); border-radius: 8px; border: 1px solid rgba(255,255,255,0.8); padding: 8px 9px; display: grid; gap: 2px; }
+.dashboard-appt-time { font-size: 10px; font-weight: 700; color: color-mix(in srgb, var(--titan-primary) 60%, #475569 40%); }
+.dashboard-appt-title { font-size: 12px; font-weight: 600; color: var(--lux-text-main); line-height: 1.3; }
+.dashboard-appt-empty { font-size: 12px; color: var(--lux-text-sub); padding: 2px 0; }
+
 
 .quote-box { position:relative; padding: 26px 30px; background: linear-gradient(135deg, var(--lux-hover), var(--lux-card)); border: 1px solid var(--lux-border); border-radius: 16px; border-left: 4px solid var(--brand-blue); min-height: 80px; box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
 .quote-text { font-size: 16px; font-style: italic; color: var(--lux-text-main); font-weight: 400; line-height: 1.6; margin-bottom: 8px; transition: opacity 0.4s ease; }
@@ -1538,6 +1554,23 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               <button class="ghost-btn" style="padding: 6px 12px; font-size: 11px;" onclick="switchSection('agenda')">View All →</button>
             </div>
             <div id="dueThisWeek"></div>
+          </div>
+
+          <div class="dashboard-section">
+            <div class="dashboard-section-header">
+              <div class="dashboard-section-label">Appointments Snapshot</div>
+              <button class="ghost-btn" style="padding: 6px 12px; font-size: 11px;" onclick="switchSection('appointments')">Manage →</button>
+            </div>
+            <div class="dashboard-appt-grid">
+              <div class="dashboard-appt-column">
+                <div class="dashboard-appt-heading">Today</div>
+                <div id="dashboardApptsToday" class="dashboard-appt-list"></div>
+              </div>
+              <div class="dashboard-appt-column">
+                <div class="dashboard-appt-heading">This Week</div>
+                <div id="dashboardApptsWeek" class="dashboard-appt-list"></div>
+              </div>
+            </div>
           </div>
 
           <!-- Inspirational Quote -->

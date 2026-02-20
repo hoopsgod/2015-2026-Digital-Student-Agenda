@@ -142,6 +142,8 @@ function renderAppointments() {
       </div>
     `;
   }).join("");
+
+  renderAppointmentsOverview();
 }
 
 function apptRender() {
@@ -1813,6 +1815,54 @@ function updateDashboard() {
   document.getElementById('dashCompletedTasks').textContent = done;
   updateFocusStats();
   renderDueThisWeek();
+  renderAppointmentsOverview();
+}
+
+function dateKeyFromLocalDate(date) {
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().split('T')[0];
+}
+
+function formatAppointmentDateLabel(dateValue) {
+  const d = new Date(`${dateValue}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return dateValue;
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function renderAppointmentsOverview() {
+  const todayWrap = document.getElementById('dashboardApptsToday');
+  const weekWrap = document.getElementById('dashboardApptsWeek');
+  if (!todayWrap || !weekWrap) return;
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(now);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+
+  const todayKeyValue = dateKeyFromLocalDate(now);
+  const weekEndKey = dateKeyFromLocalDate(weekEnd);
+
+  const appointments = apptLoad().filter(item => item.date && item.date >= todayKeyValue && item.date <= weekEndKey);
+  const todaysAppointments = appointments.filter(item => item.date === todayKeyValue);
+  const weeklyAppointments = appointments.filter(item => item.date > todayKeyValue);
+
+  if (!todaysAppointments.length) {
+    todayWrap.innerHTML = '<div class="dashboard-appt-empty">No appointments scheduled for today.</div>';
+  } else {
+    todayWrap.innerHTML = todaysAppointments.map(item => {
+      const timeLabel = item.time ? formatTime(item.time) : 'All day';
+      return `<div class="dashboard-appt-item"><span class="dashboard-appt-time">${escapeHtml(timeLabel)}</span><span class="dashboard-appt-title">${escapeHtml(item.title)}</span></div>`;
+    }).join('');
+  }
+
+  if (!weeklyAppointments.length) {
+    weekWrap.innerHTML = '<div class="dashboard-appt-empty">No more appointments coming up this week.</div>';
+  } else {
+    weekWrap.innerHTML = weeklyAppointments.slice(0, 6).map(item => {
+      const timeLabel = item.time ? formatTime(item.time) : 'All day';
+      return `<div class="dashboard-appt-item"><span class="dashboard-appt-time">${escapeHtml(formatAppointmentDateLabel(item.date))} • ${escapeHtml(timeLabel)}</span><span class="dashboard-appt-title">${escapeHtml(item.title)}</span></div>`;
+    }).join('');
+  }
 }
 
 function renderDueThisWeek() {
