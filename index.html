@@ -354,8 +354,8 @@ body.dark-mode .card-header { background: linear-gradient(135deg, rgba(255,255,2
 body.dark-mode .card-title { color: var(--titan-accent); }
 
 /* DASHBOARD */
-.dashboard-container { padding: 52px; display: flex; flex-direction: column; gap: 44px; }
-.dashboard-header { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+.dashboard-container { padding: 56px; display: flex; flex-direction: column; gap: 48px; }
+.dashboard-header { display: grid; grid-template-columns: minmax(220px, 1fr) 1.4fr; gap: 52px; align-items: start; }
 .dashboard-left { display: flex; flex-direction: column; gap: 24px; }
 .dashboard-logo { width: 128px; height: 128px; border-radius: 18px; background: linear-gradient(135deg, rgba(0,0,0,0.06), rgba(0,0,0,0.03)); border: 1px solid rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; }
 .dashboard-logo img { width: 82%; height: 82%; object-fit: contain; }
@@ -363,7 +363,7 @@ body.dark-mode .card-title { color: var(--titan-accent); }
 .dashboard-title-section .brand-app-name { color: var(--titan-accent); }
 .dashboard-title-section h2 { font-size: 11px; letter-spacing: 0.08em; font-weight: 500; text-transform: uppercase; color: var(--lux-text-sub); margin: 0 0 10px 0; }
 .dashboard-title-section p { font-size: 13px; color: var(--lux-text-sub); margin: 0; font-weight: 500; }
-.dashboard-info-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.dashboard-info-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .dashboard-info-card { padding: 22px; border-radius: 16px; border: 1px solid rgba(148, 163, 184, 0.22); box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
 .dashboard-info-card.dark { background: linear-gradient(135deg, rgba(13,13,13,0.95), rgba(26,26,26,0.9)); border-color: rgba(0,0,0,0.2); }
 .dashboard-info-card.light { background: linear-gradient(135deg, #ffffff, #f1f5f9); }
@@ -373,6 +373,52 @@ body.dark-mode .card-title { color: var(--titan-accent); }
 .dashboard-info-value { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
 .dashboard-info-card.dark .dashboard-info-value { color: var(--titan-accent); }
 .dashboard-info-card.light .dashboard-info-value { color: var(--brand-blue); }
+
+/* Priority-first layout: keep only critical daily/weekly info visible up front. */
+.dashboard-priority-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.dashboard-panel {
+  background: var(--lux-card);
+  border: 1px solid var(--lux-border);
+  border-radius: 16px;
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+body.dark-mode .dashboard-panel { box-shadow: 0 6px 18px rgba(0,0,0,0.24); }
+.dashboard-panel h3 { margin: 0; font-size: 13px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--lux-text-sub); }
+
+.dashboard-list { display: grid; gap: 8px; }
+.dashboard-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--lux-border);
+  border-radius: 10px;
+  background: var(--lux-hover);
+}
+.dashboard-list-item-title { font-size: 13px; font-weight: 600; color: var(--lux-text-main); }
+.dashboard-list-item-meta { font-size: 11px; color: var(--lux-text-sub); }
+
+.dashboard-secondary-toggle {
+  border: 1px solid var(--lux-border);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--lux-hover) 65%, var(--lux-card) 35%);
+  padding: 12px 14px;
+}
+.dashboard-secondary-toggle summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--lux-text-main);
+  list-style: none;
+}
+.dashboard-secondary-toggle summary::-webkit-details-marker { display: none; }
+.dashboard-secondary-toggle summary::after { content: 'Show more'; color: var(--brand-blue); margin-left: 8px; font-weight: 700; }
+.dashboard-secondary-toggle[open] summary::after { content: 'Show less'; }
+.dashboard-secondary-content { margin-top: 14px; display: grid; gap: 18px; }
 
 .dashboard-section { border-top: 1px solid var(--lux-border); padding-top: 30px; display: grid; gap: 14px; }
 .dashboard-section-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -859,11 +905,12 @@ body.dark-mode .mobile-nav button { color: #e2e8f0; }
   .global-search { width: 100%; }
   .header-btn { width: 46px; height: 46px; border-radius: 14px; }
   .install-btn { min-width: 0; width: auto; padding: 0 10px; font-size: 11px; }
-  .dashboard-container { padding: 18px; gap: 22px; }
+  .dashboard-container { padding: 20px; gap: 24px; }
   .dashboard-header { grid-template-columns: 1fr; gap: 24px; }
   .dashboard-logo { width: 104px; height: 104px; }
   .dashboard-title-section h1 { font-size: 36px; }
   .dashboard-info-cards { grid-template-columns: 1fr; }
+  .dashboard-priority-grid { grid-template-columns: 1fr; gap: 14px; }
   .navigation-assist {
     display: none;
   }
@@ -917,6 +964,7 @@ body.dark-mode .mobile-nav button { color: #e2e8f0; }
   .hamburger-btn { display: flex; }
   .cardsGrid,
   .dashboard-info-cards,
+  .dashboard-priority-grid,
   .quick-actions-grid { grid-template-columns: 1fr; }
   .card,
   .focus-card,
@@ -1533,60 +1581,71 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
                 <div class="dashboard-info-label">Today</div>
                 <div id="dateDisplay" class="dashboard-info-value">...</div>
               </div>
-              <div class="dashboard-info-card dark">
-                <div class="dashboard-info-label">Summer Break</div>
-                <div id="schoolCountdown" class="dashboard-info-value">...</div>
-              </div>
               <div class="dashboard-info-card light">
-                <div class="dashboard-info-label">Tasks Open</div>
+                <div class="dashboard-info-label">Open Tasks</div>
                 <div id="dashOpenTasks" class="dashboard-info-value">0</div>
               </div>
               <div class="dashboard-info-card dark">
-                <div class="dashboard-info-label">Completed</div>
+                <div class="dashboard-info-label">Completed Tasks</div>
                 <div id="dashCompletedTasks" class="dashboard-info-value">0</div>
               </div>
             </div>
           </div>
-          <!-- Due This Week -->
-          <div class="dashboard-section">
-            <div class="dashboard-section-header">
-              <div class="dashboard-section-label">Due This Week</div>
-              <button class="ghost-btn" style="padding: 6px 12px; font-size: 11px;" onclick="switchSection('agenda')">View All →</button>
-            </div>
-            <div id="dueThisWeek"></div>
-          </div>
 
-          <div class="dashboard-section">
-            <div class="dashboard-section-header">
-              <div class="dashboard-section-label">Appointments Snapshot</div>
-              <button class="ghost-btn" style="padding: 6px 12px; font-size: 11px;" onclick="switchSection('appointments')">Manage →</button>
-            </div>
-            <div class="dashboard-appt-grid">
-              <div class="dashboard-appt-column">
-                <div class="dashboard-appt-heading">Today</div>
-                <div id="dashboardApptsToday" class="dashboard-appt-list"></div>
+          <!-- Priority-first dashboard cards: key info at top for fast scanning. -->
+          <section class="dashboard-priority-grid" aria-label="Priority dashboard metrics">
+            <article class="dashboard-panel" aria-labelledby="dueTodayHeading">
+              <div class="dashboard-section-header">
+                <h3 id="dueTodayHeading">Tasks Due Today</h3>
+                <button class="ghost-btn" style="padding: 6px 12px; font-size: 11px;" onclick="switchSection('agenda')">View Tasks →</button>
               </div>
-              <div class="dashboard-appt-column">
-                <div class="dashboard-appt-heading">This Week</div>
-                <div id="dashboardApptsWeek" class="dashboard-appt-list"></div>
+              <div id="tasksDueToday" class="dashboard-list" aria-live="polite"></div>
+            </article>
+
+            <article class="dashboard-panel" aria-labelledby="upcomingHeading">
+              <div class="dashboard-section-header">
+                <h3 id="upcomingHeading">Upcoming Deadlines</h3>
+                <button class="ghost-btn" style="padding: 6px 12px; font-size: 11px;" onclick="switchSection('agenda')">View Week →</button>
               </div>
-            </div>
-          </div>
+              <div id="upcomingDeadlines" class="dashboard-list" aria-live="polite"></div>
+            </article>
+          </section>
 
-          <!-- Inspirational Quote -->
-          <div class="dashboard-section">
-            <div class="dashboard-section-label">Daily Inspiration</div>
-            <div id="quoteBox" class="quote-box">
-              <div id="quoteText" class="quote-text"></div>
-              <div id="quoteAuthor" class="quote-author"></div>
-              <button onclick="nextQuote()" class="quote-refresh-btn" title="New quote" aria-label="Load another inspirational quote">↻</button>
-            </div>
-          </div>
+          <!-- Progressive disclosure: less-critical sections collapsed by default. -->
+          <details class="dashboard-secondary-toggle">
+            <summary aria-label="Show more dashboard sections">Additional Dashboard Sections</summary>
+            <div class="dashboard-secondary-content">
+              <div class="dashboard-section">
+                <div class="dashboard-section-header">
+                  <div class="dashboard-section-label">Appointments Snapshot</div>
+                  <button class="ghost-btn" style="padding: 6px 12px; font-size: 11px;" onclick="switchSection('appointments')">Manage →</button>
+                </div>
+                <div class="dashboard-appt-grid">
+                  <div class="dashboard-appt-column">
+                    <div class="dashboard-appt-heading">Today</div>
+                    <div id="dashboardApptsToday" class="dashboard-appt-list"></div>
+                  </div>
+                  <div class="dashboard-appt-column">
+                    <div class="dashboard-appt-heading">This Week</div>
+                    <div id="dashboardApptsWeek" class="dashboard-appt-list"></div>
+                  </div>
+                </div>
+              </div>
 
-          <!-- Quick Actions -->
-          <div class="dashboard-section">
-            <div class="dashboard-section-label">Quick Actions</div>
-            <div class="quick-actions-grid">
+              <!-- Inspirational Quote -->
+              <div class="dashboard-section">
+                <div class="dashboard-section-label">Daily Inspiration</div>
+                <div id="quoteBox" class="quote-box">
+                  <div id="quoteText" class="quote-text"></div>
+                  <div id="quoteAuthor" class="quote-author"></div>
+                  <button onclick="nextQuote()" class="quote-refresh-btn" title="New quote" aria-label="Load another inspirational quote">↻</button>
+                </div>
+              </div>
+
+              <!-- Quick Actions -->
+              <div class="dashboard-section">
+                <div class="dashboard-section-label">Quick Actions</div>
+                <div class="quick-actions-grid">
               <button onclick="switchSection('agenda'); setTimeout(toggleTaskForm, 200);" class="quick-action-btn primary">
                 <span class="ui-icon icon-xl" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4.5-1L19 8.5 15.5 5 5 15.5z"/><path d="M13.5 6.5l3 3"/></svg></span>
                 <div><strong>Log Homework</strong><span>Add a new task</span></div>
@@ -1604,7 +1663,9 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
                 <div><strong>Quick Links</strong><span>Open your sites</span></div>
               </button>
             </div>
-          </div>
+              </div>
+            </div>
+          </details>
         </div>
       </div>
 
