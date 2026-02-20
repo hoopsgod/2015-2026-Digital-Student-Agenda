@@ -2072,6 +2072,104 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   </nav>
 
 </div>
+<script>
+function toggleApptForm() {
+  var f = document.getElementById('apptForm');
+  if (!f) return;
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if (f.style.display === 'block') {
+    var t = document.getElementById('apptTitle');
+    if (t) setTimeout(function(){ t.focus(); }, 50);
+  }
+}
+
+function addAppointment() {
+  var title    = (document.getElementById('apptTitle')    || {}).value || '';
+  var date     = (document.getElementById('apptDate')     || {}).value || '';
+  var time     = (document.getElementById('apptTime')     || {}).value || '';
+  var location = (document.getElementById('apptLocation') || {}).value || '';
+  var notes    = (document.getElementById('apptNotes')    || {}).value || '';
+  title = title.trim(); location = location.trim(); notes = notes.trim();
+  if (!title) { alert('Please enter a title for the appointment.'); return; }
+  if (!date)  { alert('Please select a date for the appointment.');  return; }
+  var appts = [];
+  try { appts = JSON.parse(localStorage.getItem('ff_appointments') || '[]'); } catch(e) {}
+  appts.push({ id: Date.now(), title: title, date: date, time: time, location: location, notes: notes });
+  appts.sort(function(a, b) {
+    return new Date(a.date + 'T' + (a.time || '00:00')) - new Date(b.date + 'T' + (b.time || '00:00'));
+  });
+  localStorage.setItem('ff_appointments', JSON.stringify(appts));
+  ['apptTitle','apptDate','apptTime','apptLocation','apptNotes'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  toggleApptForm();
+  renderAppointments();
+}
+
+function deleteAppointment(id) {
+  var appts = [];
+  try { appts = JSON.parse(localStorage.getItem('ff_appointments') || '[]'); } catch(e) {}
+  appts = appts.filter(function(a) { return a.id !== id; });
+  localStorage.setItem('ff_appointments', JSON.stringify(appts));
+  renderAppointments();
+}
+
+function _apptFormatTime(t) {
+  if (!t) return '';
+  var parts = t.split(':'), h = parseInt(parts[0], 10), m = parts[1];
+  return (h % 12 || 12) + ':' + m + ' ' + (h < 12 ? 'AM' : 'PM');
+}
+
+function _apptFormatDate(d) {
+  var p = d.split('-');
+  return new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]))
+    .toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+}
+
+function _escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderAppointments() {
+  var list = document.getElementById('apptList');
+  if (!list) return;
+  var appts = [];
+  try { appts = JSON.parse(localStorage.getItem('ff_appointments') || '[]'); } catch(e) {}
+  if (!appts.length) {
+    list.innerHTML = '<div class="empty-msg">No appointments yet. Click <strong>+ Add Appointment</strong> to get started.</div>';
+    return;
+  }
+  var today = new Date(); today.setHours(0,0,0,0);
+  list.innerHTML = appts.map(function(a) {
+    var isPast = new Date(a.date + 'T00:00') < today;
+    var meta = '📅 ' + _apptFormatDate(a.date);
+    if (a.time) meta += '&nbsp;&nbsp;🕐 ' + _apptFormatTime(a.time);
+    if (a.location) meta += '&nbsp;&nbsp;📍 ' + _escHtml(a.location);
+    return '<div class="task-item" style="border-left-color:' + (isPast ? 'var(--lux-border)' : 'var(--brand-blue)') + ';' + (isPast ? 'opacity:0.55;' : '') + '">' +
+      '<div class="task-body">' +
+        '<div class="task-title">' + _escHtml(a.title) + (isPast ? ' <span style="font-size:10px;color:var(--lux-text-sub);font-weight:500;">(past)</span>' : '') + '</div>' +
+        '<div class="task-meta">' + meta + '</div>' +
+        (a.notes ? '<div class="task-meta" style="margin-top:4px;">' + _escHtml(a.notes) + '</div>' : '') +
+      '</div>' +
+      '<div class="task-actions"><button class="danger-btn" onclick="deleteAppointment(' + a.id + ')">Delete</button></div>' +
+    '</div>';
+  }).join('');
+}
+
+(function() {
+  function hookSwitch() {
+    if (typeof window.switchSection === 'function') {
+      var orig = window.switchSection;
+      window.switchSection = function(sec) { orig(sec); if (sec === 'appointments') renderAppointments(); };
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { renderAppointments(); setTimeout(hookSwitch, 300); });
+  } else {
+    renderAppointments(); setTimeout(hookSwitch, 300);
+  }
+})();
+</script>
 <script src="app.js" defer></script>
 </body>
 </html>
