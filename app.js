@@ -1811,10 +1811,14 @@ function updateAnalytics() {
 function updateDashboard() {
   const open = DB.tasks.filter(t => !t.completed).length;
   const done = DB.tasks.filter(t => t.completed).length;
-  document.getElementById('dashOpenTasks').textContent = open;
-  document.getElementById('dashCompletedTasks').textContent = done;
+  const openEl = document.getElementById('dashOpenTasks');
+  const doneEl = document.getElementById('dashCompletedTasks');
+  if (openEl) openEl.textContent = open;
+  if (doneEl) doneEl.textContent = done;
+
   updateFocusStats();
-  renderDueThisWeek();
+  // Priority-first rendering keeps high-signal data at the top for fast scanning.
+  renderDashboardPriorityLists();
   renderAppointmentsOverview();
 }
 
@@ -1865,8 +1869,11 @@ function renderAppointmentsOverview() {
   }
 }
 
-function renderDueThisWeek() {
-  const container = document.getElementById('dueThisWeek');
+function renderDashboardPriorityLists() {
+  const dueTodayEl = document.getElementById('tasksDueToday');
+  const upcomingEl = document.getElementById('upcomingDeadlines');
+  if (!dueTodayEl || !upcomingEl) return;
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const endOfWeek = new Date(today);
@@ -1874,50 +1881,36 @@ function renderDueThisWeek() {
   const todayStr = today.toISOString().split('T')[0];
   const endStr = endOfWeek.toISOString().split('T')[0];
 
-  const upcoming = DB.tasks
-    .filter(t => !t.completed && t.due && t.due >= todayStr && t.due <= endStr)
-    .sort((a, b) => a.due.localeCompare(b.due))
-    .slice(0, 5);
+  const openWithDueDate = DB.tasks
+    .filter(t => !t.completed && t.due)
+    .sort((a, b) => a.due.localeCompare(b.due));
 
-  const overdue = DB.tasks
-    .filter(t => !t.completed && t.due && t.due < todayStr)
-    .sort((a, b) => a.due.localeCompare(b.due))
-    .slice(0, 3);
+  // Keep the first panel laser-focused on today to reduce decision fatigue.
+  const dueToday = openWithDueDate.filter(t => t.due === todayStr).slice(0, 5);
+  const upcoming = openWithDueDate.filter(t => t.due > todayStr && t.due <= endStr).slice(0, 5);
 
-  const items = [...overdue, ...upcoming];
+  const renderTaskRows = (items, emptyMessage) => {
+    if (!items.length) {
+      return `<div class="dashboard-list-item"><span class="dashboard-list-item-meta">${emptyMessage}</span></div>`;
+    }
 
-  if (items.length === 0) {
-    container.innerHTML = '<div style="padding: 18px; text-align: center; color: var(--lux-text-sub); font-size: 13px; background: var(--lux-hover); border-radius: 10px; border: 1px solid var(--lux-border);">No upcoming deadlines this week. You\'re all caught up!</div>';
-    return;
-  }
+    return items.map(task => {
+      const dueDate = new Date(`${task.due}T00:00:00`);
+      const dateLabel = dueDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      const subject = task.subject ? ` • ${escapeHtml(task.subject)}` : '';
+      return `
+        <button class="dashboard-list-item" onclick="switchSection('agenda')" aria-label="Open tasks to review ${escapeHtml(task.title)}">
+          <span class="dashboard-list-item-title">${escapeHtml(task.title)}</span>
+          <span class="dashboard-list-item-meta">${escapeHtml(dateLabel)}${subject}</span>
+        </button>
+      `;
+    }).join('');
+  };
 
-  container.innerHTML = items.map(t => {
-    const isOverdue = t.due < todayStr;
-    const dueDate = new Date(t.due + 'T00:00:00');
-    const diffDays = Math.ceil((dueDate - today) / 86400000);
-    let dueLabel = '';
-    if (isOverdue) dueLabel = Math.abs(diffDays) + ' day' + (Math.abs(diffDays) !== 1 ? 's' : '') + ' overdue';
-    else if (diffDays === 0) dueLabel = 'Due today';
-    else if (diffDays === 1) dueLabel = 'Due tomorrow';
-    else dueLabel = 'Due ' + dueDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-
-    const sc = getSubjectColor(t.subject);
-    const borderColor = t.subject ? sc.border : 'var(--lux-border)';
-    const subjectBadge = t.subject ? '<span style="display:inline-flex;align-items:center;gap:3px;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:700;background:' + sc.bg + ';color:' + sc.text + ';">' + t.subject + '</span>' : '';
-
-    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--lux-border);border-radius:8px;background:var(--lux-hover);margin-bottom:6px;border-left:3px solid ' + borderColor + ';cursor:pointer;transition:all 0.2s;" onclick="switchSection(\'agenda\')">' +
-      '<div style="flex:1;min-width:0;">' +
-        '<div style="font-size:13px;font-weight:600;color:var(--lux-text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
-          '<span class="priority-dot priority-' + t.priority + '"></span>' + t.title +
-        '</div>' +
-        '<div style="font-size:11px;color:' + (isOverdue ? 'var(--lux-danger)' : 'var(--lux-text-sub)') + ';font-weight:' + (isOverdue ? '700' : '500') + ';margin-top:2px;display:flex;align-items:center;gap:8px;">' +
-          (isOverdue ? '⚠️ ' : '📅 ') + dueLabel +
-          ' ' + subjectBadge +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  }).join('');
+  dueTodayEl.innerHTML = renderTaskRows(dueToday, 'No tasks due today.');
+  upcomingEl.innerHTML = renderTaskRows(upcoming, 'No deadlines coming up this week.');
 }
+
 
 // ==================== NAVIGATION ====================
 const sectionMeta = {
@@ -2431,11 +2424,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Date & countdown
   const today = new Date();
-  document.getElementById('dateDisplay').textContent = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const summer = new Date(today.getFullYear(), 5, 15);
-  if (today > summer) summer.setFullYear(summer.getFullYear() + 1);
-  document.getElementById('schoolCountdown').textContent = Math.ceil((summer - today) / 86400000) + ' days';
-
+  const dateDisplay = document.getElementById('dateDisplay');
+  if (dateDisplay) dateDisplay.textContent = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   // Set default date for task form
   document.getElementById('taskDue').valueAsDate = new Date(Date.now() + 86400000);
   document.getElementById('homeworkDue').valueAsDate = new Date(Date.now() + 86400000);
