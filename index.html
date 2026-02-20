@@ -189,6 +189,10 @@ body.dark-mode .sidebar { border-right-color: rgba(255,255,255,0.08); box-shadow
 }
 
 .task-stepper { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.task-progress-row { display: grid; gap: 6px; }
+.task-progress-meta { font-size: 11px; color: var(--lux-text-sub); font-weight: 600; }
+.task-progress-track { width: 100%; height: 8px; border-radius: 999px; background: rgba(148, 163, 184, 0.24); overflow: hidden; }
+.task-progress-fill { height: 100%; width: 33%; background: linear-gradient(90deg, #2563eb, #1d4ed8); transition: width .2s ease; }
 .task-step-dot {
   border: 1px solid var(--lux-border);
   border-radius: 999px;
@@ -269,6 +273,26 @@ body.dark-mode .sidebar { border-right-color: rgba(255,255,255,0.08); box-shadow
   background: var(--lux-card);
   border: 1px solid var(--lux-border);
 }
+
+.help-tour-btn { white-space: nowrap; }
+.custom-tooltip {
+  position: fixed;
+  z-index: 2600;
+  pointer-events: none;
+  max-width: min(280px, calc(100vw - 24px));
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.4;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.35);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity .15s ease, transform .15s ease;
+}
+.custom-tooltip.visible { opacity: 1; transform: translateY(0); }
 .back-btn:hover {
   background: var(--lux-hover);
   color: var(--lux-text-main);
@@ -1506,12 +1530,12 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <div class="sidebar-section">
         <div class="sidebar-section-title">Navigation</div>
         <button class="sidebar-btn active" data-section="profile" title="Dashboard overview and quick actions" aria-label="Open Dashboard" onclick="switchSection('profile')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/></svg></span>Dashboard<span class="sidebar-feature-desc">Start here for today’s priorities</span></button>
-        <button class="sidebar-btn" data-section="agenda" title="Homework logging in simple steps" aria-label="Open Log Homework" onclick="switchSection('agenda')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Log Homework<span class="sidebar-feature-desc">Capture tasks quickly with defaults</span></button>
+        <button class="sidebar-btn" data-section="agenda" title="Homework logging in simple steps" aria-label="Open Add Homework" onclick="switchSection('agenda')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Add Homework<span class="sidebar-feature-desc">Capture tasks quickly with defaults</span></button>
         <button class="sidebar-btn" data-section="schedule" title="Day cycle and class periods" aria-label="Open Schedule" onclick="switchSection('schedule')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Schedule<span class="sidebar-feature-desc">Manage Day A/B/C class cycles</span></button>
         <button class="sidebar-btn" data-section="appointments" title="Appointments and events" aria-label="Open Appointments" onclick="switchSection('appointments')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/><path d="M8 14h3M8 17h5"/></svg></span>Appointments<span class="sidebar-feature-desc">Track upcoming events and visits</span></button>
         <button class="sidebar-btn" data-section="heatmap" title="Analytics and Focus Studio insights" aria-label="Open Analytics" onclick="switchSection('heatmap')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"/><path d="M7 15l3-3 3 2 4-5"/><circle cx="7" cy="15" r="1"/><circle cx="10" cy="12" r="1"/><circle cx="13" cy="14" r="1"/><circle cx="17" cy="9" r="1"/></svg></span>Analytics<span class="sidebar-feature-desc">Track completion and focus trends</span></button>
         <button class="sidebar-btn" data-section="notes" title="Notes and linked class context" aria-label="Open Notes" onclick="switchSection('notes')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>Notes<span class="sidebar-feature-desc">Capture study notes and attachments</span></button>
-        <button class="sidebar-btn" data-section="links" title="Frequently used school links" aria-label="Open Quick Links" onclick="switchSection('links')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Links<span class="sidebar-feature-desc">One tap access to school tools</span></button>
+        <button class="sidebar-btn" data-section="links" title="Frequently used school links" aria-label="Open Links" onclick="switchSection('links')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Links<span class="sidebar-feature-desc">One tap access to school tools</span></button>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-title">Appearance</div>
@@ -1546,6 +1570,8 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
     <div class="header-actions">
       <label for="globalSearch" class="sr-only" style="position:absolute;left:-9999px;">Search notes and tasks</label>
       <input id="globalSearch" class="pro-input global-search panel-focus-ring" type="search" placeholder="Search notes + tasks" aria-label="Search notes and tasks" />
+      <button class="header-btn help-tour-btn tooltip-target" id="openTourBtn" type="button" title="Open help tour" data-tooltip="Open a short guided tour anytime." aria-describedby="tipOpenTour">Help / Tour</button>
+      <span id="tipOpenTour" class="sr-only" style="position:absolute;left:-9999px;">Open a short guided tour anytime.</span>
       <div class="header-status-pill"><span class="status-dot"></span>Synced & Ready</div>
       <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-controls="mobileSidebar" aria-expanded="false" onclick="toggleMobileSidebar()"><span class="ui-icon icon-lg" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span></button>
       <button class="header-btn install-btn" id="installBtn" style="display:none;" aria-hidden="true">Install App</button>
@@ -1597,7 +1623,8 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <article class="dashboard-panel" aria-labelledby="dueTodayHeading">
               <div class="dashboard-section-header">
                 <h3 id="dueTodayHeading">Tasks Due Today</h3>
-                <button class="ghost-btn" style="padding: 6px 12px; font-size: 11px;" onclick="switchSection('agenda')">View Tasks →</button>
+                <button class="ghost-btn tooltip-target" style="padding: 6px 12px; font-size: 11px;" onclick="switchSection('agenda')" title="See all tasks" data-tooltip="Go to your homework list and review tasks." aria-describedby="tipSeeTasks">See Tasks →</button>
+                <span id="tipSeeTasks" class="sr-only" style="position:absolute;left:-9999px;">Go to your homework list and review tasks.</span>
               </div>
               <div id="tasksDueToday" class="dashboard-list" aria-live="polite"></div>
             </article>
@@ -1605,7 +1632,8 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
             <article class="dashboard-panel" aria-labelledby="upcomingHeading">
               <div class="dashboard-section-header">
                 <h3 id="upcomingHeading">Upcoming Deadlines</h3>
-                <button class="ghost-btn" style="padding: 6px 12px; font-size: 11px;" onclick="switchSection('agenda')">View Week →</button>
+                <button class="ghost-btn tooltip-target" style="padding: 6px 12px; font-size: 11px;" onclick="switchSection('agenda')" title="See this week's tasks" data-tooltip="Open homework to check deadlines for the week." aria-describedby="tipSeeWeek">See This Week →</button>
+                <span id="tipSeeWeek" class="sr-only" style="position:absolute;left:-9999px;">Open homework to check deadlines for the week.</span>
               </div>
               <div id="upcomingDeadlines" class="dashboard-list" aria-live="polite"></div>
             </article>
@@ -1648,19 +1676,19 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
                 <div class="quick-actions-grid">
               <button onclick="switchSection('agenda'); setTimeout(toggleTaskForm, 200);" class="quick-action-btn primary">
                 <span class="ui-icon icon-xl" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4.5-1L19 8.5 15.5 5 5 15.5z"/><path d="M13.5 6.5l3 3"/></svg></span>
-                <div><strong>Log Homework</strong><span>Add a new task</span></div>
+                <div><strong>Add Homework</strong><span>Create a new task</span></div>
               </button>
               <button onclick="switchSection('schedule')" class="quick-action-btn secondary">
                 <span class="ui-icon icon-xl" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>
-                <div><strong>View Schedule</strong><span>Check your classes</span></div>
+                <div><strong>See Schedule</strong><span>Check your classes</span></div>
               </button>
               <button onclick="switchSection('notes'); setTimeout(newNote, 200);" class="quick-action-btn secondary">
                 <span class="ui-icon icon-xl" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>
-                <div><strong>New Note</strong><span>Jot something down</span></div>
+                <div><strong>Add Note</strong><span>Jot something down</span></div>
               </button>
               <button onclick="switchSection('links')" class="quick-action-btn secondary">
                 <span class="ui-icon icon-xl" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>
-                <div><strong>Quick Links</strong><span>Open your sites</span></div>
+                <div><strong>Open Links</strong><span>Open your sites</span></div>
               </button>
             </div>
               </div>
@@ -1671,20 +1699,27 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
 
       <!-- ========== HOMEWORK / TASKS ========== -->
       <div id="section-agenda" class="card section-wrapper">
-        <div class="feature-tip" role="note">Homework logging is now a 3-step flow to reduce form overload.</div>
+        <div class="feature-tip" role="note">Adding homework is a 3-step flow to reduce form overload.</div>
         <div class="card-header">
-          <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Log Homework</div>
-          <button class="ghost-btn" onclick="toggleTaskForm()">+ Add Task</button>
+          <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Add Homework</div>
+          <button class="ghost-btn tooltip-target" onclick="toggleTaskForm()" title="Add task" data-tooltip="Open the 3-step form to add a new assignment." aria-describedby="tipAddTask">Add Task</button>
+          <span id="tipAddTask" class="sr-only" style="position:absolute;left:-9999px;">Open the 3-step form to add a new assignment.</span>
         </div>
 
         <!-- Add Task Form -->
         <div id="taskForm" style="display:none; padding: 20px; border-bottom: 1px solid var(--lux-border); background: var(--lux-hover);">
           <div style="display: grid; gap: 10px;">
             <div style="font-size: 13px; font-weight: 700; color: var(--lux-text-main); margin-bottom: 2px;" id="taskFormTitle">Add Task</div>
+            <div class="task-progress-row" aria-live="polite">
+              <div id="taskStepLabel" class="task-progress-meta">You're on Step 1 of 3</div>
+              <div class="task-progress-track" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" aria-label="Homework steps progress">
+                <div id="taskStepProgressFill" class="task-progress-fill"></div>
+              </div>
+            </div>
             <div class="task-stepper" aria-label="Homework form progress">
               <span class="task-step-dot active" data-task-step="1">1. Assignment</span>
-              <span class="task-step-dot" data-task-step="2">2. Class + due dates</span>
-              <span class="task-step-dot" data-task-step="3">3. Priority + notes</span>
+              <span class="task-step-dot" data-task-step="2">2. Class + Due Date</span>
+              <span class="task-step-dot" data-task-step="3">3. Priority + Notes</span>
             </div>
             <div class="task-step-pane active" data-task-pane="1">
               <div style="display:flex; gap:8px; align-items:end;">
@@ -1705,7 +1740,8 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
                 <button type="button" class="quick-subject-btn" onclick="setTaskSubject('History')">History</button>
               </div>
               <div style="display:flex; gap: 8px;">
-                <button class="primary-btn" onclick="setTaskStep(2)">Next</button>
+                <button class="primary-btn" onclick="setTaskStep(2)" title="Go to class and due date" data-tooltip="Continue to Step 2: Class + Due Date." aria-describedby="tipNextStep2">Next</button>
+                <span id="tipNextStep2" class="sr-only" style="position:absolute;left:-9999px;">Continue to Step 2: Class and due date.</span>
                 <button class="ghost-btn" onclick="toggleTaskForm()" aria-label="Cancel adding task">Cancel</button>
               </div>
             </div>
@@ -1733,7 +1769,8 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
               </div>
               <div style="display: flex; gap: 10px;">
                 <button class="ghost-btn" onclick="setTaskStep(1)">Back</button>
-                <button class="primary-btn" onclick="setTaskStep(3)">Next</button>
+                <button class="primary-btn" onclick="setTaskStep(3)" title="Go to priority and notes" data-tooltip="Continue to Step 3: Priority + Notes." aria-describedby="tipNextStep3">Next</button>
+                <span id="tipNextStep3" class="sr-only" style="position:absolute;left:-9999px;">Continue to Step 3: Priority and notes.</span>
               </div>
             </div>
             <div class="task-step-pane" data-task-pane="3">
@@ -1968,7 +2005,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <div id="section-notes" class="card section-wrapper">
         <div class="card-header">
           <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>Notes</div>
-          <button class="ghost-btn" onclick="newNote()">+ New Note</button>
+          <button class="ghost-btn" onclick="newNote()">Add Note</button>
         </div>
 
         <div class="note-toolbar">
@@ -2009,7 +2046,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
       <!-- ========== LINKS ========== -->
       <div id="section-links" class="card section-wrapper">
         <div class="card-header">
-          <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Quick Links</div>
+          <div class="card-title"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Open Links</div>
           <button class="ghost-btn" onclick="toggleLinkForm()">+ Add Link</button>
         </div>
 
@@ -2120,7 +2157,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
     </section>
     <section class="onboarding-step" data-onboarding-step="2">
       <h3>How this helps</h3>
-      <p>Use Dashboard for priorities, Log Homework for quick task capture, and Notes for study prep.</p>
+      <p>Use Dashboard for priorities, Add Homework for quick task capture, and Notes for study prep.</p>
     </section>
     <section class="onboarding-step" data-onboarding-step="3">
       <h3>Schedule setup guidance</h3>
@@ -2132,6 +2169,7 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
     </section>
     <div class="onboarding-actions">
       <button class="ghost-btn" type="button" id="onboardingBackBtn" onclick="advanceOnboarding(-1)">Back</button>
+      <button class="ghost-btn" type="button" id="closeTourBtn" onclick="dismissOnboardingTour(true)">Close</button>
       <button class="primary-btn" type="button" id="onboardingNextBtn" onclick="advanceOnboarding(1)">Next</button>
     </div>
   </div>
@@ -2158,12 +2196,14 @@ body.dark-mode .section-tab.active { border-bottom-color: var(--titan-accent); }
   <nav class="mobile-nav" aria-label="Mobile navigation">
     <button title="Go to landing page" aria-label="Go to landing page" onclick="goToLanding()"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg></span>Landing</button>
     <button title="Dashboard" aria-label="Open Dashboard" onclick="switchSection('profile')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/></svg></span>Home</button>
-    <button title="Log Homework" aria-label="Open Log Homework" onclick="switchSection('agenda')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Homework</button>
+    <button title="Add Homework" aria-label="Open Add Homework" onclick="switchSection('agenda')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></span>Homework</button>
     <button title="Schedule" aria-label="Open Schedule" onclick="switchSection('schedule')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Schedule</button>
     <button title="Appointments" aria-label="Open Appointments" onclick="switchSection('appointments')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/><path d="M8 14h3M8 17h5"/></svg></span>Appointments</button>
     <button title="Notes" aria-label="Open Notes" onclick="switchSection('notes')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>Notes</button>
-    <button title="Quick Links" aria-label="Open Quick Links" onclick="switchSection('links')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Links</button>
+    <button title="Open Links" aria-label="Open Links" onclick="switchSection('links')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-1.5 1.5a3.5 3.5 0 01-5-5L7 7a3.5 3.5 0 015 5L10.5 13"/><path d="M14 10l1.5-1.5a3.5 3.5 0 015 5L17 17a3.5 3.5 0 01-5-5l1.5-1.5"/></svg></span>Links</button>
   </nav>
+
+  <div id="customTooltip" class="custom-tooltip" role="tooltip" aria-hidden="true"></div>
 
 </div>
 <script>
