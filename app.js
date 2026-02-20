@@ -2361,7 +2361,7 @@ function switchSection(sectionId) {
 function toggleMobileSidebar() {
   const sidebar = document.querySelector('.sidebar');
   const backdrop = document.getElementById('mobileSidebarBackdrop');
-  const hamburger = document.getElementById('hamburgerBtn');
+  const hamburger = document.getElementById('menuBtn');
   if (!sidebar || !backdrop || !hamburger) return;
   const open = !sidebar.classList.contains('mobile-open');
   sidebar.classList.toggle('mobile-open', open);
@@ -2371,7 +2371,7 @@ function toggleMobileSidebar() {
 function closeMobileSidebar() {
   const sidebar = document.querySelector('.sidebar');
   const backdrop = document.getElementById('mobileSidebarBackdrop');
-  const hamburger = document.getElementById('hamburgerBtn');
+  const hamburger = document.getElementById('menuBtn');
   if (!sidebar || !backdrop || !hamburger) return;
   sidebar.classList.remove('mobile-open');
   backdrop.classList.remove('active');
@@ -2386,7 +2386,7 @@ function toggleSettingsPanel(forceOpen) {
   const backdrop = document.getElementById('settingsPanelBackdrop');
   backdrop.style.opacity = open ? '1' : '0';
   backdrop.style.pointerEvents = open ? 'auto' : 'none';
-  const toggle = document.getElementById('settingsToggle');
+  const toggle = document.getElementById('settingsBtn');
   if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
   if (open) {
     STORAGE.setItem(CUSTOMIZE_TIP_STORAGE_KEY, 'true');
@@ -2768,13 +2768,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (STORAGE.getItem('dyslexia') === 'true') document.body.classList.add('font-dyslexic');
   if (STORAGE.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
   applyColorTheme(STORAGE.getItem('currentTheme') || 'deep-ocean');
-  document.getElementById('hamburgerBtn')?.setAttribute('aria-expanded', 'false');
+  document.getElementById('menuBtn')?.setAttribute('aria-expanded', 'false');
   setupPWAInstall();
   // Service worker intentionally disabled to avoid stale cached builds.
   monitorWebVitals();
 
   // Event listeners
-  document.getElementById('settingsToggle').addEventListener('click', toggleSettingsPanel);
+  document.getElementById('settingsBtn').addEventListener('click', toggleSettingsPanel);
   document.getElementById('closeSettings').addEventListener('click', toggleSettingsPanel);
   document.getElementById('settingsPanelBackdrop').addEventListener('click', toggleSettingsPanel);
   document.getElementById('mobileSidebarBackdrop').addEventListener('click', closeMobileSidebar);
@@ -2804,7 +2804,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   document.getElementById('globalSearch')?.addEventListener('search', performGlobalSearch);
-  document.getElementById('openTourBtn')?.addEventListener('click', openOnboardingTour);
+  document.getElementById('helpTourBtn')?.addEventListener('click', openOnboardingTour);
   document.getElementById('closeTourBtn')?.addEventListener('click', () => dismissOnboardingTour(true));
   document.getElementById('onboardingOverlay')?.addEventListener('click', (event) => {
     if (event.target?.id === 'onboardingOverlay') dismissOnboardingTour(true);
